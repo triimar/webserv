@@ -4,12 +4,11 @@ Server::Server() {
 
 }
 
-Server::Server(char *configFile) : configFile(configFile){
-
-}
-
-Server::Server(const Server &server) : configFile(server.configFile), socketFd(server.socketFd){
-
+Server::Server(const Server &server) : port(server.port), host(server.host),
+serverName(server.serverName), root(server.root), index(server.index),
+socketFd(server.socketFd), ipAddress(server.ipAddress), clientSize(server.clientSize),
+errorPages(server.errorPages) {
+	return;
 }
 
 Server &Server::operator=(const Server &server) {
@@ -27,7 +26,7 @@ Server::~Server() {
 
 void Server::startServer() {
 	this->socketFd = socket(AF_LOCAL, SOCK_STREAM, 0);
-	if (!socketFd)
+	if (socketFd < 0)
 		throw std::runtime_error("Error: unable to start server.\n");
 }
 
