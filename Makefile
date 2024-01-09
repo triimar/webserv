@@ -1,4 +1,4 @@
-NAME = webserv
+NAME = webservto
 
 SRC = main.cpp
 

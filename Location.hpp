@@ -7,7 +7,7 @@
 enum Methods{
 	GET,
 	POST,
-	DELETE;
+	DELETE,
 };
 
 class Location
