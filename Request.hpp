@@ -1,9 +1,9 @@
 #pragma once
 
-#include <map>;
 #include <string>;
 #include <sstream>;
 #include <vector>;
+#include <map>;
 
 enum RequestMethod { //same enum in Location
 	GET,
@@ -29,6 +29,7 @@ private:
 	std::string		url_;
 	std::string		httpVer_;
 
+	// std::map<std::string, std::string> headers_; //map does not allow access using index. To iterate through map I have to make the variable public
 	std::vector<std::pair<std::string, std::string>> headers_;
 	std::vector<char> body_;
 	//std::istringstream	body_; 
@@ -41,6 +42,7 @@ private:
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
 
+	std::string& trimWhitespaces(std::string& str);
 
 public:
 	Request(int	socketFd);

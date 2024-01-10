@@ -25,6 +25,24 @@ Request& Request::operator=(const Request& ) {
 
 /* member functions that set member variables*/
 
+/* helpers (maybe should be in a separate namespace that the class uses?)*/
+
+std::string& Request::trimWhitespaces(std::string& str) {
+    size_t start = str.find_first_not_of(" \t\r\n");
+    if (start != std::string::npos) {
+        str.erase(0, start);
+    } else {
+        // if the string is all whitespaces, clear it(just in case)
+        str.clear();
+        return str;
+    }
+    size_t end = str.find_last_not_of(" \t\r\n");
+    if (end != std::string::npos) {
+        str.erase(end + 1);
+    }
+    return str;
+}
+
 
 
 /* getters */
@@ -37,6 +55,13 @@ std::string		Request::getUrl() const {
 std::string		Request::getHttpVer()const {
 	return httpVer_;
 }
+
+// std::string		Request::getHeaderKey(int index) const {
+// 	return headers_[index].first;
+// }
+// std::string		Request::getHeaderValue(int index) const {
+// 	return headers_[index].second;
+// }
 
 std::string		Request::getHeaderKey(int index) const {
 	return headers_[index].first;
