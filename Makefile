@@ -1,6 +1,6 @@
 NAME = webservto
 
-SRC = main.cpp
+SRC = main.cpp Server.cpp
 
 CP = c++
 
