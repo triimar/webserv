@@ -1,14 +1,15 @@
 #pragma once
 
-#include <map>;
-#include <string>;
-#include <sstream>;
-#include <vector>;
+#include <map>
+#include <string>
+#include <sstream>
+#include <vector>
 
 enum RequestMethod { //same enum in Location
 	GET,
 	POST,
 	DELETE,
+	ALL,
 };
 
 enum RequestState {
