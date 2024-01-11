@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <exception>
 #include <vector>
@@ -27,7 +28,7 @@ private:
 	int							socketFd;
 	sockaddr_in					socketAddress;
 	int 						newSocket;
-	long 						incomingMsg;
+//	long 						incomingMsg;
 	unsigned int				socketLen;
 //	uint32_t ipAddress;
 
@@ -43,7 +44,7 @@ public:
 	void acceptConnection(int &newSocket);
 
 	void setPort(unsigned short port);
-	void setHost(in_addr_t host);
+	void setHost(std::string host);
 	void setName(std::string name);
 	void setRoot(std::string root);
 	void setIndex(std::string index);

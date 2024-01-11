@@ -46,8 +46,9 @@ void Config::parseServerLine(Server &server, std::string line) {
 	std::stringstream ss(line);
 	std::string word;
 	switch (i) {
+		//LISTEN
 		case 0: {
-			while (ss >> word && word !="listen")
+			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
 			ss >> word;
 			if (word.empty() || word[word.length() - 1] != ';')
@@ -58,10 +59,95 @@ void Config::parseServerLine(Server &server, std::string line) {
 			if (!(port_ss >> port))
 				throw std::runtime_error("Config file error: invalid port format.\n");
 			server.setPort(port);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+			break;
+		}
+		//SERVER_NAME
+		case 1: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			ss >> word;
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			word.erase(word.length() - 1);
+			server.setName(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+			break;
+		}
+		//CLIENT_SIZE
+		case 3: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			ss >> word;
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			word.erase(word.length() - 1);
+			std::stringstream client_ss(word);
+			unsigned long client;
+			if (!(client_ss >> client))
+				throw std::runtime_error("Config file error: invalid port format.\n");
+			server.setClientSize(client);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+			break;
+		}
+		//INDEX
+		case 4: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			while (ss >> word && word[word.length() - 1] != ';')
+				server.setIndex(word);
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			word.erase(word.length() - 1);
+			server.setIndex(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+			break;
+		}
+		//ERROR_PAGE
+		case 5: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			ss >> word;
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			word.erase(word.length() - 1);
+			server.setErrorPage(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+			break;
+		}
+		//ROOT
+		case 6: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			ss >> word;
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			word.erase(word.length() - 1);
+			server.setRoot(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+			break;
+		}
+		//HOST
+		case 7: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			ss >> word;
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format.\n");
+			word.erase(word.length() - 1);
+			server.setHost(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .\n");
 			break;
 		}
 		default:
-			std::cout << "hi\n";
+			std::cout << line << "\n";
 			break;
 	}
 }
@@ -71,12 +157,12 @@ std::vector <Server> Config::createServers() {
 	std::string line;
 	std::getline(str, line);
 
-	while (!line.empty())
+	while (!str.eof())
 	{
 		int spos = line.find("server");
 		if (line.find("server") != std::string::npos)
 		{
-			while (!line.empty() && line.find('{', spos) == std::string::npos)
+			while (!str.eof() && line.find('{', spos) == std::string::npos)
 			{
 				if (!isEmptyLine(line))
 				{
@@ -86,18 +172,18 @@ std::vector <Server> Config::createServers() {
 				std::getline(str, line);
 				spos = 0;
 			}
-			if (line.empty() || line.find('{') != line.length() - 1)
+			if (str.eof() || line.find('{') != line.length() - 1)
 				throw std::runtime_error("Config file error: invalid format.\n");
 			Server server;
 			std::getline(str, line);
-			while (!line.empty() && line.find('}') == std::string::npos)
+			while (!str.eof() && line.find('}') == std::string::npos)
 			{
 				parseServerLine(server, line);
 				std::getline(str, line);
 			}
 			list.push_back(server);
 		}
-		if (!line.empty())
+		if (!str.eof())
 			std::getline(str, line);
 	}
 	return list;

@@ -119,8 +119,11 @@ void Server::setPort(unsigned short port) {
 	this->port = port;
 }
 
-void Server::setHost(in_addr_t host) {
-	this->host.s_addr = host;
+void Server::setHost(std::string host) {
+	if (this->host.s_addr != 0)
+		throw std::runtime_error("Config file error: server's host was initialized twice.\n");
+	if (!inet_aton(host.c_str(), &this->host))
+		throw std::runtime_error("Config file error: invalid host name.\n");
 }
 
 void Server::setName(std::string name) {
@@ -144,5 +147,13 @@ void Server::setIP() {
 }
 
 void Server::setClientSize(unsigned long clientSize) {
+	if (!clientSize)
+		throw std::runtime_error("Config file error: client size can't be 0.\n");
+	if (this->clientSize)
+		throw std::runtime_error("Config file error: client size was initialized twice.\n");
 	this->clientSize = clientSize;
+}
+
+void Server::setErrorPage(std::string errorPage) {
+	this->errorPages.push_back(errorPage);
 }
