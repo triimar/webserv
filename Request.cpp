@@ -28,9 +28,15 @@ Request& Request::operator=(const Request& ) {
 /* member functions that set member variables*/
 
 void Request::parseRequestLine() {
-	std::string methodStr;
-	requestStream_ >> methodStr >> uri_;
-	std::cout << methodStr << "|" << uri_ << std::endl;
+	std::string requestLine;
+    std::getline(requestStream_, requestLine, '\r');
+    requestStream_.ignore();
+
+    std::stringstream rls(requestLine);
+	std::string http;
+	rls >> methodStr_ >> uri_ >> http;
+	std::cout << "|"<< methodStr_ << "|" << uri_ << "|" << http << "|" << std::endl;
+	std::cout << requestStream_.str();
 
 }
 

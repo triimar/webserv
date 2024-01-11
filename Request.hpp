@@ -27,6 +27,7 @@ private:
 	std::stringstream	requestStream_;
 	RequestState		state_;
 	RequestMethod		method_;
+	std::string			methodStr_;
 	std::string			uri_;
 	unsigned int		versionMinor_;
 	unsigned int		versionMajor_;

@@ -22,7 +22,7 @@
 //testing request parsing
 int main() 
 {
-	const char* buffer = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\r\n\r\n";
+	const char* buffer = "GET /path/to/resource HTTP/1.2\r\nHost: example.com\r\n\r\n";
 	Request line(buffer);
 	line.parseRequestLine();
 }
