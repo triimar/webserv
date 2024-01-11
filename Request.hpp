@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <iostream>
 #include <sstream>
 #include <vector>
 
@@ -23,14 +24,15 @@ enum RequestState {
 class Request 
 {
 private:
-	RequestState	state_;
-
-	RequestMethod	method_;
-	std::string		url_;
-	std::string		httpVer_;
+	std::stringstream	requestStream_;
+	RequestState		state_;
+	RequestMethod		method_;
+	std::string			uri_;
+	unsigned int		versionMinor_;
+	unsigned int		versionMajor_;
 
 	// std::map<std::string, std::string> headers_; //map does not allow access using index. To iterate through map I have to make the variable public
-	std::vector<std::pair<std::string, std::string>> headers_;
+	std::vector<std::pair<std::string, std::string> > headers_;
 	std::vector<char> body_;
 	//std::istringstream	body_; 
 	// or std::vector<char> body_; HAVE to decide, which would be better
@@ -45,16 +47,16 @@ private:
 	std::string& trimWhitespaces(std::string& str);
 
 public:
-	Request(char *buffer);
+	Request(const char *buffer);
 	~Request();
 
-	void parseRequestLine(char *buffer);
-	
+	void parseRequestLine();
 
 	RequestMethod	getMethod() const;
-	std::string		getUrl() const;
-	std::string		getHttpVer()const;
+	std::string		getUri() const;
+	unsigned int	getHttpVerMajor()const;
+	unsigned int	getHttpVerMinor()const;
+
 	std::string		getHeaderKey(int index) const;
 	std::string		getHeaderValue(int index) const;
-
 };

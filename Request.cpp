@@ -1,22 +1,24 @@
 #include "Request.hpp"
 
+#define CRLF "\r\n" //end-of-line marker for all protocol elements except the entity-body
+
 /* constructors & destructor */
-Request::Request(): state_(requestERROR) {
+Request::Request(): requestStream_(), state_(requestERROR) {
 
 }
 
-Request::Request(char *buffer): state_(requestOK) {
-
+Request::Request(const char *buffer): requestStream_(buffer), state_(requestOK), versionMinor_(1), \
+									versionMajor_(1) {
+	std::cout << requestStream_.str();
 }
 
 Request::~Request() {
 
 }
 
-Request::Request(const Request& rhs): state_(rhs.state_), \
-									method_(rhs.method_), url_(rhs.url_), httpVer_(rhs.httpVer_), \
-									headers_(rhs.headers_), body_(rhs.body_) {
-
+Request::Request(const Request& rhs): requestStream_(rhs.requestStream_.str()), state_(rhs.state_), \
+									method_(rhs.method_), uri_(rhs.uri_), versionMinor_(rhs.versionMinor_), \
+									versionMajor_(rhs.versionMajor_), headers_(rhs.headers_), body_(rhs.body_) {
 }
 
 Request& Request::operator=(const Request& ) {
@@ -25,8 +27,11 @@ Request& Request::operator=(const Request& ) {
 
 /* member functions that set member variables*/
 
-void Request::parseRequestLine(char *buffer) {
-	
+void Request::parseRequestLine() {
+	std::string methodStr;
+	requestStream_ >> methodStr >> uri_;
+	std::cout << methodStr << "|" << uri_ << std::endl;
+
 }
 
 /* helpers (maybe should be in a separate namespace that the class uses?)*/
@@ -53,13 +58,16 @@ std::string& Request::trimWhitespaces(std::string& str) {
 RequestMethod	Request::getMethod() const {
 	return method_;
 }
-std::string		Request::getUrl() const {
-	return url_;
+std::string		Request::getUri() const {
+	return uri_;
 }
-std::string		Request::getHttpVer()const {
-	return httpVer_;
+unsigned int	Request::getHttpVerMajor()const {
+	return versionMajor_;
 }
 
+unsigned int	Request::getHttpVerMinor()const {
+	return versionMinor_;
+}
 // std::string		Request::getHeaderKey(int index) const {
 // 	return headers_[index].first;
 // }
