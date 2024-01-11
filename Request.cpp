@@ -1,11 +1,11 @@
 #include "Request.hpp"
 
 /* constructors & destructor */
-Request::Request(): socketFd_(-1), state_(requestERROR) {
+Request::Request(): state_(requestERROR) {
 
 }
 
-Request::Request(const int	socketFd): socketFd_(socketFd), state_(requestOK) {
+Request::Request(char *buffer): state_(requestOK) {
 
 }
 
@@ -13,7 +13,7 @@ Request::~Request() {
 
 }
 
-Request::Request(const Request& rhs): socketFd_(rhs.socketFd_), state_(rhs.state_), \
+Request::Request(const Request& rhs): state_(rhs.state_), \
 									method_(rhs.method_), url_(rhs.url_), httpVer_(rhs.httpVer_), \
 									headers_(rhs.headers_), body_(rhs.body_) {
 
@@ -24,6 +24,10 @@ Request& Request::operator=(const Request& ) {
 }
 
 /* member functions that set member variables*/
+
+void Request::parseRequestLine(char *buffer) {
+	
+}
 
 /* helpers (maybe should be in a separate namespace that the class uses?)*/
 

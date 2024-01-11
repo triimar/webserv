@@ -23,7 +23,6 @@ enum RequestState {
 class Request 
 {
 private:
-	const int		socketFd_;
 	RequestState	state_;
 
 	RequestMethod	method_;
@@ -46,8 +45,11 @@ private:
 	std::string& trimWhitespaces(std::string& str);
 
 public:
-	Request(int	socketFd);
+	Request(char *buffer);
 	~Request();
+
+	void parseRequestLine(char *buffer);
+	
 
 	RequestMethod	getMethod() const;
 	std::string		getUrl() const;

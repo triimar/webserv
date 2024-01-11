@@ -87,7 +87,7 @@ void Server::startListen() {
 
 		std::ostringstream ss;
 		ss << "------ Received Request from client ------\n\n";
-		std::cout << ss.str() << std::endl;
+		std::cout << ss.str() << std::endl << buffer;
 
 //		sendResponse();
 
