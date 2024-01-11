@@ -112,6 +112,10 @@ void Server::closeServer() {
 }
 
 void Server::setPort(unsigned short port) {
+	if (!port)
+		throw std::runtime_error("Config file error: port cannot be initialized to 0.\n");
+	if (this->port)
+		throw std::runtime_error("Config file error: server's port was initialized twice.\n");
 	this->port = port;
 }
 
