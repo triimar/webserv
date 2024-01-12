@@ -3,22 +3,16 @@
 #define CRLF "\r\n" //end-of-line marker for all protocol elements except the entity-body
 
 /* constructors & destructor */
-Request::Request(): requestStream_(), state_(requestERROR) {
 
-}
-
-Request::Request(const char *buffer): requestStream_(buffer), state_(requestOK), versionMinor_(1), \
-									versionMajor_(1) {
-	std::cout << requestStream_.str();
+Request::Request(): state_(requestOK), method_(OTHER) {
 }
 
 Request::~Request() {
 
 }
 
-Request::Request(const Request& rhs): requestStream_(rhs.requestStream_.str()), state_(rhs.state_), \
-									method_(rhs.method_), uri_(rhs.uri_), versionMinor_(rhs.versionMinor_), \
-									versionMajor_(rhs.versionMajor_), headers_(rhs.headers_), body_(rhs.body_) {
+Request::Request(const Request& rhs): state_(rhs.state_), \
+									method_(rhs.method_), uri_(rhs.uri_), headers_(rhs.headers_), body_(rhs.body_) {
 }
 
 Request& Request::operator=(const Request& ) {
@@ -27,17 +21,42 @@ Request& Request::operator=(const Request& ) {
 
 /* member functions that set member variables*/
 
-void Request::parseRequestLine() {
-	std::string requestLine;
-    std::getline(requestStream_, requestLine, '\r');
-    requestStream_.ignore();
+void	Request::setRequestMethod() {
+	const std::string methods[3] = {"GET", "POST", "DELETE"};
+	for (int i = 0; i < 3; i++) {
+		if (methods[i] == methodStr_) {
+			method_ = static_cast<RequestMethod>(i);
+			break ;
+		}
+	}
+}
 
-    std::stringstream rls(requestLine);
-	std::string http;
-	rls >> methodStr_ >> uri_ >> http;
-	std::cout << "|"<< methodStr_ << "|" << uri_ << "|" << http << "|" << std::endl;
-	std::cout << requestStream_.str();
+int Request::processRequestLine(char *bufRequestLine) {
+    std::stringstream rls(bufRequestLine);
+	rls >> methodStr_;
+	if (!rls) {
+		return false; // why failed, in which way - can fail only if there is nothing in the string?
+	}
+	setRequestMethod();
+	
+	rls >> uri_;
+	if (!rls.bad())
+		return false; // why failed, in which 
+	else if (rls.fail() || rls.eof() || uri_.length() == 0)
+		return false; //set error code
+	//validate uri_
+	
+	rls >> httpVer_;
+	if (!rls.bad())
+		return false; // why failed, in which 
+	else if (rls.fail() || rls.eof() || httpVer_.length() == 0)
+		return false; //set error code
+	if (httpVer_.compare(0, httpVer_.length(), "HTTP/1.1") != 0) { //not a valid idea, because there is bad request version 400 & version not supported 505
+        return false;
+    }
 
+	std::cout << "|"<< methodStr_ << "|" << uri_ << "|" << httpVer_ << "|" << errorCode_ << std::endl;
+	return true;
 }
 
 /* helpers (maybe should be in a separate namespace that the class uses?)*/
@@ -67,13 +86,11 @@ RequestMethod	Request::getMethod() const {
 std::string		Request::getUri() const {
 	return uri_;
 }
-unsigned int	Request::getHttpVerMajor()const {
-	return versionMajor_;
+
+std::string		Request::getHttpVer()const {
+	return httpVer_;
 }
 
-unsigned int	Request::getHttpVerMinor()const {
-	return versionMinor_;
-}
 // std::string		Request::getHeaderKey(int index) const {
 // 	return headers_[index].first;
 // }
