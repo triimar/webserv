@@ -19,8 +19,10 @@ int main(int argc, char **argv)
 //	server.startListen();
 
 	try{
+		std::vector<Server> list;
 		Config config(argv[1]);
-		config.createServers();
+		list = config.createServers();
+		std::for_each(list.begin(), list.end(), Server::printServer);
 	}
 	catch (std::exception &e)
 	{

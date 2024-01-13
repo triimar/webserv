@@ -143,7 +143,9 @@ void Server::setIP() {
 		return;//Throw exception?
 	this->ipAddress = inet_ntoa(this->host);
 	this->ipAddress += ":";
-	this->ipAddress += this->port;
+	std::stringstream ss;
+	ss << this->port;
+	this->ipAddress += ss.str();
 }
 
 void Server::setClientSize(unsigned long clientSize) {
@@ -156,4 +158,20 @@ void Server::setClientSize(unsigned long clientSize) {
 
 void Server::setErrorPage(std::string errorPage) {
 	this->errorPages.push_back(errorPage);
+}
+
+void printList(std::string index)
+{
+	std::cout << "\t" << index << std::endl;
+}
+
+void Server::printServer(Server &server) {
+	std::cout << "Server: " << server.serverName <<
+	"\nIP: " << server.ipAddress <<
+	"\nRoot: " << server.root <<
+	"\nIndex: ";
+	std::for_each(server.index.begin(), server.index.end(), printList);
+	std::cout << "Client Size: " << server.clientSize <<
+	"\nError Pages: ";
+	std::for_each(server.errorPages.begin(), server.errorPages.end(), printList);
 }

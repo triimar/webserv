@@ -51,4 +51,6 @@ public:
 	void setIP();
 	void setClientSize(unsigned long clientSize);
 	void setErrorPage(std::string errorPage);
+
+	static void printServer(Server &server);
 };

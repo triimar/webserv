@@ -181,10 +181,12 @@ std::vector <Server> Config::createServers() {
 				parseServerLine(server, line);
 				std::getline(str, line);
 			}
+			server.setIP();
 			list.push_back(server);
 		}
 		if (!str.eof())
 			std::getline(str, line);
 	}
+//	close(str);
 	return list;
 }
