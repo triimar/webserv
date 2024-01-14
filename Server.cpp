@@ -13,7 +13,7 @@ Server::Server() {
 Server::Server(const Server &server) : port(server.port), host(server.host),
 serverName(server.serverName), root(server.root), index(server.index),
 ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-socketFd(server.socketFd){
+locations(server.locations), socketFd(server.socketFd){
 	return;
 }
 
@@ -174,4 +174,82 @@ void Server::printServer(Server &server) {
 	std::cout << "Client Size: " << server.clientSize <<
 	"\nError Pages: ";
 	std::for_each(server.errorPages.begin(), server.errorPages.end(), printList);
+	std::for_each(server.locations.begin(), server.locations.end(), Location::printLocation);
 }
+
+void Server::setLocation(std::string line, std::ifstream &stream) {
+	Location location;
+
+	std::stringstream ss(line);
+	std::string word;
+	std::string keywords[] = {"allow", "root", "index"};
+	while (ss >> word && word != "location")
+		throw std::runtime_error("Config file error location a: invalid keyword format.\n");
+	ss >> word;
+	if (word.empty() || word == "{")
+		throw std::runtime_error("Config file error location b: location should be followed by a directory.\n");
+	location.setName(word);
+	if (!(ss >> word) || word != "{")
+		throw std::runtime_error("Config file error location c: location directory should be followed by a '{'.\n");
+	std::getline(stream, line);
+	while (stream.good() && line.find('}') == std::string::npos)
+	{
+//		std::cout << line << "\n";
+		if (line.empty())
+		{
+			std::getline(stream, line);
+			continue;
+		}
+		std::stringstream lss(line);
+		lss >> word;
+		int i;
+		for (i = 0; i < 3; i++)
+			if (word == keywords[i])
+				break;
+		switch (i){
+			//ALLOW
+			case 0: {
+				while (lss >> word && word.find(";") == std::string::npos)
+					location.setMethod(word);
+				if (word.empty() || word[word.length() - 1] != ';')
+					throw std::runtime_error("Config file error location d: invalid keyword format.\n");
+				word.erase(word.length() - 1);
+				location.setMethod(word);
+				break;
+			}
+			//ROOT
+			case 1: {
+				if (!(lss >> word) || word[word.length() - 1] != ';')
+					throw std::runtime_error("Config file error location e: invalid keyword format.\n");
+				word.erase(word.length() - 1);
+				location.setRoot(word);
+				break;
+			}
+			//INDEX
+			case 2: {
+				while (lss >> word && word.find(";") == std::string::npos)
+					location.setIndex(word);
+				if (word.empty() || word[word.length() - 1] != ';')
+					throw std::runtime_error("Config file error location f: invalid keyword format.\n");
+				word.erase(word.length() - 1);
+				location.setIndex(word);
+				break;
+			}
+			default:
+			{
+				std::cout << word << "\n";
+				throw std::runtime_error("Config file error location g: invalid keyword format.\n");
+			}
+		}
+		std::getline(stream, line);
+	}
+	if (!stream.eof())
+	{
+		this->locations.push_back(location);
+	}
+}
+
+//void Server::pushLocation() {
+//	Location location;
+//	this->locations.push_back(location);
+//}

@@ -33,8 +33,8 @@ bool Config::isEmptyLine(std::string line) {
 void Config::parseServerLine(Server &server, std::string line) {
 	if (isEmptyLine(line))
 		return;
-	unsigned long keySize = 9;
-	std::string keywords[] = {"listen", "server_name", "allow", "client_size", "index", "error_page", "root", "host", "location"};
+	unsigned long keySize = 8;
+	std::string keywords[] = {"listen", "server_name", "client_size", "index", "error_page", "root", "host", "location"};
 	unsigned long i;
 	for (i = 0; i < keySize; i++)
 	{
@@ -77,7 +77,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			break;
 		}
 		//CLIENT_SIZE
-		case 3: {
+		case 2: {
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
 			ss >> word;
@@ -94,7 +94,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			break;
 		}
 		//INDEX
-		case 4: {
+		case 3: {
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
 			while (ss >> word && word[word.length() - 1] != ';')
@@ -108,7 +108,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			break;
 		}
 		//ERROR_PAGE
-		case 5: {
+		case 4: {
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
 			ss >> word;
@@ -121,7 +121,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			break;
 		}
 		//ROOT
-		case 6: {
+		case 5: {
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
 			ss >> word;
@@ -134,7 +134,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			break;
 		}
 		//HOST
-		case 7: {
+		case 6: {
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
 			ss >> word;
@@ -144,6 +144,15 @@ void Config::parseServerLine(Server &server, std::string line) {
 			server.setHost(word);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+			break;
+		}
+		//LOCATION
+		case 7: {
+//			server.pushLocation();
+//			Location location;
+			server.setLocation(line, str);
+//			location.setName("HELLO");
+//			server.pushLocation(location);
 			break;
 		}
 		default:

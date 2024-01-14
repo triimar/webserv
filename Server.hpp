@@ -11,6 +11,8 @@
 #include <cstdlib>
 #include <sstream>
 #include <unistd.h>
+#include <fstream>
+#include "Location.hpp"
 
 #define BUFFER_SIZE 30720
 
@@ -25,6 +27,7 @@ private:
 	std::string					ipAddress;
 	unsigned long				clientSize;
 	std::vector<std::string>	errorPages;
+	std::vector<Location>		locations;
 	int							socketFd;
 	sockaddr_in					socketAddress;
 	int 						newSocket;
@@ -51,6 +54,8 @@ public:
 	void setIP();
 	void setClientSize(unsigned long clientSize);
 	void setErrorPage(std::string errorPage);
+	void setLocation(std::string line, std::ifstream &stream);
+//	void pushLocation();
 
 	static void printServer(Server &server);
 };

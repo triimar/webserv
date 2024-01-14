@@ -13,9 +13,10 @@ enum Methods{
 class Location
 {
 private:
-	std::string	name;
-	std::string	root;
-	std::vector<Methods> allowedMethods;
+	std::string					name;
+	std::string					root;
+	std::vector<Methods>		allowedMethods;
+	std::vector<std::string>	index;
 
 public:
 	Location();
@@ -23,4 +24,10 @@ public:
 	Location &operator=(const Location& location);
 	~Location();
 
+	void setName(std::string name);
+	void setRoot(std::string root);
+	void setMethod(std::string method);
+	void setIndex(std::string index);
+
+	static void printLocation(Location &location);
 };
