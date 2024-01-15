@@ -22,8 +22,7 @@
 //testing request parsing
 int main() 
 {
-	const char* buffer = "GET /path/to/resource HTTP/1.1\r\nhost:localhost\r\n\r\n";
-	std::cout << buffer << std::endl;
+	const char* buffer = "\r\n\r\n\r\n\r\nGET /path/to/resource HTTP/1.1\r\nhost:localhost\r\n\r\ndatadatadata";
 	Request line;
-	line.processRequest(buffer, 51);
+	line.processRequest(buffer, 63);
 }

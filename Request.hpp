@@ -8,15 +8,20 @@
 
 #define CRLF "\r\n"
 
-enum ParseState
-{
-	parseMethod,
-	parseURI,
-	parseHTTPver,
-	parseHeaders,
-    parseMessageBody,
-	reqestParseFAIL,
-	requestERROR,
+enum ParseState {
+	stateParseRequestLine,
+	stateParseHeaders,
+    StateParseMessageBody,
+	requestParseFAIL, //indicates falure of parser as opposed to problem with request
+	requestERROR, // indicates a problem in the request
+	requestOK,
+};
+
+enum RequestLineState {
+	stateParseMethod,
+	stateParseUri,
+	stateParseHTTPver,
+	requestLineOK,
 };
 
 enum RequestMethod {
@@ -31,6 +36,7 @@ class Request
 {
 private:
 	ParseState			state_;
+	RequestLineState	rlstate_;
 
 	std::string			methodStr_;
 	RequestMethod		method_;
@@ -38,7 +44,7 @@ private:
 	std::string			httpVer_;
 	// std::map<std::string, std::string> headers_; //map does not allow access using index. To iterate through map I have to make the variable public
 	std::vector<std::pair<std::string, std::string> > headers_;
-	std::vector<char> body_;
+	std::vector<char> 	body_;
 	int					errorCode_; //is 0 if no error is found in 
 	// Not std::string body_, because HTTP request can contain binary data. 
 	// In the context of HTTP, "binary data" typically refers to non-textual data, 
@@ -47,8 +53,14 @@ private:
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
 
-	void			setRequestMethod();
-//	int				parseRequestLine(const char *start, const char *messageEnd);
+	void		parseMethod(std::stringstream& requestLine);
+	void		parseURI(std::stringstream& requestLine);
+	void		parseHTTPver(std::stringstream& requestLine);
+
+	const char *extractHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
+	void		parseRequestLine(std::stringstream& headersStream);
+	void		parseHeaders(std::stringstream& headersStream);
+
 
 public:
 	Request();
