@@ -128,19 +128,31 @@ void	Request::parseRequestLine(std::stringstream& headersStream) {
 	return ;
 }
 
-void Request::parseHeaders(std::stringstream& headersStream) {
+void Request::parseHeader(std::stringstream& headersStream) {
 	std::string line;
-	while (std::getline(headersStream, line)) {
+	std::string key, value;
+
+	if ((!headersStream.eof() && (headersStream.peek() == 32 || headersStream.peek() == 10)))
+		return setError(requestERROR, 400, "Bad request first");
+	if (std::getline(headersStream, line)) {
 		std::istringstream iss(line);
-		std::string key, value;
-		if ( !std::getline(iss, key, ':') || !std::getline(iss, value, '\r'))
+		if (!std::getline(iss, key, ':') || !std::getline(iss, value, '\r'))
 			return setError(requestERROR, 400, "Bad request headers");
 		trimString(key);
 		trimString(value);
-		headers_.insert(std::make_pair(key, value));
 	}
-
-	state_ = requestOK;
+	while ((headersStream && (headersStream.peek() == 32 || headersStream.peek() == 10))) {
+		std::string moreValue;
+		std::getline(headersStream, line);
+		std::stringstream more(line);
+		if ( !std::getline(more, moreValue, '\r'))
+			return setError(requestERROR, 400, "Bad request headers on more");
+		value.append(moreValue);
+		trimString(value);
+	}
+	headers_.insert(std::make_pair(key, value));
+	if (headersStream.eof())
+		state_ = requestOK;
 }
 
 void	Request::processRequest(const char* requestBuf, int messageLen) { //what if len == 0?
@@ -156,7 +168,7 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 		switch (state_) {
 		case stateParseRequestLine: parseRequestLine(headersStream);
 			break;
-		case stateParseHeaders: parseHeaders(headersStream);
+		case stateParseHeaders: parseHeader(headersStream);
 			break;
 		case StateParseMessageBody:
 			break;

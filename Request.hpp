@@ -59,8 +59,9 @@ private:
 	void		parseHTTPver(std::stringstream& requestLine);
 
 	const char *extractHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
+	
 	void		parseRequestLine(std::stringstream& headersStream);
-	void		parseHeaders(std::stringstream& headersStream);
+	void		parseHeader(std::stringstream& headersStream);
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	std::string& trimString(std::string& str);
