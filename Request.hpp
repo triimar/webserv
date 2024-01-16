@@ -43,13 +43,14 @@ private:
 	std::string			uri_;
 	std::string			httpVer_;
 	// std::map<std::string, std::string> headers_; //map does not allow access using index. To iterate through map I have to make the variable public
-	std::vector<std::pair<std::string, std::string> > headers_;
+	std::map<std::string, std::string> headers_;
 	std::vector<char> 	body_;
-	int					errorCode_; //is 0 if no error is found in 
 	// Not std::string body_, because HTTP request can contain binary data. 
 	// In the context of HTTP, "binary data" typically refers to non-textual data, 
 	// which may include images, audio files, video files, or any other type of file that is not represented as plain text.
 
+	int					errorCode_; //is 0 if no error is found in 
+	std::string			errorMsg_;
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
 
@@ -61,6 +62,8 @@ private:
 	void		parseRequestLine(std::stringstream& headersStream);
 	void		parseHeaders(std::stringstream& headersStream);
 
+	void 		setError(ParseState type, int errorCode, const char *message);
+	std::string& trimString(std::string& str);
 
 public:
 	Request();
@@ -71,6 +74,9 @@ public:
 	RequestMethod	getMethod() const;
 	std::string		getUri() const;
 	std::string 	getHttpVer()const;
-	std::string		getHeaderKey(int index) const;
-	std::string		getHeaderValue(int index) const;
+	// std::map<std::string, std::string>::const_iterator	getHeadersBegin() const;
+	// std::map<std::string, std::string>::const_iterator	getHeadersEnd() const;
+	// std::string&	getHeaderValueForKey(const std::string& key) const;
+	// std::string		getHeaderKey(int index) const;
+	// std::string		getHeaderValue(int index) const;
 };
