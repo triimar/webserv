@@ -39,6 +39,14 @@ std::string& Request::trimString(std::string& str) {
     return str;
 }
 
+//deimiters in char representation are: DQUOTE and "(),/:;<=>?@[\]{}"
+bool Request::containsDelimiter(std::string& str) {
+	"(),/:;<=>?@[\]{}"
+	for (std::string::iterator it = str.begin(); it != str.end(); ++it) {
+		if ()
+	}
+	"(),/:;<=>?@[\]{}"
+}
 /* parsing functions and setters */
 
 // Extracts from buffer request-line + headers  as a stringstream.
@@ -133,11 +141,11 @@ void Request::parseHeader(std::stringstream& headersStream) {
 	std::string key, value;
 
 	if ((!headersStream.eof() && (headersStream.peek() == 32 || headersStream.peek() == 10)))
-		return setError(requestERROR, 400, "Bad request first");
+		return setError(requestERROR, 400, "Bad request");
 	if (std::getline(headersStream, line)) {
 		std::istringstream iss(line);
-		if (!std::getline(iss, key, ':') || !std::getline(iss, value, '\r'))
-			return setError(requestERROR, 400, "Bad request headers");
+		if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r'))
+			return setError(requestERROR, 400, "Bad request");
 		trimString(key);
 		trimString(value);
 	}
@@ -146,7 +154,7 @@ void Request::parseHeader(std::stringstream& headersStream) {
 		std::getline(headersStream, line);
 		std::stringstream more(line);
 		if ( !std::getline(more, moreValue, '\r'))
-			return setError(requestERROR, 400, "Bad request headers on more");
+			return setError(requestERROR, 400, "Bad request");
 		value.append(moreValue);
 		trimString(value);
 	}

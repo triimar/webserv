@@ -24,9 +24,7 @@ enum RequestLineState {
 	requestLineOK,
 };
 
-enum RequestMethod {
-	GET,
-	POST,
+enum RequestMethod {GET, POST,
 	DELETE,
 	OTHER,
 };
@@ -65,6 +63,7 @@ private:
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	std::string& trimString(std::string& str);
+	bool		containsDelmiter(std::string& str);
 
 public:
 	Request();
