@@ -1,21 +1,27 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <exception>
-#include <vector>
-#include <cstring>
-#include <cstdlib>
-#include <sstream>
-#include <unistd.h>
+#include "Request.hpp"
+#include "utils.hpp"
+
+/* ************************************************************************** */
+/*                                  DEFINES                                   */
+/* ************************************************************************** */
 
 #define BUFFER_SIZE 30720
+#define DEFAULT_CONFIG "webserv.conf"
+
+// Define macro for CGI extensions and interpreters
+// define a pair separated by a '='
+// define as many pairs as you want separated by '&'
+// make sure the interpreter exists at the given path
+#define SUPPORTED_CGI ".sh=/bin/sh&.py=/usr/bin/python3&.perl=/usr/bin/perl"
+typedef std::map<std::string, std::string> CGIList;
 
 class Server
 {
 private:
+    CGIList                     supportedCGI;
+    std::string                 configPath;
 	unsigned short				port;
 	in_addr						host;
 	std::string					serverName;
@@ -33,7 +39,7 @@ private:
 
 public:
 	Server();
-	Server(const Server& server);
+    Server(const Server& server);
 	Server &operator=(const Server& server);
 	~Server();
 
@@ -41,6 +47,7 @@ public:
 	void closeServer();
 	void startListen();
 	void acceptConnection(int &newSocket);
+    bool tryCGI(Request &req);
 
 	void setPort(unsigned short port);
 	void setHost(in_addr_t host);
