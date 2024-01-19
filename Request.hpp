@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cctype>
 
 #define CRLF "\r\n"
 
@@ -24,10 +25,7 @@ enum RequestLineState {
 	requestLineOK,
 };
 
-enum RequestMethod {GET, POST,
-	DELETE,
-	OTHER,
-};
+enum RequestMethod {GET, POST, DELETE, OTHER};
 
 // REQUEST CLASS provides functions to parse the request and save the Request data.
 class Request 
@@ -49,6 +47,7 @@ private:
 
 	int					errorCode_; //is 0 if no error is found in 
 	std::string			errorMsg_;
+	
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
 
@@ -64,19 +63,22 @@ private:
 	void 		setError(ParseState type, int errorCode, const char *message);
 	std::string& trimString(std::string& str);
 	bool		containsDelmiter(std::string& str);
+	bool 		containsControlChar(std::string& str) const;
 
 public:
 	Request();
 	~Request();
 
-	void			processRequest(const char* requestBuf, int messageLen);
+	void				processRequest(const char* requestBuf, int messageLen);
+	void				clearRequest();
 
-	RequestMethod	getMethod() const;
-	std::string		getUri() const;
-	std::string 	getHttpVer()const;
-	// std::map<std::string, std::string>::const_iterator	getHeadersBegin() const;
-	// std::map<std::string, std::string>::const_iterator	getHeadersEnd() const;
-	// std::string&	getHeaderValueForKey(const std::string& key) const;
-	// std::string		getHeaderKey(int index) const;
-	// std::string		getHeaderValue(int index) const;
+	RequestMethod		getMethod() const;
+	const std::string	getUri() const;
+	const std::string 	getHttpVer()const;
+	bool				isTransferEncodingChunked() const;
+	bool 				isConnectionClose() const;
+	std::map<std::string, std::string>::const_iterator	getHeadersBegin() const;
+	std::map<std::string, std::string>::const_iterator	getHeadersEnd() const;
+	const std::string&	getHeaderValueForKey(const std::string& key) const;
+
 };

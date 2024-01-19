@@ -4,6 +4,7 @@
 Request::Request(): state_(stateParseRequestLine), rlstate_(stateParseMethod), method_(OTHER), errorCode_(0) {
 }
 
+
 Request::~Request() {
 
 }
@@ -21,7 +22,17 @@ void Request::setError(ParseState type, int errorCode, const char *message) {
 	state_ = type;
 	errorCode_ = errorCode;
 	errorMsg_.assign(message);
-	//should it clear all?
+	clearRequest();
+}
+
+void Request::clearRequest() {
+	methodStr_.clear();
+	method_ = OTHER;
+	uri_.clear();
+	httpVer_.clear();
+	headers_.clear();
+	body_.clear();
+	//state_, rlstate_, errorCode_ and ErrorMsg_ stay.
 }
 
 std::string& Request::trimString(std::string& str) {
@@ -39,14 +50,31 @@ std::string& Request::trimString(std::string& str) {
     return str;
 }
 
-//deimiters in char representation are: DQUOTE and "(),/:;<=>?@[\]{}"
-bool Request::containsDelimiter(std::string& str) {
-	"(),/:;<=>?@[\]{}"
-	for (std::string::iterator it = str.begin(); it != str.end(); ++it) {
-		if ()
-	}
-	"(),/:;<=>?@[\]{}"
+bool Request::containsControlChar(std::string& str) const {
+	for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        if (std::iscntrl(static_cast<unsigned char>(*it))) {
+            return true;
+        }
+    }
+    return false;
 }
+
+// bool HttpRequestParser::isReserverChar(char c)
+// {
+// 	static const std::string specialChars = ":/?#[]@!$&'()*+,;={} \t";
+
+// 	return (specialChars.find(c) != std::string::npos);
+// }
+
+// //deimiters in char representation are: DQUOTE and "(),/:;<=>?@[\]{}"
+// bool Request::containsDelimiter(std::string& str) {
+// 	"(),/:;<=>?@[\]{}"
+// 	for (std::string::iterator it = str.begin(); it != str.end(); ++it) {
+// 		if ()
+// 	}
+// 	"(),/:;<=>?@[\]{}"
+// 	* ( ) ; ; @ = + , / ? # []
+// }
 /* parsing functions and setters */
 
 // Extracts from buffer request-line + headers  as a stringstream.
@@ -72,7 +100,7 @@ const char *Request::extractHeadersStream(std::stringstream& headersStream, cons
 void	Request::parseMethod(std::stringstream& requestLine) {
 	requestLine >> methodStr_;
 	if (requestLine.fail() || methodStr_.empty())
-		return setError(requestERROR, 400, "Bad request");
+		return setError(requestERROR, 400, "Bad Request");
 	const std::string methods[3] = {"GET", "POST", "DELETE"};
 	for (int i = 0; i < 3; i++) {
 		if (methods[i] == methodStr_) {
@@ -80,14 +108,16 @@ void	Request::parseMethod(std::stringstream& requestLine) {
 			break ;
 		}
 	}
+	if (method_ == OTHER)
+		return setError(requestERROR, 501, "Not Implemented");
 	rlstate_ = stateParseUri;
 	return ;
 }
 
 void	Request::parseURI(std::stringstream& requestLine) {
 	requestLine >> uri_;
-	if (requestLine.fail() || uri_.empty())
-		return setError(requestERROR, 400, "Bad request");
+	if (requestLine.fail() || uri_.empty() || containsControlChar(uri_))
+		return setError(requestERROR, 400, "Bad Request");
 	rlstate_ = stateParseHTTPver;
 	return ;
 }
@@ -95,15 +125,15 @@ void	Request::parseURI(std::stringstream& requestLine) {
 void	Request::parseHTTPver(std::stringstream& requestLine) {
 	requestLine >> httpVer_;
 	if (requestLine.fail() || httpVer_.empty() || !requestLine.eof() || httpVer_.compare(0, 5, "HTTP/") != 0)
-		return setError(requestERROR, 400, "Bad request");
+		return setError(requestERROR, 400, "Bad Request");
 	std::stringstream verStr(httpVer_.substr(5));
 	int	major, minor;
     char dot;
     verStr >> major >> dot >> minor;
     if (verStr.fail() || dot != '.' || verStr.peek() != EOF)
-		return setError(requestERROR, 400, "Bad request version");
+		return setError(requestERROR, 400, "Bad Request Version");
     if (major != 1 || minor != 1)
-		return setError(requestERROR, 505, "HTTP version not supported");
+		return setError(requestERROR, 505, "HTTP Version Not Supported");
 	rlstate_ = requestLineOK;
 	return ;
 }
@@ -112,9 +142,9 @@ void	Request::parseRequestLine(std::stringstream& headersStream) {
 	std::string rl;
 	std::getline(headersStream, rl);
 	if (!headersStream || rl.empty())
-		return setError(requestParseFAIL, 400, "Bad request"); //???
+		return setError(requestParseFAIL, 400, "Bad Request"); //???
 	else if (rl.back() != '\r')
-		return setError(requestERROR, 400, "Bad request");
+		return setError(requestERROR, 400, "Bad Request");
 	rl.pop_back();
 	std::stringstream requestLineStream(rl);
 	std::cout << "Request Line|" << rl << "|" << std::endl;
@@ -141,11 +171,11 @@ void Request::parseHeader(std::stringstream& headersStream) {
 	std::string key, value;
 
 	if ((!headersStream.eof() && (headersStream.peek() == 32 || headersStream.peek() == 10)))
-		return setError(requestERROR, 400, "Bad request");
+		return setError(requestERROR, 400, "Bad Request");
 	if (std::getline(headersStream, line)) {
 		std::istringstream iss(line);
 		if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r'))
-			return setError(requestERROR, 400, "Bad request");
+			return setError(requestERROR, 400, "Bad Request");
 		trimString(key);
 		trimString(value);
 	}
@@ -154,7 +184,7 @@ void Request::parseHeader(std::stringstream& headersStream) {
 		std::getline(headersStream, line);
 		std::stringstream more(line);
 		if ( !std::getline(more, moreValue, '\r'))
-			return setError(requestERROR, 400, "Bad request");
+			return setError(requestERROR, 400, "Bad Request");
 		value.append(moreValue);
 		trimString(value);
 	}
@@ -169,7 +199,7 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 	const char *bodyStart = extractHeadersStream(headersStream, requestBuf, msgEnd);
 
 	if (!bodyStart)
-		return setError(requestERROR, 400, "Bad request"); 	//there is no CRLFCRLF -> bad request (syntax error)
+		return setError(requestERROR, 400, "Bad Request"); 	//there is no CRLFCRLF -> bad Request (syntax error)
 	// if (bodyStart == msgEnd)
 	// 	std::cout << "NOBODY" << std::endl;
 	while (state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
@@ -212,14 +242,34 @@ std::string		Request::getHttpVer()const {
 	return httpVer_;
 }
 
-// std::map<std::string, std::string>::const_iterator	Request::getHeadersBegin() const {
-// 	return headers_.begin();
-// }
+bool	Request::isTransferEncodingChunked() const {
+	std::map<std::string, std::string>::const_iterator it;
+	it = headers_.find("Transfer-Encoding");
+	if (it != headers_.end() && it->second == "chunked")
+		return true;
+	return false;
+}
 
-// std::map<std::string, std::string>::const_iterator	Request::getHeadersEnd() const {
-// 	return headers_.end();
-// }
+bool	Request::isConnectionClose() const {
+	std::map<std::string, std::string>::const_iterator it;
+	it = headers_.find("Connection");
+	if (it != headers_.end() && it->second == "close")
+		return true;
+	return false;
+}
 
-// std::string&	Request::getHeaderValueForKey(const std::string& key) const {
-// 	return headers_[key];
-// }
+std::map<std::string, std::string>::const_iterator	Request::getHeadersBegin() const {
+	return headers_.begin();
+}
+
+std::map<std::string, std::string>::const_iterator	Request::getHeadersEnd() const {
+	return headers_.end();
+}
+
+const std::string&	Request::getHeaderValueForKey(const std::string& key) const {
+	std::map<std::string, std::string>::const_iterator it;
+	it = headers_.find(key);
+	if (it != headers_.end())
+		return ("");
+	return it->second;
+}
