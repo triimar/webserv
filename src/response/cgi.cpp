@@ -35,7 +35,7 @@ void Response::fileToBody(int fd) {
         _body.insert(_body.end(), buf, buf + readBytes);
     }
     if (readBytes == -1) {
-        // error reading file 
+        // error reading file
     }
 }
 
