@@ -22,13 +22,16 @@ void Request::setError(ParseState type, int errorCode, const char *message) {
 	state_ = type;
 	errorCode_ = errorCode;
 	errorMsg_.assign(message);
-	clearRequest();
+//	clearRequest();
 }
 
 void Request::clearRequest() {
 	methodStr_.clear();
 	method_ = OTHER;
 	uri_.clear();
+	path_.clear();
+	// query_.clear();
+	// fragment_.clear();
 	httpVer_.clear();
 	headers_.clear();
 	body_.clear();
@@ -115,8 +118,26 @@ void	Request::parseMethod(std::stringstream& requestLine) {
 }
 
 void	Request::parseURI(std::stringstream& requestLine) {
-	requestLine >> uri_;
-	if (requestLine.fail() || uri_.empty() || containsControlChar(uri_))
+	std::string tmp;
+	requestLine >> tmp;
+	if (requestLine.fail() || tmp.empty() || containsControlChar(tmp))
+		return setError(requestERROR, 400, "Bad Request");
+	uri_ = tmp;
+	size_t end = tmp.find_first_of("#?");
+	if (end == std::string::npos)
+		end = tmp.length();
+	tmp = tmp.substr(0, end);
+	if 	(tmp.compare(0, 7, "http://") == 0) {
+		tmp = tmp.substr(7);
+		if (!std::isalpha(tmp.at(0)))
+			return setError(requestERROR, 400, "Bad Request");
+		size_t start = tmp.find_first_of('/');
+		if (start != std::string::npos)
+			tmp = tmp.substr(start, tmp.length());
+	}
+	if (tmp.at(0) == '/')
+		path_ = tmp;
+	else 
 		return setError(requestERROR, 400, "Bad Request");
 	rlstate_ = stateParseHTTPver;
 	return ;
@@ -190,9 +211,32 @@ void Request::parseHeader(std::stringstream& headersStream) {
 	}
 	headers_.insert(std::make_pair(key, value));
 	if (headersStream.eof())
-		state_ = requestOK;
+		state_ = StateParseMessageBody;
 }
 
+void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
+	if (method_ == GET || method_ == DELETE) {
+		if (bodyStart == msgEnd) {
+			state_ = requestOK;
+			return ;
+		}
+		else
+		return setError(requestERROR, 400, "Bad Request: Request method contains a message body");
+	}
+	std::string bodyLenStr = getHeaderValueForKey("Content-Length");
+	if (bodyLenStr.empty())
+		return setError(requestERROR, 400, "Bad Request: Missing Content-Length header in POST request");
+	char *endptr;
+	if (strtol(bodyLenStr.c_str(), &endptr, 10) != msgEnd - bodyStart || endptr != '\0')
+		return setError(requestERROR, 400, "Bad Request: Mismatch between actual and declared Content-Length");
+
+	while (bodyStart != msgEnd) {
+		body_.push_back(*bodyStart);
+		bodyStart++;
+	state_ = requestOK;
+	}
+
+}
 void	Request::processRequest(const char* requestBuf, int messageLen) { //what if len == 0?
 	std::stringstream headersStream;
 	const char *msgEnd = &requestBuf[messageLen - 1];
@@ -208,7 +252,7 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 			break;
 		case stateParseHeaders: parseHeader(headersStream);
 			break;
-		case StateParseMessageBody:
+		case StateParseMessageBody:storeBody(bodyStart, msgEnd);
 			break;
 		case requestParseFAIL:
 			break;
@@ -220,6 +264,7 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 	}
 	std::cout << "MethodStr & enum|" << methodStr_ << "|" << method_ << "|\n";
 	std::cout << "uri|" << uri_ << "|\n";
+	std::cout << "path|" << path_ << "|\n";
 	std::cout << "http|" << httpVer_ << "|\n";
 	std::cout << " ------HEADERS-------" << std::endl;
 	for (std::map<std::string, std::string>::iterator it = headers_.begin(); it != headers_.end(); ++it) {
@@ -234,11 +279,11 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 RequestMethod	Request::getMethod() const {
 	return method_;
 }
-std::string		Request::getUri() const {
+const std::string		Request::getUri() const {
 	return uri_;
 }
 
-std::string		Request::getHttpVer()const {
+const std::string		Request::getHttpVer()const {
 	return httpVer_;
 }
 
@@ -266,7 +311,7 @@ std::map<std::string, std::string>::const_iterator	Request::getHeadersEnd() cons
 	return headers_.end();
 }
 
-const std::string&	Request::getHeaderValueForKey(const std::string& key) const {
+std::string	Request::getHeaderValueForKey(const std::string& key) const {
 	std::map<std::string, std::string>::const_iterator it;
 	it = headers_.find(key);
 	if (it != headers_.end())

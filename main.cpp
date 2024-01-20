@@ -22,8 +22,9 @@
 //testing request parsing
 int main() 
 {
-	const char* buffer = "\r\n\r\n\r\n\r\nGET /path/to/resource HTTP/1.1\r\nhost:localhost\r\nkey key: that and that\
+	const char* buffer = "\r\n\r\n\r\n\r\nGET http://www.example.com/path/to/resource?query#fragment HTTP/1.1\r\nhost:localhost\r\nkey key: that and that\
  hallo ballo     \r\n falloyallo  	\r\nwhat: vvaaaalue\r\n\r\n";
 	Request line;
-	line.processRequest(buffer, 63);
+	line.processRequest(buffer, std::strlen(buffer) + 1);
+	std::cout << std::strlen(buffer);
 }

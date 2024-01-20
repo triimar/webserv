@@ -36,9 +36,12 @@ private:
 
 	std::string			methodStr_;
 	RequestMethod		method_;
-	std::string			uri_;
+	std::string			uri_; //can be either abs URI or abs path. I dont handle '*' or authority
+	std::string         path_; //is absolute path in relation to the root of the server, extracted from URI
+    // std::string     	query_; // not sure if we have to handle
+    // std::string         fragment_;
 	std::string			httpVer_;
-	// std::map<std::string, std::string> headers_; //map does not allow access using index. To iterate through map I have to make the variable public
+
 	std::map<std::string, std::string> headers_;
 	std::vector<char> 	body_;
 	// Not std::string body_, because HTTP request can contain binary data. 
@@ -59,11 +62,14 @@ private:
 	
 	void		parseRequestLine(std::stringstream& headersStream);
 	void		parseHeader(std::stringstream& headersStream);
+	void		storeBody(const char *bodyStart, const char *msgEnd);
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	std::string& trimString(std::string& str);
-	bool		containsDelmiter(std::string& str);
+	// bool		containsDelmiter(std::string& str); ?
 	bool 		containsControlChar(std::string& str) const;
+
+
 
 public:
 	Request();
@@ -79,6 +85,6 @@ public:
 	bool 				isConnectionClose() const;
 	std::map<std::string, std::string>::const_iterator	getHeadersBegin() const;
 	std::map<std::string, std::string>::const_iterator	getHeadersEnd() const;
-	const std::string&	getHeaderValueForKey(const std::string& key) const;
+	std::string			getHeaderValueForKey(const std::string& key) const;
 
 };
