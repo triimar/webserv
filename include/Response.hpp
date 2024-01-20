@@ -21,12 +21,19 @@ public:
 
 private:
 
-    void Response::handleUrl();
+    void handleUrl();
+    bool tryCGI();
+    bool isValidCGI();
 
     const Server _server;
     const Request _request;
+    std::string _cgiPath;
+    std::string _cgiInterpreter;
+    char        **_cgiEnv;
     std::string _localPath;
-    std::string _indexPath;
+    std::vector<std::string> _indexPaths;
     struct stat _pathStat;
-
+    uint8_t _status;
+    std::vector<char> _body;
+    char *_buffer;
 };

@@ -1,21 +1,8 @@
 #pragma once
 
 #include "Request.hpp"
+#include "Status.hpp"
 #include "utils.hpp"
-
-/* ************************************************************************** */
-/*                                  DEFINES                                   */
-/* ************************************************************************** */
-
-#define BUFFER_SIZE 30720
-#define DEFAULT_CONFIG "webserv.conf"
-
-// Define macro for CGI extensions and interpreters
-// define a pair separated by a '='
-// define as many pairs as you want separated by '&'
-// make sure the interpreter exists at the given path
-#define SUPPORTED_CGI ".sh=/bin/sh&.py=/usr/bin/python3&.perl=/usr/bin/perl"
-typedef std::map<std::string, std::string> CGIList;
 
 class Server
 {
@@ -47,7 +34,6 @@ public:
 	void closeServer();
 	void startListen();
 	void acceptConnection(int &newSocket);
-    bool tryCGI(Request &req);
 
 	void setPort(unsigned short port);
 	void setHost(in_addr_t host);
@@ -57,4 +43,9 @@ public:
 	void setIP();
 	void setClientSize(unsigned long clientSize);
 	void setErrorPage(std::string errorPage);
+
+    std::string getRoot();
+    std::vector<std::string> getIndex();
+
+    std::string getCGIInterpreter(std::string &extension)
 };

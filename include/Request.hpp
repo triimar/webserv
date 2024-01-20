@@ -3,6 +3,7 @@
 #include "utils.hpp"
 
 enum RequestMethod { //same enum in Location
+    INVALID,
 	GET,
 	POST,
 	DELETE,

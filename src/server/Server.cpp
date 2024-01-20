@@ -87,3 +87,24 @@ void Server::setIP() {
 void Server::setClientSize(unsigned long clientSize) {
 	this->clientSize = clientSize;
 }
+
+/* ************************************************************************** */
+/*                                  GETTERS                                   */
+/* ************************************************************************** */
+
+std::string getRoot() {
+    return (this->root);
+}
+
+std::vector<std::string> getIndex() {
+    return (this->index);
+}
+
+std::string Server::getCGIInterpreter(std::string &extension) {
+    CGIList::iterator it = supportedCGI.find(extension);
+    if (it != supportedCGI.end()) {
+        return (it->second);
+    } else {
+        return ("")
+    }
+}
