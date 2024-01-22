@@ -31,8 +31,8 @@ int main()
                           "Content-Length: 15\r\n"
                           "\r\n"
                           "name=John&age=25\r\n";
+	
 	Request R;
-
 	R.processRequest(postRequest, strlen(postRequest) + 1);
 	
 	std::cout << " ------REQUEST LINE-------" << std::endl;
@@ -45,7 +45,7 @@ int main()
 		std::cout << "|" << it->first << "|: |" << it->second << "|" << std::endl;
 	}
 	std::cout << " -------------" << std::endl;
-	for (std::vector<char>::iterator it  = R.body_.begin(); it != R.body_.end(); ++it) {
+	for (std::deque<char>::iterator it  = R.body_.begin(); it != R.body_.end(); ++it) {
 		std::cout << *it;
 	}
 	std::cout << "|" << std::endl << " -------------" << std::endl;

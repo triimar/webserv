@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <vector>
+#include <deque>
 #include <cctype>
 #include <cstdlib>
 
@@ -91,7 +91,7 @@ public:
 	const int&			getErrorCode() const;
 	const std::string&	getErrorMsg() const;
 			//can be used to get Content-Type. Will return empty string if its not found in headers
-	std::vector<char> 	body_; //temporarily in public, will go to private with access functions
+	std::deque<char> 	body_; //temporarily in public, will go to private with access functions
 	// Not std::string body_, because HTTP request can contain binary data. 
 	// In the context of HTTP, "binary data" typically refers to non-textual data, 
 	// which may include images, audio files, video files, or any other type of file that is not represented as plain text.
