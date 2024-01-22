@@ -10,8 +10,8 @@ Request::~Request() {
 }
 
 Request::Request(const Request& rhs): state_(rhs.state_), rlstate_(rhs.rlstate_), methodStr_(rhs.methodStr_), method_(rhs.method_), \
-								uri_(rhs.uri_), httpVer_(rhs.httpVer_), \
-								headers_(rhs.headers_), body_(rhs.body_), errorCode_(rhs.errorCode_) {
+								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
+								headers_(rhs.headers_), errorCode_(rhs.errorCode_), errorMsg_(rhs.errorMsg_), body_(rhs.body_) {
 }
 
 Request& Request::operator=(const Request& ) {
@@ -227,21 +227,45 @@ void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
 	if (bodyLenStr.empty())
 		return setError(requestERROR, 400, "Bad Request: Missing Content-Length header in POST request");
 	char *endptr;
-	if (strtol(bodyLenStr.c_str(), &endptr, 10) != msgEnd - bodyStart || endptr != '\0')
+	long contentLen = strtol(bodyLenStr.c_str(), &endptr, 10);
+	if (contentLen != msgEnd - bodyStart - 3) { //-2 when I assume it is not 0 terminated
+		std::cout << bodyLenStr << "   " << contentLen << " **** " << (msgEnd - bodyStart - 3) << std::endl;
 		return setError(requestERROR, 400, "Bad Request: Mismatch between actual and declared Content-Length");
-
-	while (bodyStart != msgEnd) {
+	}
+	while (bodyStart != msgEnd && contentLen > 0) {
 		body_.push_back(*bodyStart);
 		bodyStart++;
-	state_ = requestOK;
+		contentLen--;
 	}
-
+	state_ = requestOK;
 }
+
+void 	Request::decodeChunked(const char *chunk, int len) {
+	char* endptr;
+	const char* chunkEnd = chunk + len;
+    unsigned long chunkLen = strtoul(chunk, &endptr, 16);
+    if (*endptr != ';' && *endptr != '\r') 
+		return setError(requestERROR, 400, "Bad Request");
+	if (chunkLen == 0) {
+		state_ = requestOK;
+		return;
+	}
+	chunk = std::strstr(chunk, "\r\n");
+	if (!chunk) 
+		return setError(requestERROR, 400, "Bad Request");
+	chunk += 2;
+	while (chunk != chunkEnd && chunkLen > 0) {
+		body_.push_back(*chunk);
+		chunk++;
+	}
+	if (chunk == chunkEnd || *chunk != '\r')
+		return setError(requestERROR, 400, "Bad Request");
+}
+
 void	Request::processRequest(const char* requestBuf, int messageLen) { //what if len == 0?
 	std::stringstream headersStream;
 	const char *msgEnd = &requestBuf[messageLen - 1];
 	const char *bodyStart = extractHeadersStream(headersStream, requestBuf, msgEnd);
-
 	if (!bodyStart)
 		return setError(requestERROR, 400, "Bad Request"); 	//there is no CRLFCRLF -> bad Request (syntax error)
 	// if (bodyStart == msgEnd)
@@ -262,29 +286,31 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 			break;
 		}
 	}
-	std::cout << "MethodStr & enum|" << methodStr_ << "|" << method_ << "|\n";
-	std::cout << "uri|" << uri_ << "|\n";
-	std::cout << "path|" << path_ << "|\n";
-	std::cout << "http|" << httpVer_ << "|\n";
-	std::cout << " ------HEADERS-------" << std::endl;
-	for (std::map<std::string, std::string>::iterator it = headers_.begin(); it != headers_.end(); ++it) {
-		std::cout << "|" << it->first << "|: |" << it->second << "|" << std::endl;
-	}
-	std::cout << " -------------" << std::endl;
-	std::cout << "ERROR: " << errorCode_ << " : " << errorMsg_ << std::endl;
+
 
 }
 
 /* getters */
-RequestMethod	Request::getMethod() const {
+const RequestMethod&	Request::getMethod() const {
 	return method_;
 }
-const std::string		Request::getUri() const {
+const std::string&		Request::getUri() const {
 	return uri_;
 }
 
-const std::string		Request::getHttpVer()const {
+const std::string&		Request::getPath() const {
+	return path_;
+}
+const std::string&		Request::getHttpVer()const {
 	return httpVer_;
+}
+
+const int&				Request::getErrorCode() const {
+	return errorCode_;
+}
+
+const std::string&		Request::getErrorMsg() const {
+	return errorMsg_;
 }
 
 bool	Request::isTransferEncodingChunked() const {
@@ -314,7 +340,7 @@ std::map<std::string, std::string>::const_iterator	Request::getHeadersEnd() cons
 std::string	Request::getHeaderValueForKey(const std::string& key) const {
 	std::map<std::string, std::string>::const_iterator it;
 	it = headers_.find(key);
-	if (it != headers_.end())
+	if (it == headers_.end())
 		return ("");
 	return it->second;
 }

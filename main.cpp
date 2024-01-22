@@ -22,9 +22,32 @@
 //testing request parsing
 int main() 
 {
-	const char* buffer = "\r\n\r\n\r\n\r\nGET http://www.example.com/path/to/resource?query#fragment HTTP/1.1\r\nhost:localhost\r\nkey key: that and that\
- hallo ballo     \r\n falloyallo  	\r\nwhat: vvaaaalue\r\n\r\n";
-	Request line;
-	line.processRequest(buffer, std::strlen(buffer) + 1);
-	std::cout << std::strlen(buffer);
+// 	const char* buffer = "\r\n\r\n\r\n\r\nGET http://www.example.com/path/to/resource?query#fragment HTTP/1.1\r\nhost:localhost\r\nkey key: that and that\
+//  hallo ballo     \r\n falloyallo  	\r\nwhat: vvaaaalue\r\n\r\n";
+	
+	const char* postRequest = "POST /submit-form HTTP/1.1\r\n"
+                          "Host: example.com\r\n"
+                          "Content-Type: application/x-www-form-urlencoded\r\n"
+                          "Content-Length: 15\r\n"
+                          "\r\n"
+                          "name=John&age=25\r\n";
+	Request R;
+
+	R.processRequest(postRequest, strlen(postRequest) + 1);
+	
+	std::cout << " ------REQUEST LINE-------" << std::endl;
+	std::cout << "Method enum|" << R.getMethod() << "|\n";
+	std::cout << "uri|" << R.getUri() << "|\n";
+	std::cout << "path|" << R.getPath() << "|\n";
+	std::cout << "http|" << R.getHttpVer() << "|\n";
+	std::cout << " ------HEADERS-------" << std::endl;
+	for (std::map<std::string, std::string>::const_iterator it = R.getHeadersBegin(); it != R.getHeadersEnd(); ++it) {
+		std::cout << "|" << it->first << "|: |" << it->second << "|" << std::endl;
+	}
+	std::cout << " -------------" << std::endl;
+	for (std::vector<char>::iterator it  = R.body_.begin(); it != R.body_.end(); ++it) {
+		std::cout << *it;
+	}
+	std::cout << "|" << std::endl << " -------------" << std::endl;
+	std::cout << "ERROR: " << R.getErrorCode() << " : " << R.getErrorMsg() << std::endl;
 }
