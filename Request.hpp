@@ -9,6 +9,7 @@
 #include <cstdlib>
 
 #define CRLF "\r\n"
+#define CRLFCRLF "\r\n\r\n"
 
 enum ParseState {
 	stateParseRequestLine,
@@ -39,8 +40,9 @@ private:
 	RequestMethod		method_;
 	std::string			uri_; //can be either abs URI or abs path. I dont handle '*' or authority
 	std::string         path_; //is absolute path in relation to the root of the server, extracted from URI
-    // std::string     	query_; // not sure if we have to handle
-    // std::string         fragment_;
+	std::string			params_;
+    std::string     	query_; 
+    std::string         fragment_;
 	std::string			httpVer_;
 
 	std::map<std::string, std::string> headers_;
@@ -56,7 +58,7 @@ private:
 	void		parseURI(std::stringstream& requestLine);
 	void		parseHTTPver(std::stringstream& requestLine);
 
-	const char *extractHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
+	void 		createHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
 	
 	void		parseRequestLine(std::stringstream& headersStream);
 	void		parseHeader(std::stringstream& headersStream);
@@ -72,7 +74,8 @@ public:
 	Request();
 	~Request();
 
-	void				processRequest(const char* requestBuf, int messageLen);
+	void				processHeaders(const char* requestBuf, int messageLen);
+	// void				processRequest(const char* requestBuf, int messageLen);
 	void				storeBody(const char *bodyStart, const char *msgEnd);
 	void 				decodeChunked(const char *chunk, int len);
 	void				clearRequest();
@@ -82,6 +85,8 @@ public:
 
 	const std::string& 	getHttpVer() const;
 	const std::string&	getPath() const;
+	const std::string&	getQuery() const;
+	const std::string&  getFragment() const;
 	bool				isTransferEncodingChunked() const;
 	bool 				isConnectionClose() const;
 	std::map<std::string, std::string>::const_iterator	getHeadersBegin() const;
