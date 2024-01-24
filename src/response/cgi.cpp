@@ -19,75 +19,80 @@ bool Response::isValidCGI() {
     return (true);
 }
 
-void Response::setCGIEnvironment() {
-    // pass header to script via env variables
+void Response::executeCGI() {
+    _status = 500; // default fail, gets set back to 0 on success
+    int cgiOutput[2];
+    if (pipe(cgiOutput) == -1) {
+        return ;
+    }
+    pid_t cgi = fork();
+    if (cgi == -1) {
+        return ;
+    } else if (cgi == 0) {
+        cgiProcess(cgiOutput);
+    }
+    close(cgiOutput[PIPEIN]);
+    waitForCGI(cgi, cgiOutput[PIPEOUT]);
+    close(cgiOutput[PIPEOUT]);
 }
 
-void Response::bodyToFile(int fd) {
-    std::vector<char> &reqBody = _request.getBody();
-    write(fd, reqBody.data(), reqBody.size());
+void Response::cgiProcess(int cgiOutput[2]) {
+    dup2(cgiOutput[PIPEIN], STDOUT_FILENO);
+    close(cgiOutput[PIPEOUT]);
+    if (_request.getMethod() == POST) {
+        // write request body to cgi stdin
+        std::vector<char> &reqBody = _request.getBody();
+        if (write(STDIN_FILENO, reqBody.data(), reqBody.size()) == -1) {
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (setCGIEnvironment() == RETURN_FAILURE) {
+        exit(EXIT_FAILURE);
+    }
+    const char *argv[] = {
+        const_cast<char *>(_cgiInterpreter.c_str()),
+        const_cast<char *>(_cgiPath.c_str()),
+        NULL};
+    execve(argv[PIPEOUT], argv, _cgiEnv);
+    exit(EXIT_FAILURE);
 }
 
-void Response::fileToBody(int fd) {
+bool Response::fileToResponse(int fd) {
     char *buf[BUFFER_SIZE] = {NULL};
     ssize_t readBytes;
     while ((readBytes = read(fd, buf, BUFFER_SIZE)) > 0) {
-        _body.insert(_body.end(), buf, buf + readBytes);
+        _response.insert(_response.end(), buf, buf + readBytes);
     }
     if (readBytes == -1) {
-        // error reading file
+        return (RETURN_FAILURE);
     }
+    return (RETURN_SUCCESS);
 }
 
-void Response::executeCGI() {
-    int cgiInput[2], cgiOutput[2];
-    pipe(cgiInput);
-    if (_request.getMethod() == POST) {
-        bodyToFile(cgiInput[PIPEIN]);
-    }
-    close(cgiInput[PIPEIN]);
-    pipe(cgiOutput);
+void Response::waitForCGI(pid_t cgi, int output) {
+    int time = 0;
+    int waitStatus;
 
-    pid_t pid = fork();
-    if (pid == 0) {
-        dup2(cgiInput[PIPEOUT], STDIN_FILENO);
-        dup2(cgiOutput[PIPEIN], STDOUT_FILENO);
-        close(cgiOutput[PIPEOUT]);
-        const char *argv[] = {
-            const_cast<char *>(_cgiInterpreter.c_str()),
-            const_cast<char *>(_cgiPath.c_str()),
-            NULL};
-        execve(argv[PIPEOUT], argv, _cgiEnv);
-        // error if execve fails
+    while (time < CGI_TIMEOUT_SEC) {
+        if (waitpid(cgi, &waitStatus, WNOHANG) != 0) {
+            break ;
+        }
+        sleep(1);
+        ++time;
     }
-
-    close(cgiInput[PIPEOUT]);
-    close(cgiOutput[PIPEIN]);
-    if (_request.getMethod() == GET) {
-        fileToBody(cgiOutput[PIPEOUT]);
-    }
-    close(cgiOutput[PIPEOUT]);
-
-    // int waitStatus;
-    // waitpid(pid, &waitStatus, WNOHANG | WUNTRACED ??);
-    // WEXITSTATUS(waitStatus);
+    if (time == CGI_TIMEOUT_SEC
+        && kill(cgi, SIGTERM) == 0 && waitpid(cgi, &waitStatus, 0) != -1) {
+        _status = 503; // timeout and no fail on the waits
+    } else if (WIFEXITED(waitStatus) && WEXITSTATUS(waitStatus) == EXIT_SUCCESS
+        && (_request.getMethod() == POST
+        || fileToResponse(output) == RETURN_SUCCESS)) {
+        _status = 0; // success
+    } // else is fail so status is left unchanged 500
 }
 
-/**
- * @brief Tries to execute requested file if it is one of the following
- * supported cgi: .sh, .py, .perl
- * 
- * @retval true, if file was valid cgi
- * @retval false, else
- */
-bool Response::tryCGI() {
-    if (isValidCGI() == false) {
-        return (false);
-    }
+bool Response::setCGIEnvironment() {
+    // pass header to script via env variables
 
-    setCGIEnvironment();
+    // Everything after the ? in the URL appears in the QUERY_STRING environment variable
 
-    executeCGI();
-
-    return (true);
 }

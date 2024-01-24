@@ -7,6 +7,10 @@
 class Server
 {
 private:
+
+    char *getStatusMessage(uint16_t status);
+    std::string getCGIInterpreter(std::string &extension);
+
     CGIList                     supportedCGI;
     std::string                 configPath;
 	unsigned short				port;
@@ -46,6 +50,4 @@ public:
 
     std::string getRoot();
     std::vector<std::string> getIndex();
-
-    std::string getCGIInterpreter(std::string &extension)
 };
