@@ -21,7 +21,7 @@ class Server
 private:
 	unsigned short				port;
 	in_addr						host;
-	std::string					serverName;
+	std::vector<std::string>	serverName;
 	std::string					root;
 	std::vector<std::string>	index;
 	std::string					ipAddress;

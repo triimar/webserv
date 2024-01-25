@@ -3,7 +3,6 @@
 Server::Server() {
 	port = 0;
 	host.s_addr = 0;
-	serverName = "";
 	root = "";
 	socketFd = -1;
 	ipAddress = "";
@@ -127,7 +126,7 @@ void Server::setHost(std::string host) {
 }
 
 void Server::setName(std::string name) {
-	this->serverName = name;
+	serverName.push_back(name);
 }
 
 void Server::setRoot(std::string root) {
@@ -166,13 +165,14 @@ void printList(std::string index)
 }
 
 void Server::printServer(Server &server) {
-	std::cout << "Server: " << server.serverName <<
-	"\nIP: " << server.ipAddress <<
+	std::cout << "Server:";
+	std::for_each(server.serverName.begin(), server.serverName.end(), printList);
+	std::cout << "IP: " << server.ipAddress <<
 	"\nRoot: " << server.root <<
 	"\nIndex: ";
 	std::for_each(server.index.begin(), server.index.end(), printList);
 	std::cout << "Client Size: " << server.clientSize <<
-	"\nError Pages: ";
+	"\nError Pages:";
 	std::for_each(server.errorPages.begin(), server.errorPages.end(), printList);
 	std::for_each(server.locations.begin(), server.locations.end(), Location::printLocation);
 }
