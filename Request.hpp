@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <deque>
 #include <cctype>
 #include <cstdlib>
@@ -12,6 +13,7 @@
 #define CRLFCRLF "\r\n\r\n"
 
 enum ParseState {
+	stateParseStart,
 	stateParseRequestLine,
 	stateParseHeaders,
     StateParseMessageBody,
@@ -54,14 +56,15 @@ private:
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
 
+	void		prelimValidation(const char *requestBuf, const char * msgEnd);
 	void		parseMethod(std::stringstream& requestLine);
 	void		parseURI(std::stringstream& requestLine);
 	void		parseHTTPver(std::stringstream& requestLine);
 
 	void 		createHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
 	
-	void		parseRequestLine(std::stringstream& headersStream);
-	void		parseHeader(std::stringstream& headersStream);
+	void		parseRequestLine(const char *requestBuf, const char * msgEnd);
+	void 		parseHeader(const char *requestBuf, const char * msgEnd);
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	std::string& trimString(std::string& str);
@@ -74,8 +77,8 @@ public:
 	Request();
 	~Request();
 
-	void				processHeaders(const char* requestBuf, int messageLen);
-	// void				processRequest(const char* requestBuf, int messageLen);
+	// void				processHeader(const char* requestBuf, int messageLen);
+	void				processRequest(const char* requestBuf, int messageLen);
 	void				storeBody(const char *bodyStart, const char *msgEnd);
 	void 				decodeChunked(const char *chunk, int len);
 	void				clearRequest();

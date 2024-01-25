@@ -33,8 +33,8 @@ int main()
                         //   "name=John&age=25\r\n";
 	
 	Request R;
-	// R.processRequest(postRequest, strlen(postRequest) + 1);
-	R.processHeaders(postRequest, strlen(postRequest) + 1);
+	R.processRequest(postRequest, strlen(postRequest) + 1);
+	// R.processHeaders(postRequest, strlen(postRequest) + 1);
 	std::cout << " ------REQUEST LINE-------" << std::endl;
 	std::cout << "Method enum|" << R.getMethod() << "|\n";
 	std::cout << "uri|" << R.getUri() << "|\n";
