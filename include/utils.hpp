@@ -5,19 +5,23 @@
 /* ************************************************************************** */
 
 #include <string>
-#include <iostream>
 #include <vector>
 #include <deque>
 #include <map>
 #include <iterator>
+#include <algorithm>
+#include <iostream>
+#include <fstream>
 #include <sstream>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <exception>
 #include <cstring>
 #include <cstdlib>
 #include <cstdint>
+#include <cstdio>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
 
@@ -66,15 +70,25 @@ typedef std::map<std::string, std::string> CGIList;
 #define CGI_TIMEOUT_SEC 42
 #define CGI_METHODS (GET | POST)
 
+#define STATUS_HTML {400, 401, 403, 404, 405, 500, 503}
+#define STATUS_HTML_PATH "./www/status-html/"
+
+#define SSTR(x) static_cast<std::ostringstream &>(\
+        (std::ostringstream() << std::dec << x)).str()
+
 /* ************************************************************************** */
 /*                                 FUNCTIONS                                  */
 /* ************************************************************************** */
 
-WebservError ft_perror(WebservError err, std::string &context);
+// error
+WebservError ft_perror(WebservError err, const char *context);
 
+// split
 std::vector<std::string> splitString(const std::string str, char delim);
 
+// paths
 std::string combinePaths(std::string &lhs, std::string &rhs);
 
+// vector
 void appendStringToVector(std::vector<char> &vector, const char *str);
-
+ssize_t readToVector(int fd, std::vector<char> &vec);

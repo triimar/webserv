@@ -26,6 +26,7 @@ private:
 	int 						newSocket;
 	long 						incomingMsg;
 	unsigned int				socketLen;
+    std::vector<u_int16_t>      _implementedStatusHTML;
 //	uint32_t ipAddress;
 
 public:
@@ -48,6 +49,10 @@ public:
 	void setClientSize(unsigned long clientSize);
 	void setErrorPage(std::string errorPage);
 
-    std::string getRoot();
-    std::vector<std::string> getIndex();
+    const char *getStatusMessage(uint16_t status) const;
+    std::string getRoot() const;
+    std::vector<std::string> getIndex() const;
+    std::string getServerName() const;
+
+    bool isImplementedStatusHTML(uint16_t status) const;
 };

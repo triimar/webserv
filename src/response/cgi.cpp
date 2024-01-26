@@ -46,51 +46,45 @@ void Response::cgiProcess(int cgiOutput[2]) {
             exit(EXIT_FAILURE);
         }
     }
-    if (setCGIEnvironment() == RETURN_FAILURE) {
+    char **cgiEnv = getCGIEnvironment();
+    if (cgiEnv == NULL) {
         exit(EXIT_FAILURE);
     }
     const char *argv[] = {
         const_cast<char *>(_cgiInterpreter.c_str()),
         const_cast<char *>(_cgiPath.c_str()),
         NULL};
-    execve(argv[PIPEOUT], argv, _cgiEnv);
+    execve(argv[PIPEOUT], argv, cgiEnv);
     exit(EXIT_FAILURE);
 }
 
-bool Response::fileToResponse(int fd) {
-    char *buf[BUFFER_SIZE] = {NULL};
-    ssize_t readBytes;
-    while ((readBytes = read(fd, buf, BUFFER_SIZE)) > 0) {
-        _response.insert(_response.end(), buf, buf + readBytes);
-    }
-    if (readBytes == -1) {
-        return (RETURN_FAILURE);
-    }
-    return (RETURN_SUCCESS);
-}
-
 void Response::waitForCGI(pid_t cgi, int output) {
-    int time = 0;
+    size_t time = CGI_TIMEOUT_SEC * 1000;
     int waitStatus;
 
-    while (time < CGI_TIMEOUT_SEC) {
+    while (time > 0) {
         if (waitpid(cgi, &waitStatus, WNOHANG) != 0) {
             break ;
         }
-        sleep(1);
-        ++time;
+        usleep(100);
+        time -= 100;
     }
-    if (time == CGI_TIMEOUT_SEC
+    if (time == 0
         && kill(cgi, SIGTERM) == 0 && waitpid(cgi, &waitStatus, 0) != -1) {
         _status = 503; // timeout and no fail on the waits
     } else if (WIFEXITED(waitStatus) && WEXITSTATUS(waitStatus) == EXIT_SUCCESS
         && (_request.getMethod() == POST
-        || fileToResponse(output) == RETURN_SUCCESS)) {
-        _status = 0; // success
+        || readToVector(output, _response) == RETURN_SUCCESS)) {
+        switch (_request.getMethod()) {
+        case GET:
+            _status = 200;
+        case POST:
+            _status = 201;
+        }
     } // else is fail so status is left unchanged 500
 }
 
-bool Response::setCGIEnvironment() {
+char **Response::getCGIEnvironment() {
     // pass header to script via env variables
 
     // Everything after the ? in the URL appears in the QUERY_STRING environment variable

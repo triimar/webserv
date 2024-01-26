@@ -20,8 +20,7 @@ Just construct response with server and request & then call send()
         response.send();
 
 */
-
-
+ 
 class Response {
 
 public:
@@ -33,14 +32,22 @@ public:
     void send();
 
 private:
+    // path
+    void findPath();
+    uint16_t pathExists(std::string &path);
     // cgi
     bool isValidCGI();
     void executeCGI();
-    bool setCGIEnvironment();
+    void cgiProcess(int cgiOutput[2]);
+    void waitForCGI(pid_t cgi, int output);
+    char **getCGIEnvironment();
     // process
     void processRequest();
-    // utils
-    void findPath();
+    uint16_t performGET();
+    uint16_t performPOST();
+    uint16_t performDELETE();
+    // send
+    void constructResponse(std::vector &response);
 
     const Server &_server;
     const Request &_request;

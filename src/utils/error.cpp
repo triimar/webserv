@@ -3,8 +3,7 @@
 using std::cerr;
 using std::endl;
 
-static void printError(WebservError err, const char *context)
-{
+static void printError(WebservError err, const char *context) {
     switch (err) {
         case MEMFAIL:
             cerr << "Memory allocation failed while " << context;
@@ -13,8 +12,7 @@ static void printError(WebservError err, const char *context)
     }
 }
 
-WebservError ft_perror(WebservError err, const char *context)
-{
+WebservError ft_perror(WebservError err, const char *context) {
     if (err == SUCCESS) {
         return (err);
     }

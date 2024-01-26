@@ -1,8 +1,7 @@
-#include "../../include/Response.hpp"
+#include "../../include/Server.hpp"
 
-char *Server::getStatusMessage(uint16_t status) {
-    switch (status)
-    {
+const char *Server::getStatusMessage(uint16_t status) const {
+    switch (status) {
     // info
     case 100: return (STATUS_100);
     case 101: return (STATUS_101);
