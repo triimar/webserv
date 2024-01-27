@@ -14,7 +14,8 @@
 enum ParseState {
 	stateParseRequestLine,
 	stateParseHeaders,
-    StateParseMessageBody,
+	stateCheckBody,
+    stateExpectingBody,
 	requestParseFAIL, //indicates falure of parser as opposed to problem with request
 	requestERROR, // indicates a problem in the request
 	requestOK,
@@ -62,10 +63,10 @@ private:
 	
 	void		parseRequestLine(std::stringstream& headersStream);
 	void		parseHeader(std::stringstream& headersStream);
+	void		checkForBody(char *requestBuf,  char *bodyStart, char *msgEnd);
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	std::string& trimString(std::string& str);
-	// bool		containsDelmiter(std::string& str); ?
 	bool 		containsControlChar(std::string& str) const;
 
 

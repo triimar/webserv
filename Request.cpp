@@ -228,15 +228,21 @@ void Request::parseHeader(std::stringstream& headersStream) {
 		state_ = requestOK;
 }
 
-void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
+void	Request::checkForBody(char *requestBuf, char *bodyStart, char *msgEnd) {
 	if (method_ == GET || method_ == DELETE) {
-		if (bodyStart == msgEnd) {
-			state_ = requestOK;
-			return ;
+			if (bodyStart == msgEnd) {
+				state_ = requestOK;
+				return ;
 		}
 		else
-			return setError(requestERROR, 400, "Bad Request: Request method contains a message body");
+			return setError(requestERROR, 400, "Bad Request: Request method contains a message body"); //maybe not an error?
 	}
+	else
+		state_ = stateExpectingBody;
+}
+
+void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
+
 	std::string bodyLenStr = getHeaderValueForKey("Content-Length");
 	if (bodyLenStr.empty())
 		return setError(requestERROR, 400, "Bad Request: Missing Content-Length header in POST request");
@@ -285,18 +291,16 @@ void	Request::processHeaders(const char* requestBuf, int messageLen) { //what if
 		return setError(requestERROR, 400, "Bad Request: Empty request");
 	std::stringstream headersStream;
 	createHeadersStream(headersStream, requestBuf, msgEnd);
-	while (state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
+	while (state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK && state_ != stateExpectingBody) {
 		switch (state_) {
 		case stateParseRequestLine: parseRequestLine(headersStream);
 			break;
 		case stateParseHeaders: parseHeader(headersStream);
 			break;
-		case StateParseMessageBody:
-			break;
+		case stateCheckBody: checkForBody();
+		case stateExpectingBody:
 		case requestParseFAIL:
-			break;
 		case requestERROR:
-			break;
 		case requestOK:
 			break;
 		}
