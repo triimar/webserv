@@ -11,19 +11,28 @@
     // }
     // return (0);
 
-std::string Response::getIndex(bool (*condition)(std::string &path)) {
+std::string Response::getIndex() {
     std::string index;
-    std::vector<std::string> &location = _server.getLocationIndexes(_path);
+    std::vector<std::string> location = _server.getLocationIndexes(_path);
     for (std::vector<std::string>::iterator it = location.begin();
         it != location.end(); ++it) {
         index = combinePaths(_path, *it);
-        if (condition(index)) {
+        if (access(index.c_str(), R_OK) == 0) {
             return (index); // found valid index path
         }
     }
     return (""); // no index path found
 }
 
-Return Response::tryAutoIndex() {
-
+std::string Response::getCGIIndex() {
+    std::string index;
+    std::vector<std::string> location = _server.getLocationIndexes(_path);
+    for (std::vector<std::string>::iterator it = location.begin();
+        it != location.end(); ++it) {
+        index = combinePaths(_path, *it);
+        if (isValidCGI(index)) {
+            return (index); // found valid index path
+        }
+    }
+    return (""); // no index path found
 }

@@ -1,6 +1,6 @@
 #include "../../include/Config.hpp"
 
-Config::Config() {}
+// Config::Config() {}
 
 /**
  * Constructor for the configuration class. It will only accept file names

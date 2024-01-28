@@ -456,3 +456,7 @@ std::string	Request::getHeaderValueForKey(const std::string& key) const {
 		return ("");
 	return it->second;
 }
+
+const std::vector<char> Request::getBody() const {
+    return body_;
+}

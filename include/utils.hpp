@@ -4,27 +4,27 @@
 /*                                  INCLUDES                                  */
 /* ************************************************************************** */
 
-#include <string>
-#include <vector>
-#include <deque>
-#include <map>
 #include <iterator>
 #include <algorithm>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <exception>
-#include <cstring>
-#include <cstdlib>
 #include <cstdint>
 #include <cstdio>
 #include <sys/stat.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <signal.h>
+#include <map>
+#include <cctype>
+#include <iostream>
+#include <string>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <exception>
+#include <vector>
+#include <cstring>
+#include <cstdlib>
+#include <sstream>
+#include <unistd.h>
+#include <fstream>
 
 /* ************************************************************************** */
 /*                                   ENUMS                                    */
@@ -85,8 +85,7 @@ std::vector<std::string> splitString(const std::string str, char delim);
 
 // paths
 std::string combinePaths(std::string &lhs, std::string &rhs);
-bool doesPathExist(std::string &path);
 
 // vector
 void appendStringToVector(std::vector<char> &vector, const char *str);
-ssize_t readToVector(int fd, std::vector<char> &vec);
+Return readToVector(int fd, std::vector<char> &vec);

@@ -5,11 +5,12 @@ bool Response::isValidCGI(std::string &path) {
     if (ext == std::string::npos) {
         return (false); // file without extension
     }
-    _cgiInterpreter = _server.getCGIInterpreter(path.substr(ext + 1));
+    std::string extension = path.substr(ext + 1);
+    _cgiInterpreter = _server.getCGIInterpreter(extension);
     if (_cgiInterpreter.empty()) {
         return (false); // file extension isn't supported
     }
-    return (hasReadPermissions(path));
+    return (access(path.c_str(), R_OK) == 0);
 }
 
 bool Response::isCGI() {
@@ -17,7 +18,7 @@ bool Response::isCGI() {
     if (S_ISDIR(_pathStat.st_mode) == false) {
         return (isValidCGI(_path));
     }
-    _cgiPath = getIndex(isValidCGI);
+    _cgiPath = getCGIIndex();
     return (_cgiPath.empty() == false);
 }
 
@@ -47,18 +48,17 @@ void Response::cgiProcess(int cgiOutput[2]) {
     close(cgiOutput[PIPEOUT]);
     if (_request.getMethod() == POST) {
         // write request body to cgi stdin
-        std::vector<char> &reqBody = _request.getBody();
-        if (write(STDIN_FILENO, reqBody.data(), reqBody.size()) == -1) {
+        if (write(STDIN_FILENO, _request.getBody().data(), _request.getBody().size()) == -1) {
             exit(EXIT_FAILURE);
         }
     }
-    const char **cgiEnv = getCGIEnvironment();
+    char **cgiEnv = getCGIEnvironment();
     if (cgiEnv == NULL) {
         exit(EXIT_FAILURE);
     }
-    const char *argv[] = {
-        _cgiInterpreter.c_str(),
-        _cgiPath.c_str(),
+    char *argv[3] = {
+        const_cast<char *>(_cgiInterpreter.c_str()),
+        const_cast<char *>(_cgiPath.c_str()),
         NULL
     };
     execve(argv[0], argv, cgiEnv);
@@ -94,5 +94,5 @@ char **Response::getCGIEnvironment() {
     // pass header to script via env variables
 
     // Everything after the ? in the URL appears in the QUERY_STRING environment variable
-
+    return (NULL);
 }

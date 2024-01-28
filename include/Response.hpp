@@ -32,28 +32,33 @@ public:
     void send();
 
 private:
-    // path
-    void findPath();
-    uint16_t pathExists(std::string &path);
     // cgi
-    bool isValidCGI();
+    bool isCGI();
+    bool isValidCGI(std::string &path);
     void executeCGI();
     void cgiProcess(int cgiOutput[2]);
-    void waitForCGI(pid_t cgi, int output);
+    uint16_t waitForCGI(pid_t cgi);
     char **getCGIEnvironment();
     // process
     uint16_t processRequest();
+    uint16_t checkRequest();
+    uint16_t fileToBody(std::string &path);
     uint16_t performGET();
     uint16_t performPOST();
     uint16_t performDELETE();
+    // index
+    std::string getIndex();
+    std::string getCGIIndex();
     // send
     void constructResponse();
+    void makeErrorPage();
+    void setHeaders();
 
     const Server &_server;
     const Request &_request;
     std::string _cgiPath;
     std::string _cgiInterpreter;
-	bool	_isCGI;
+    bool _isCGI;
     char **_cgiEnv;
     std::string _path;
     struct stat _pathStat;

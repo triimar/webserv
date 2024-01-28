@@ -280,7 +280,7 @@ std::string Server::getServerName() const {
     return (this->serverName.back());
 }
 
-std::string Server::getCGIInterpreter(std::string &extension) {
+std::string Server::getCGIInterpreter(const std::string &extension) {
     CGIList::iterator it = supportedCGI.find(extension);
     if (it != supportedCGI.end()) {
         return (it->second);

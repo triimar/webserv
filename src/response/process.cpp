@@ -22,6 +22,7 @@ uint16_t Response::processRequest() {
         return (performPOST());
     case DELETE:
         return (performDELETE());
+    default: return (501);
     }
 }
 
@@ -32,9 +33,9 @@ uint16_t Response::checkRequest() {
         return (405);
     }
     // ???
-    if (_server.hasLocationReturn(_request.getPath(), _status, _body) == true) {
-        return (_status);
-    }
+    // if (_server.hasLocationReturn(_request.getPath(), _status, _body) == true) {
+    //     return (_status);
+    // }
 
     _path = _server.getLocationPath(_request.getPath());
     if (access(_path.c_str(), F_OK) == 0) {
@@ -70,17 +71,17 @@ uint16_t Response::performGET() {
     if (_path.back() != '/') {
         return (301); // why???
     }
-    std::string index = _server.getIndex(hasReadPermissions);
+    std::string index = getIndex();
     if (index.empty() == false) {
         return (fileToBody(index));
     }
     // ???
-    if (_server.getAutoIndexing() == true) {
-        if (makeAutoIndex() == RETURN_SUCCESS) {
-            return (200);
-        }
-        return (500);
-    }
+    // if (_server.getAutoIndexing() == true) {
+    //     if (makeAutoIndex() == RETURN_SUCCESS) {
+    //         return (200);
+    //     }
+    //     return (500);
+    // }
     return (403);
 }
 
@@ -88,9 +89,9 @@ uint16_t Response::performPOST() {
     if (_request.getHeaderValueForKey("Content-Length").empty()) {
         return (411);
     }
-    if (Response::isSupportedMIMEType(_request.getHeaderValueForKey("Content-Type")) == false) {
-        return (415);
-    }
+    // if (Response::isSupportedMIMEType(_request.getHeaderValueForKey("Content-Type")) == false) {
+    //     return (415);
+    // }
 
     // what happends with directories
 
@@ -114,7 +115,7 @@ uint16_t Response::performDELETE() {
     if (_path.back() != '/') {
         return (409); // why??
     }
-    if (access(_indexPath.c_str(), W_OK) == -1) {
+    if (access(_path.c_str(), W_OK) == -1) {
         return (403);
     }
     if (rmdir(_path.c_str()) == -1) {

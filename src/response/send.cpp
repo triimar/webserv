@@ -10,7 +10,7 @@ void Response::send() {
 }
 
 void Response::makeErrorPage() {
-    std::string &path = _server.getErrorPage(_status);
+    std::string path = _server.getErrorPage(_path, _status);
     if (path.empty()) {
         return ;
     }
@@ -29,9 +29,9 @@ void Response::makeErrorPage() {
 void Response::setHeaders() {
     _headers["Server"] = _server.getServerName();
     _headers["Content-Length"] = SSTR(_body.size());
-    if (_reqest.getMethod() == GET) {
-       _headers["Content-Type"] = getContentType();
-    }
+    // if (_reqest.getMethod() == GET) {
+    //    _headers["Content-Type"] = getContentType();
+    // }
     
 }
 

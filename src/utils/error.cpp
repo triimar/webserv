@@ -11,6 +11,7 @@ static void printError(WebservError err, const char *context) {
             cerr << "Memory allocation failed while " << context;
         case INVARGS:
             cerr << "Too many arguments. Expected 0-1";
+        default:;
     }
 }
 
@@ -21,7 +22,7 @@ WebservError ft_perror(WebservError err, const char *context) {
     cerr << "Error: ";
     if (err == ERRNO) {
         cerr << strerror(errno) << endl;
-        return (errno);
+        return (static_cast<WebservError>(errno));
     }
     printError(err, context);
     cerr << endl;
