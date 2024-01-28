@@ -3,6 +3,7 @@
 Location::Location(){
 	name = "";
 	root = "";
+	autoindex = true;
 }
 
 Location::Location(const Location &location) : name(location.name),

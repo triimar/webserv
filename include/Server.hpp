@@ -8,11 +8,11 @@
 #include "Status.hpp"
 #include "utils.hpp"
 
+static CGIList              supportedCGI;
 class Server
 {
 private:
 
-    static CGIList              supportedCGI;
     std::string                 configPath;
 	unsigned short				port;
 	in_addr						host;

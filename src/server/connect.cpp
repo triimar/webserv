@@ -1,41 +1,5 @@
 #include "../../include/Server.hpp"
 
-Server::Server() {
-	port = 0;
-	host.s_addr = 0;
-	root = "";
-	socketFd = -1;
-	ipAddress = "";
-	clientSize = 0;
-}
-
-Server::Server(const Server &server) : port(server.port), host(server.host),
-serverName(server.serverName), root(server.root), index(server.index),
-ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-socketFd(server.socketFd){
-	return;
-}
-
-Server &Server::operator=(const Server &server) {
-	if (&server != this)
-	{
-		this->port = server.port;
-		this->host = server.host;
-		this->serverName = server.serverName;
-		this->root = server.root;
-		this->index = server.index;
-		this->ipAddress = server.ipAddress;
-		this->clientSize = server.clientSize;
-		this->errorPages = server.errorPages;
-		this->socketFd = server.socketFd;
-	}
-	return *this;
-}
-
-Server::~Server() {
-	closeServer();
-}
-
 void Server::startServer() {
 	this->socketFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketFd < 0)

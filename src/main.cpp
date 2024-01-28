@@ -4,18 +4,28 @@
 
 int main(int argc, char **argv)
 {
-	Server server;
+	if (argc > 2)
+	{
+		std::cerr << "Wrong number of arguments\n";
+		return 1;
+	}
+	(void) argv;
+//	Server server;
+//	std::string parameter = "0.0.0.0";
+//	server.setPort(4242);
+//	server.setHost(parameter.data());
+//	server.setIP();
+//	server.startServer();
+//	server.startListen();
 
-    if (argc > 2 || !argv) {
-        std::exit(ft_perror(INVARGS, NULL));
-    }
-
-	std::string parameter = "0.0.0.0";
-	server.setPort(4242);
-	server.setHost(parameter);
-	server.setIP();
-    // above is config template
-
-	server.startServer();
-	server.startListen();
+	try{
+		std::vector<Server> list;
+		Config config(argv[1]);
+		list = config.createServers();
+		std::for_each(list.begin(), list.end(), Server::printServer);
+	}
+	catch (std::exception &e)
+	{
+		std::cerr << e.what();
+	}
 }
