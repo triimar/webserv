@@ -8,16 +8,13 @@ class Server
 {
 private:
 
-    char *getStatusMessage(uint16_t status);
-    std::string getCGIInterpreter(std::string &extension);
-
-    CGIList                     supportedCGI;
+    static CGIList              supportedCGI;
     std::string                 configPath;
 	unsigned short				port;
 	in_addr						host;
 	std::string					serverName;
 	std::string					root;
-	std::vector<std::string>	index;
+    std::vector<std::string>	index;
 	std::string					ipAddress;
 	unsigned long				clientSize;
 	std::vector<std::string>	errorPages;
@@ -26,7 +23,6 @@ private:
 	int 						newSocket;
 	long 						incomingMsg;
 	unsigned int				socketLen;
-    std::vector<u_int16_t>      _implementedStatusHTML;
 //	uint32_t ipAddress;
 
 public:
@@ -49,10 +45,9 @@ public:
 	void setClientSize(unsigned long clientSize);
 	void setErrorPage(std::string errorPage);
 
-    const char *getStatusMessage(uint16_t status) const;
+    static std::string getCGIInterpreter(std::string &extension);
+    static const char *getStatusMessage(uint16_t status) const;
     std::string getRoot() const;
     std::vector<std::string> getIndex() const;
     std::string getServerName() const;
-
-    bool isImplementedStatusHTML(uint16_t status) const;
 };

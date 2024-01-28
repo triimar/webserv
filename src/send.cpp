@@ -1,22 +1,23 @@
 #include "../../include/Response.hpp"
 
 void Response::send() {
-    if (_server.isImplementedStatusHTML(_status)) {
-        makeErrorHTML();
-    }
-    if (_isCGI == false) {
+    makeErrorPage();
+    if (_isCGI == false || _response.empty()) {
         setHeaders();
         constructResponse();
     }
     // send(_socket, _response.data(), _response.size(), 0);
 }
 
-void Response::makeStatusHTML() {
-    std::string path = STATUS_HTML_PATH + SSTR(_status) + ".html";
+void Response::makeErrorPage() {
+    std::string &path = _server.getErrorPage(_status);
+    if (path.empty()) {
+        return ;
+    }
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1 || readToVector(fd, _body) == RETURN_FAILURE) {
         _body.clear();
-        appendStringToVector(_body, getStatusMessage(_status));
+        appendStringToVector(_body, Server::getStatusMessage(_status));
     }
     if (fd != -1) {
         close(fd);
@@ -37,7 +38,7 @@ void Response::setHeaders() {
 void Response::constructResponse() {
     appendStringToVector(_response, _request.getHttpVer().c_str());
     appendStringToVector(_response, " ");
-    appendStringToVector(_response, _server.getStatusMessage(_status));
+    appendStringToVector(_response, Server::getStatusMessage(_status));
     appendStringToVector(_response, "\r\n");
 
     if (_headers.empty() == false) {

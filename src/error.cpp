@@ -3,6 +3,8 @@
 using std::cerr;
 using std::endl;
 
+// errors only if establishing connection fails - afterwards always response
+
 static void printError(WebservError err, const char *context) {
     switch (err) {
         case MEMFAIL:
@@ -17,7 +19,7 @@ WebservError ft_perror(WebservError err, const char *context) {
         return (err);
     }
     cerr << "Error: ";
-    if (err == CUB_ERRNO) {
+    if (err == ERRNO) {
         cerr << strerror(errno) << endl;
         return (errno);
     }

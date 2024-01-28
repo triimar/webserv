@@ -7,17 +7,16 @@ void appendStringToVector(std::vector<char> &vector, const char *str) {
     }
 }
 
-ssize_t readToVector(int fd, std::vector<char> &vec) {
+Return readToVector(int fd, std::vector<char> &vec) {
     char buf[BUFFER_SIZE + 1] = {'\0'};
-    ssize_t fileSize = 0;
     ssize_t readBytes;
     while ((readBytes = read(fd, buf, BUFFER_SIZE)) > 0) {
-        buf[readBytes] = '\0';
-        appendStringToVector(vec, buf);
-        fileSize += readBytes;
+        for (ssize_t i = 0; i < readBytes; ++i) {
+            vec.push_back(buf[i]);
+        }
     }
     if (readBytes == -1) {
-        return (-1);
+        return (RETURN_FAILURE);
     }
-    return (fileSize);
+    return (RETURN_SUCCESS);
 }

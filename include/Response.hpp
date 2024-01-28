@@ -42,7 +42,7 @@ private:
     void waitForCGI(pid_t cgi, int output);
     char **getCGIEnvironment();
     // process
-    void processRequest();
+    uint16_t processRequest();
     uint16_t performGET();
     uint16_t performPOST();
     uint16_t performDELETE();
@@ -54,8 +54,7 @@ private:
     std::string _cgiPath;
     std::string _cgiInterpreter;
     char **_cgiEnv;
-    std::string _localPath;
-    std::vector<std::string> _indexPaths;
+    std::string _path;
     struct stat _pathStat;
     uint16_t _status;
     std::map<std::string, std::string> _headers;

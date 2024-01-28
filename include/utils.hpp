@@ -37,10 +37,10 @@ enum WebservError {
 };
 
 enum RequestMethod {
-    INVALID = 0b0,
-	GET = 0b1,
-	POST = 0b10,
-	DELETE = 0b100,
+    INVALID,
+	GET,
+	POST,
+	DELETE
 };
 
 enum Return {
@@ -68,10 +68,6 @@ enum Pipe {
 typedef std::map<std::string, std::string> CGIList;
 
 #define CGI_TIMEOUT_SEC 42
-#define CGI_METHODS (GET | POST)
-
-#define STATUS_HTML {400, 401, 403, 404, 405, 500, 503}
-#define STATUS_HTML_PATH "./www/status-html/"
 
 #define SSTR(x) static_cast<std::ostringstream &>(\
         (std::ostringstream() << std::dec << x)).str()
@@ -88,6 +84,7 @@ std::vector<std::string> splitString(const std::string str, char delim);
 
 // paths
 std::string combinePaths(std::string &lhs, std::string &rhs);
+bool doesPathExist(std::string &path);
 
 // vector
 void appendStringToVector(std::vector<char> &vector, const char *str);

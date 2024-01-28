@@ -98,7 +98,7 @@ std::string getRoot() const {
     return (this->root);
 }
 
-std::vector<std::string> getIndex() const {
+std::vector<std::string> getIndex(std::string location) {
     return (this->index);
 }
 
@@ -106,18 +106,11 @@ std::string getServerName() const {
     return (this->serverName);
 }
 
-std::string Server::getCGIInterpreter(std::string &extension) const {
+static std::string Server::getCGIInterpreter(std::string &extension) const {
     CGIList::iterator it = supportedCGI.find(extension);
     if (it != supportedCGI.end()) {
         return (it->second);
     } else {
         return ("")
     }
-}
-
-
-
-bool Server::isImplementedStatusHTML(uint16_t status) const {
-    return (std::find(_implementedStatusHTML.begin(),
-        _implementedStatusHTML.end(), status) == _implementedStatusHTML.end());
 }

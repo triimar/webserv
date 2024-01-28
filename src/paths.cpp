@@ -10,3 +10,7 @@ std::string combinePaths(std::string &lhs, std::string &rhs) {
         return (lhs + rhs);
     }
 }
+
+bool hasReadPermissions(std::string &path) {
+    return (access(path.c_str(), R_OK) == 0);
+}

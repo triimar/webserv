@@ -1,22 +1,24 @@
 #include "../../include/Response.hpp"
 
-bool Response::isValidCGI() {
-    if (S_ISDIR(_pathStat.st_mode) == false) {
-        _cgiPath = _localPath;
-    } else if (_indexPaths.empty() == false) {
-        _cgiPath = _indexPaths.front();
-    } else {
-        return (false); // not a file or directory with index
-    }
-    size_t ext = _cgiPath.rfind('.');
+bool Response::isValidCGI(std::string &path) {
+    size_t ext = path.rfind('.');
     if (ext == std::string::npos) {
         return (false); // file without extension
     }
-    _cgiInterpreter = _server.getCGIInterpreter(_cgiPath.substr(ext + 1));
+    _cgiInterpreter = _server.getCGIInterpreter(path.substr(ext + 1));
     if (_cgiInterpreter.empty()) {
         return (false); // file extension isn't supported
     }
-    return (true);
+    return (hasReadPermissions(path));
+}
+
+bool Response::isCGI() {
+    _cgiPath = _path;
+    if (S_ISDIR(_pathStat.st_mode) == false) {
+        return (isValidCGI(_path));
+    }
+    _cgiPath = getIndex(isValidCGI);
+    return (_cgiPath.empty() == false);
 }
 
 void Response::executeCGI() {
@@ -32,11 +34,15 @@ void Response::executeCGI() {
         cgiProcess(cgiOutput);
     }
     close(cgiOutput[PIPEIN]);
-    waitForCGI(cgi, cgiOutput[PIPEOUT]);
+    _status = waitForCGI(cgi);
+    readToVector(cgiOutput[PIPEOUT], _response);
     close(cgiOutput[PIPEOUT]);
 }
 
 void Response::cgiProcess(int cgiOutput[2]) {
+    if (chdir(_server.getRoot().c_str()) == -1) {
+        exit(EXIT_FAILURE);
+    }
     dup2(cgiOutput[PIPEIN], STDOUT_FILENO);
     close(cgiOutput[PIPEOUT]);
     if (_request.getMethod() == POST) {
@@ -46,19 +52,20 @@ void Response::cgiProcess(int cgiOutput[2]) {
             exit(EXIT_FAILURE);
         }
     }
-    char **cgiEnv = getCGIEnvironment();
+    const char **cgiEnv = getCGIEnvironment();
     if (cgiEnv == NULL) {
         exit(EXIT_FAILURE);
     }
     const char *argv[] = {
-        const_cast<char *>(_cgiInterpreter.c_str()),
-        const_cast<char *>(_cgiPath.c_str()),
-        NULL};
-    execve(argv[PIPEOUT], argv, cgiEnv);
+        _cgiInterpreter.c_str(),
+        _cgiPath.c_str(),
+        NULL
+    };
+    execve(argv[0], argv, cgiEnv);
     exit(EXIT_FAILURE);
 }
 
-void Response::waitForCGI(pid_t cgi, int output) {
+uint16_t Response::waitForCGI(pid_t cgi) {
     size_t time = CGI_TIMEOUT_SEC * 1000;
     int waitStatus;
 
@@ -69,19 +76,18 @@ void Response::waitForCGI(pid_t cgi, int output) {
         usleep(100);
         time -= 100;
     }
-    if (time == 0
-        && kill(cgi, SIGTERM) == 0 && waitpid(cgi, &waitStatus, 0) != -1) {
-        _status = 503; // timeout and no fail on the waits
-    } else if (WIFEXITED(waitStatus) && WEXITSTATUS(waitStatus) == EXIT_SUCCESS
-        && (_request.getMethod() == POST
-        || readToVector(output, _response) == RETURN_SUCCESS)) {
-        switch (_request.getMethod()) {
-        case GET:
-            _status = 200;
-        case POST:
-            _status = 201;
+    if (time == 0 && kill(cgi, SIGTERM) == 0
+        && waitpid(cgi, &waitStatus, 0) != -1) {
+        return (503); // timeout and no fail on the waits
+    } else if (WIFEXITED(waitStatus)) {
+        switch (WEXITSTATUS(waitStatus)) {
+        case 0: return (200);
+        case 2: return (400);
+        case 127: return (404);
+        case 128: return (400);
         }
-    } // else is fail so status is left unchanged 500
+    }
+    return (500);
 }
 
 char **Response::getCGIEnvironment() {
