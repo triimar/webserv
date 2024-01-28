@@ -312,66 +312,12 @@ void 	Request::decodeChunked(const char *bodyStart, const char *msgEnd) {
 	// 	return setError(requestERROR, 400, "Bad Request");
 }
 
-// void	Request::processHeaders(const char* requestBuf, int messageLen) { //what if len == 0?
-// 	const char *msgEnd = &requestBuf[messageLen - 1];
-
-// 	if (std::strncmp(msgEnd - 4, CRLFCRLF,  4) != 0)
-// 		return setError(requestERROR, 400, "Bad Request: Syntax error"); 	//there is no CRLFCRLF -> bad Request (syntax error)
-// 	if (requestBuf == msgEnd)
-// 		return setError(requestERROR, 400, "Bad Request: Empty request");
-// 	std::stringstream headersStream;
-// 	createHeadersStream(headersStream, requestBuf, msgEnd);
-// 	while (state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK && state_ != stateExpectingBody) {
-// 		switch (state_) {
-// 		case stateParseRequestLine: parseRequestLine(headersStream);
-// 			break;
-// 		case stateParseHeaders: parseHeader(headersStream);
-// 			break;
-// 		case stateCheckBody: checkForBody();
-// 		case stateExpectingBody:
-// 		case requestParseFAIL:
-// 		case requestERROR:
-// 		case requestOK:
-// 			break;
-// 		}
-// 	}
-// }
-
-// void	Request::processHeaders(const char* requestBuf, int messageLen) { //what if len == 0?
-// 	const char *msgEnd = &requestBuf[messageLen - 1];
-// 	if (std::strncmp(msgEnd - 4, CRLFCRLF,  4) != 0)
-// 		return setError(requestERROR, 400, "Bad Request: Syntax error"); 	//there is no CRLFCRLF -> bad Request (syntax error)
-// 	while (requestBuf != msgEnd && std::isspace(*requestBuf))
-// 		requestBuf++;
-// 	if (requestBuf == msgEnd)
-// 		return setError(requestERROR, 400, "Bad Request: Empty request");
-// 	std::stringstream headersStream;
-// 	createHeadersStream(headersStream, requestBuf, msgEnd);
-// 	while (state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
-// 		switch (state_) {
-// 		case stateParseRequestLine: parseRequestLine(headersStream);
-// 			break;
-// 		case stateParseHeaders: parseHeader(headersStream);
-// 			break;
-// 		case StateParseMessageBody:
-// 			break;
-// 		case requestParseFAIL:
-// 			break;
-// 		case requestERROR:
-// 			break;
-// 		case requestOK:
-// 			break;
-// 		}
-// 	}
-// }
 void	Request::processRequest(const char* requestBuf, int messageLen) { //what if len == 0?
 	std::stringstream headersStream;
 	const char *msgEnd = &requestBuf[messageLen - 1];
 	const char *bodyStart = extractHeadersStream(headersStream, requestBuf, msgEnd);
 	if (!bodyStart)
 		return setError(requestERROR, 400, "Bad Request"); 	//there is no CRLFCRLF -> bad Request (syntax error)
-	// if (bodyStart == msgEnd)
-	// 	std::cout << "NOBODY" << std::endl;
 	while (state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
 		switch (state_) {
 			case stateParseRequestLine: parseRequestLine(headersStream);
@@ -441,6 +387,14 @@ bool	Request::isConnectionClose() const {
 	return false;
 }
 
+std::string	Request::getHeaderValueForKey(const std::string& key) const {
+	std::map<std::string, std::string>::const_iterator it;
+	it = headers_.find(key);
+	if (it == headers_.end())
+		return ("");
+	return it->second;
+}
+
 std::map<std::string, std::string>::const_iterator	Request::getHeadersBegin() const {
 	return headers_.begin();
 }
@@ -460,3 +414,12 @@ std::string	Request::getHeaderValueForKey(const std::string& key) const {
 const std::vector<char> Request::getBody() const {
     return body_;
 }
+
+std::vector<char>::const_iterator	Request::getBodyBegin() const {
+	return body_.begin();
+}
+
+std::vector<char>::const_iterator	Request::getBodyEnd() const {
+	return body_.end();
+}
+
