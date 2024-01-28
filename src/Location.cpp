@@ -1,4 +1,4 @@
-#include "Location.hpp"
+#include "../include/Location.hpp"
 
 Location::Location(){
 	name = "";
@@ -58,9 +58,9 @@ void printListTab(std::string index)
 void printListMethods(Methods meth)
 {
 	std::string method;
-	if (meth == 0)
+	if (meth == GET)
 		method = "GET";
-	else if (meth == 1)
+	else if (meth == POST)
 		method = "POST";
 	else
 		method = "DELETE";

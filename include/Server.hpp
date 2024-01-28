@@ -26,8 +26,14 @@ private:
 	std::vector<std::string>	index;
 	std::string					ipAddress;
 	unsigned long				clientSize;
+
+	//Change to map for error code as key
 	std::vector<std::string>	errorPages;
+	//Map with name
 	std::vector<Location>		locations;
+	bool						autoindex;
+	std::vector<std::string>	cgi_info;
+
 	int							socketFd;
 	sockaddr_in					socketAddress;
 	int 						newSocket;

@@ -1,4 +1,4 @@
-#include "Request.hpp"
+#include "../include/Request.hpp"
 
 /* constructors & destructor */
 Request::Request(): state_(requestERROR) {

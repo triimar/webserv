@@ -17,6 +17,8 @@ private:
 	std::string					root;
 	std::vector<Methods>		allowedMethods;
 	std::vector<std::string>	index;
+	bool						autoindex;
+	std::vector<std::string>	cgi_info;
 
 public:
 	Location();
