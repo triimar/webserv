@@ -1,40 +1,45 @@
-NAME = webservto
+NAME		=	webserv
 
-<<<<<<< HEAD
-SRC = main.cpp Server.cpp Config.cpp Location.cpp
-=======
-SRC = main.cpp Server.cpp Request.cpp
->>>>>>> origin/request_branch
+INCDIR		=	./include
+SRCDIR		=	./src
+SUBDIRNAMES	=	server request response utils config
+SUBDIRS		=	$(foreach name, $(SUBDIRNAMES), $(SRCDIR)/$(name))
+BUILDDIR	=	./build
 
-CP = c++
+CP			=	c++
+CPPFLAGS	=	-Werror -Wextra -Wall -std=c++98 -g -fsanitize=address
+INCFLAGS	=	-I $(INCDIR)
 
-OBJ = $(SRC:%.cpp=$(OBJ_DIR)%.o)
+INCS		=	$(wildcard $(INCDIR)/*.hpp)
+SRCS		=	$(SRCDIR)/main.cpp \
+				$(foreach dir, $(SUBDIRNAMES), $(wildcard $(SRCDIR)/$(dir)/*.cpp))
+OBJS		=	$(addprefix $(BUILDDIR)/, $(SRCS:.cpp=.o))
+DEPS		=	$(OBJS:.o=.d)
 
-OBJ_DIR = obj/
+PINK		=	\033[1;95m
+GREEN		=	\033[1;92m
+RESET		=	\033[0m
 
-FLAGS = -Werror -Wextra -Wall -std=c++98 -g -fsanitize=address
+$(NAME): $(OBJS)
+	@$(CP) $(CPPFLAGS) $(INCFLAGS) $(OBJS) -o $(NAME)
+	@echo "$(GREEN)Compiled successfully!$(RESET)"
 
-PINK = \033[1;95m
-GREEN = \033[1;92m
-RESET = \033[0m
+-include $(DEPS)
+
+$(BUILDDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CP) $(CPPFLAGS) $(INCFLAGS) -c $< -o $@
 
 all: $(NAME)
 
-$(OBJ_DIR):
-	@mkdir -p $(OBJ_DIR)
-
-$(NAME): $(OBJ_DIR) $(OBJ)
-	@$(CP) $(OBJ) $(FLAGS) -o $(NAME)
-	@echo "$(GREEN)Compiled successfully!$(RESET)"
-
-$(OBJ_DIR)%.o: %.cpp
-	@$(CP) $(FLAGS) -c $< -o $@
-
 clean:
-	@/bin/rm -rf $(OBJ_DIR)
-	@echo "$(PINK)Clean successful!$(RESET)"
+	@/bin/rm -rf $(BUILDDIR)
+	@echo "$(PINK)clean successful!$(RESET)"
 
 fclean: clean
 	@/bin/rm -f $(NAME)
+	@echo "$(PINK)fclean successful!$(RESET)"
 
 re: fclean all
+
+.PHONY: all clean fclean re

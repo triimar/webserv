@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "../../include/Server.hpp"
 
 Server::Server() {
 	port = 0;
@@ -7,6 +7,12 @@ Server::Server() {
 	socketFd = -1;
 	ipAddress = "";
 	clientSize = 0;
+    // translates SUPPORTED_CGI macro to usable map
+    std::vector<std::string> cgiPairs = splitString(SUPPORTED_CGI, '&');
+    for (size_t i = 0; i < cgiPairs.size(); ++i) {
+        std::vector<std::string> pair = splitString(cgiPairs[i], '=');
+        supportedCGI[pair[0]] = pair[1];
+    }
 }
 
 Server::Server(const Server &server) : port(server.port), host(server.host),
@@ -104,7 +110,6 @@ void Server::acceptConnection(int &newSocket) {
 		exit(1);
 	}
 }
-
 
 void Server::closeServer() {
 	close(socketFd);
@@ -248,3 +253,32 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 //	Location location;
 //	this->locations.push_back(location);
 //}
+
+// ???????
+//	this->clientSize = clientSize;
+//}
+
+/* ************************************************************************** */
+/*                                  GETTERS                                   */
+/* ************************************************************************** */
+
+std::string getRoot() const {
+    return (this->root);
+}
+
+std::vector<std::string> getIndex(std::string location) {
+    return (this->index);
+}
+
+std::string getServerName() const {
+    return (this->serverName);
+}
+
+static std::string Server::getCGIInterpreter(std::string &extension) const {
+    CGIList::iterator it = supportedCGI.find(extension);
+    if (it != supportedCGI.end()) {
+        return (it->second);
+    } else {
+        return ("")
+    }
+}

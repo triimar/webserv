@@ -1,4 +1,4 @@
-#include "../include/Location.hpp"
+#include "../../include/Location.hpp"
 
 Location::Location(){
 	name = "";
@@ -6,8 +6,8 @@ Location::Location(){
 }
 
 Location::Location(const Location &location) : name(location.name),
-root(location.root), allowedMethods(location.allowedMethods),
-index(location.index){}
+											   root(location.root), allowedMethods(location.allowedMethods),
+											   index(location.index){}
 
 Location &Location::operator=(const Location &location) {
 	if (&location != this)
@@ -69,7 +69,7 @@ void printListMethods(Methods meth)
 
 void Location::printLocation(Location &location) {
 	std::cout << "Location: " << location.name <<
-	"\n\tRoot: " << location.root << "\n\tIndex:\n";
+			  "\n\tRoot: " << location.root << "\n\tIndex:\n";
 	std::for_each(location.index.begin(), location.index.end(), printListTab);
 	std::cout << "\tAllowed:\n";
 	std::for_each(location.allowedMethods.begin(), location.allowedMethods.end(), printListMethods);

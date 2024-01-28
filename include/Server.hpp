@@ -15,10 +15,16 @@
 #include "Location.hpp"
 
 #define BUFFER_SIZE 30720
+#include "Request.hpp"
+#include "Status.hpp"
+#include "utils.hpp"
 
 class Server
 {
 private:
+
+    static CGIList              supportedCGI;
+    std::string                 configPath;
 	unsigned short				port;
 	in_addr						host;
 	std::vector<std::string>	serverName;
@@ -64,4 +70,9 @@ public:
 //	void pushLocation();
 
 	static void printServer(Server &server);
+    static std::string getCGIInterpreter(std::string &extension);
+    static const char *getStatusMessage(uint16_t status) const;
+    std::string getRoot() const;
+    std::vector<std::string> getIndex() const;
+    std::string getServerName() const;
 };

@@ -1,0 +1,13 @@
+*
+!Makefile
+!include
+!include/**
+!src
+!src/**
+!www
+!www/**
+!conf_files
+!conf_files/**
+!.gitignore
+!webserv.conf
+.DS_Store
