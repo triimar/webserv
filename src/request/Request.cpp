@@ -84,15 +84,6 @@ const char *Request::extractHeadersStream(std::stringstream& headersStream, cons
 	return bodyStart;
 }
 
-// void Request::createHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd) {
-
-// 	std::size_t len = static_cast<std::size_t>(msgEnd - 4 - requestBuf); //excluding CRLFCRLF from end
-// 	char tmp[len + 1];
-//     std::memcpy(tmp, requestBuf, len);
-// 	tmp[len] = '\0';
-// 	headersStream << tmp;
-// }
-
 void	Request::parseMethod(std::stringstream& requestLine) {
 	requestLine >> methodStr_;
 	if (requestLine.fail() || methodStr_.empty())
@@ -246,71 +237,35 @@ void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
 	state_ = requestOK;
 }
 
-void 	Request::decodeChunked(const char *bodyStart, const char *msgEnd) {
-
-	// void 	Request::decodeChunked(const char *chunk, int len)
-	char *endptr;
-	const char *chunk = bodyStart;
-	unsigned long chunkLen;
-	// while (chunkLen != 0 && chunk != msgEnd) {
-	// 	if (*endptr != ';' && *endptr != '\r')
-	// 		return setError(requestERROR, 400, "Bad Request");
-	// 	chunk = std::strstr(chunk, "\r\n");
-	// 	if (!chunk)
-	// 		return setError(requestERROR, 400, "Bad Request");
-	// 	chunk += 2;
-	// 	while (chunk != msgEnd && chunkLen > 0) {
-	// 		body_.push_back(*chunk);
-	// 		chunk++;
-	// 		chunkLen--;
-	// 	}
-	// }
-	while (chunk != msgEnd) {
-		chunkLen = strtoul(chunk, &endptr, 16);
-		std::cout << "LEN " << chunkLen << std::endl;
-		if (*endptr != ';' && *endptr != '\r')
-			return setError(requestERROR, 400, "Bad Request");
-		else if (chunkLen == 0)
-			break;
-		chunk = std::strstr(chunk, "\r\n");
-		if (!chunk)
-			return setError(requestERROR, 400, "Bad Request");
-		chunk += 2;
-		std::cout << chunk << std::endl;
-		while (chunk != msgEnd && chunkLen > 0) {
-			body_.push_back(*chunk);
-			chunk++;
-			chunkLen--;
-		}
+const char *Request::decodeChunked(const char *chunkStart, const char *msgEnd) {
+	unsigned long len;
+	const char *content = std::strstr(chunkStart, "\r\n");
+	std::string lenLine(chunkStart, content);
+	content = content + 2;
+	std::stringstream ss(lenLine);
+    ss >> std::hex >> len;
+	if (ss.bad()) {
+		setError(requestERROR, 400, "Bad Request");
+		return content;
 	}
-	if (chunkLen == 0) {
+    std::cout << lenLine << "  " << len << std::endl;
+	if (len == 0) {
 		state_ = requestOK;
-		return ;
+		return content;
 	}
-	else
-		return setError(requestERROR, 400, "Bad Request");
-
-
-
-	// const char* chunkEnd = chunk + len;
-	// unsigned long chunkLen = strtoul(chunk, &endptr, 16);
-	// if (*endptr != ';' && *endptr != '\r')
-	// 	return setError(requestERROR, 400, "Bad Request");
-	// if (chunkLen == 0) 
-	// 	state_ = requestOK;
-	// 	return;
-	// }
-	// chunk = std::strstr(chunk, "\r\n");
-	// if (!chunk)
-	// 	return setError(requestERROR, 400, "Bad Request");
-	// chunk += 2;
-	// while (chunk != chunkEnd && chunkLen > 0) {
-	// 	body_.push_back(*chunk);
-	// 	chunk++;
-	// }
-	// if (chunk == chunkEnd || *chunk != '\r')
-	// 	return setError(requestERROR, 400, "Bad Request");
+	while (content != msgEnd && len > 0) {
+		body_.push_back(*content);
+		content++;
+		len--;
+	}
+	if (content == msgEnd && len != 0) {
+		setError(requestERROR, 400, "Bad Request");
+		return content;
+	}
+	content = content + 2;
+	return content;
 }
+
 
 void	Request::processRequest(const char* requestBuf, int messageLen) { //what if len == 0?
 	std::stringstream headersStream;
@@ -328,7 +283,7 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 				break;
 			case stateParseMessageBody:storeBody(bodyStart, msgEnd);
 				break;
-			case stateParseChunkedBody: decodeChunked(bodyStart, msgEnd);
+			case stateParseChunkedBody: bodyStart = decodeChunked(bodyStart, msgEnd);
 			case requestParseFAIL:
 				break;
 			case requestERROR:

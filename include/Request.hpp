@@ -59,7 +59,7 @@ private:
 	void		parseHeader(std::stringstream& headersStream);
 	void		checkForBody(const char *bodyStart, const char *msgEnd);
 	void		storeBody(const char *bodyStart, const char *msgEnd);
-	void 		decodeChunked(const char *bodyStart, const char *msgEnd);
+	const char 	*decodeChunked(const char *chunkStart, const char *msgEnd);
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	void		clearRequest();
