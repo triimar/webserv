@@ -296,7 +296,7 @@ void 	Request::decodeChunked(const char *bodyStart, const char *msgEnd) {
 	// unsigned long chunkLen = strtoul(chunk, &endptr, 16);
 	// if (*endptr != ';' && *endptr != '\r')
 	// 	return setError(requestERROR, 400, "Bad Request");
-	// if (chunkLen == 0) {
+	// if (chunkLen == 0) 
 	// 	state_ = requestOK;
 	// 	return;
 	// }
@@ -387,14 +387,6 @@ bool	Request::isConnectionClose() const {
 	return false;
 }
 
-std::string	Request::getHeaderValueForKey(const std::string& key) const {
-	std::map<std::string, std::string>::const_iterator it;
-	it = headers_.find(key);
-	if (it == headers_.end())
-		return ("");
-	return it->second;
-}
-
 std::map<std::string, std::string>::const_iterator	Request::getHeadersBegin() const {
 	return headers_.begin();
 }
@@ -411,7 +403,7 @@ std::string	Request::getHeaderValueForKey(const std::string& key) const {
 	return it->second;
 }
 
-const std::vector<char> Request::getBody() const {
+const std::vector<char>& Request::getBody() const {
     return body_;
 }
 

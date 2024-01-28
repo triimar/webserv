@@ -1,9 +1,6 @@
 #pragma once
 
-<<<<<<< HEAD
-=======
 #include <cctype>
->>>>>>> 20433a2415db189baf5883241d334efbff2468e9
 #include "utils.hpp"
 
 #define CRLF "\r\n"
@@ -86,14 +83,11 @@ public:
 	const std::string&  getFragment() const;
 	const int&			getErrorCode() const;
 	const std::string&	getErrorMsg() const;
+    const std::vector<char>& getBody() const;
 	
 	bool				isTransferEncodingChunked() const;
 	bool 				isConnectionClose() const;
 	std::string			getHeaderValueForKey(const std::string& key) const;
-
-	const int&			getErrorCode() const;
-	const std::string&	getErrorMsg() const;
-    const std::vector<char> getBody() const;
 
 	std::map<std::string, std::string>::const_iterator	getHeadersBegin() const;
 	std::map<std::string, std::string>::const_iterator	getHeadersEnd() const;
