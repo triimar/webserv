@@ -1,6 +1,10 @@
 NAME = webservto
 
+<<<<<<< HEAD
 SRC = main.cpp Server.cpp Config.cpp Location.cpp
+=======
+SRC = main.cpp Server.cpp Request.cpp
+>>>>>>> origin/request_branch
 
 CP = c++
 

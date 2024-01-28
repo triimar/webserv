@@ -1,4 +1,4 @@
-#include "../include/Server.hpp"
+#include "Server.hpp"
 
 Server::Server() {
 	port = 0;
@@ -12,7 +12,7 @@ Server::Server() {
 Server::Server(const Server &server) : port(server.port), host(server.host),
 serverName(server.serverName), root(server.root), index(server.index),
 ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-locations(server.locations), socketFd(server.socketFd){
+socketFd(server.socketFd){
 	return;
 }
 
@@ -118,15 +118,12 @@ void Server::setPort(unsigned short port) {
 	this->port = port;
 }
 
-void Server::setHost(std::string host) {
-	if (this->host.s_addr != 0)
-		throw std::runtime_error("Config file error: server's host was initialized twice.\n");
-	if (!inet_aton(host.c_str(), &this->host))
-		throw std::runtime_error("Config file error: invalid host name.\n");
+void Server::setHost(in_addr_t host) {
+	this->host.s_addr = host;
 }
 
 void Server::setName(std::string name) {
-	serverName.push_back(name);
+	this->serverName = name;
 }
 
 void Server::setRoot(std::string root) {
@@ -142,9 +139,7 @@ void Server::setIP() {
 		return;//Throw exception?
 	this->ipAddress = inet_ntoa(this->host);
 	this->ipAddress += ":";
-	std::stringstream ss;
-	ss << this->port;
-	this->ipAddress += ss.str();
+	this->ipAddress += this->port;
 }
 
 void Server::setClientSize(unsigned long clientSize) {

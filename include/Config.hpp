@@ -8,15 +8,10 @@
 
 class Config{
 private:
-//	int port;
-//	std::string host;
-//	std::vector<std::string> serverNames;
-//	int errorLogFd;
-	std::ifstream str;
-	Server getServer();
-	bool isEmptyLine(std::string line);
-	void parseServerLine(Server &server, std::string line);
-	Config();
+	int port;
+	std::string host;
+	std::vector<std::string> serverNames;
+	int errorLogFd;
 
 public:
 	Config(char *file);
