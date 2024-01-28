@@ -25,16 +25,25 @@ int main()
 // 	const char* buffer = "\r\n\r\n\r\n\r\nGET http://www.example.com/path/to/resource?query#fragment HTTP/1.1\r\nhost:localhost\r\nkey key: that and that\
 //  hallo ballo     \r\n falloyallo  	\r\nwhat: vvaaaalue\r\n\r\n";
 	
-	const char* postRequest = "POST http://ajeeojeenothub/oi?queque#frag HTTP/1.1\r\n"
-                          "Host: example.com\r\n"
-                          "Content-Type: application/x-www-form-urlencoded\r\n"
-                          "Content-Length: 15\r\n"
-                          "\r\n";
-                        //   "name=John&age=25\r\n";
+	// const char* postRequest = "POST http://ajeeojeenothub/oi?queque#frag HTTP/1.1\r\n"
+    //                       "Host: example.com\r\n"
+    //                       "Content-Type: application/x-www-form-urlencoded\r\n"
+    //                       "Content-Length: 15\r\n"
+    //                       "\r\n"
+    //                       "name=John&age=25\r\n";
 	
+	const char* postRequest = 
+    "POST /example HTTP/1.1\r\n"
+    "Host: example.com\r\n"
+    "Transfer-Encoding: chunked\r\n"
+    "\r\n"
+    "1a\r\nThis is the data to be sent in chunks.\r\n"
+    "15\r\nAdditional data in chunk 2.\r\n"
+    "0\r\n\r\n";
+
 	Request R;
 	// R.processRequest(postRequest, strlen(postRequest) + 1);
-	R.processHeaders(postRequest, strlen(postRequest) + 1);
+	R.processRequest(postRequest, strlen(postRequest) + 1);
 	std::cout << " ------REQUEST LINE-------" << std::endl;
 	std::cout << "Method enum|" << R.getMethod() << "|\n";
 	std::cout << "uri|" << R.getUri() << "|\n";

@@ -15,7 +15,8 @@ enum ParseState {
 	stateParseRequestLine,
 	stateParseHeaders,
 	stateCheckBody,
-    stateExpectingBody,
+	stateParseMessageBody,
+	stateParseChunkedBody,
 	requestParseFAIL, //indicates falure of parser as opposed to problem with request
 	requestERROR, // indicates a problem in the request
 	requestOK,
@@ -59,11 +60,12 @@ private:
 	void		parseURI(std::stringstream& requestLine);
 	void		parseHTTPver(std::stringstream& requestLine);
 
-	void 		createHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
-	
+	// void 		createHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
+	const char *extractHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
 	void		parseRequestLine(std::stringstream& headersStream);
 	void		parseHeader(std::stringstream& headersStream);
-	void		checkForBody(char *requestBuf,  char *bodyStart, char *msgEnd);
+	// void		checkForBody(char *requestBuf, char *msgEnd);
+	void		checkForBody(const char *bodyStart, const char *msgEnd);
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	std::string& trimString(std::string& str);
@@ -75,10 +77,10 @@ public:
 	Request();
 	~Request();
 
-	void				processHeaders(const char* requestBuf, int messageLen);
-	// void				processRequest(const char* requestBuf, int messageLen);
+	// void				processHeaders(const char* requestBuf, int messageLen);
+	void				processRequest(const char* requestBuf, int messageLen);
 	void				storeBody(const char *bodyStart, const char *msgEnd);
-	void 				decodeChunked(const char *chunk, int len);
+	void 				decodeChunked(const char *bodyStart, const char *msgEnd);
 	void				clearRequest();
 
 	const RequestMethod& getMethod() const;
