@@ -1,5 +1,6 @@
 #include "Request.hpp"
 
+
 //Orthodox canonical form
 Request::Request(): state_(stateParseRequestLine), rlstate_(stateParseMethod), method_(OTHER), errorCode_(0) {
 }
