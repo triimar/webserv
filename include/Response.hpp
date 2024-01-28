@@ -47,12 +47,13 @@ private:
     uint16_t performPOST();
     uint16_t performDELETE();
     // send
-    void constructResponse(std::vector &response);
+    void constructResponse();
 
     const Server &_server;
     const Request &_request;
     std::string _cgiPath;
     std::string _cgiInterpreter;
+	bool	_isCGI;
     char **_cgiEnv;
     std::string _path;
     struct stat _pathStat;

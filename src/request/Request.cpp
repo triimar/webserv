@@ -266,7 +266,7 @@ void 	Request::decodeChunked(const char *bodyStart, const char *msgEnd) {
 	// 	}
 	// }
 	while (chunk != msgEnd) {
-		chunkLen = strtoul("0x" + chunk, &endptr, 16);
+		chunkLen = strtoul(chunk, &endptr, 16);
 		std::cout << "LEN " << chunkLen << std::endl;
 		if (*endptr != ';' && *endptr != '\r')
 			return setError(requestERROR, 400, "Bad Request");

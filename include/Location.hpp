@@ -1,21 +1,22 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <vector>
+//#include <iostream>
+//#include <string>
+//#include <vector>
+#include "utils.hpp"
 
-enum Methods{
-	GET,
-	POST,
-	DELETE,
-};
+//enum Methods{
+//	GET,
+//	POST,
+//	DELETE,
+//};
 
 class Location
 {
 private:
 	std::string					name;
 	std::string					root;
-	std::vector<Methods>		allowedMethods;
+	std::vector<RequestMethod>		allowedMethods;
 	std::vector<std::string>	index;
 	bool						autoindex;
 	std::vector<std::string>	cgi_info;

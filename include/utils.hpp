@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
@@ -37,10 +38,10 @@ enum WebservError {
 };
 
 enum RequestMethod {
-    INVALID,
 	GET,
 	POST,
-	DELETE
+	DELETE,
+    OTHER
 };
 
 enum Return {

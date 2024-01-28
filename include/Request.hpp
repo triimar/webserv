@@ -7,6 +7,7 @@
 #include <deque>
 #include <cctype>
 #include <cstdlib>
+#include "utils.hpp"
 
 #define CRLF "\r\n"
 #define CRLFCRLF "\r\n\r\n"
@@ -29,7 +30,7 @@ enum RequestLineState {
 	requestLineOK,
 };
 
-enum RequestMethod {GET, POST, DELETE, OTHER};
+//enum RequestMethod {GET, POST, DELETE, OTHER};
 
 // REQUEST CLASS provides functions to parse the request and save the Request data.
 class Request

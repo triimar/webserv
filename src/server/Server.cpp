@@ -8,6 +8,7 @@ Server::Server() {
 	ipAddress = "";
 	clientSize = 0;
     // translates SUPPORTED_CGI macro to usable map
+	//TODO move to more global so not to have it every server
     std::vector<std::string> cgiPairs = splitString(SUPPORTED_CGI, '&');
     for (size_t i = 0; i < cgiPairs.size(); ++i) {
         std::vector<std::string> pair = splitString(cgiPairs[i], '=');
@@ -123,12 +124,15 @@ void Server::setPort(unsigned short port) {
 	this->port = port;
 }
 
-void Server::setHost(in_addr_t host) {
-	this->host.s_addr = host;
+void Server::setHost(std::string host) {
+	if (this->host.s_addr != 0)
+		throw std::runtime_error("Config file error: server's host was initialized twice.\n");
+	if (!inet_aton(host.c_str(), &this->host))
+		throw std::runtime_error("Config file error: invalid host name.\n");
 }
 
 void Server::setName(std::string name) {
-	this->serverName = name;
+	serverName.push_back(name);
 }
 
 void Server::setRoot(std::string root) {
@@ -144,7 +148,9 @@ void Server::setIP() {
 		return;//Throw exception?
 	this->ipAddress = inet_ntoa(this->host);
 	this->ipAddress += ":";
-	this->ipAddress += this->port;
+	std::stringstream ss;
+	ss << this->port;
+	this->ipAddress += ss.str();
 }
 
 void Server::setClientSize(unsigned long clientSize) {
@@ -262,23 +268,23 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 /*                                  GETTERS                                   */
 /* ************************************************************************** */
 
-std::string getRoot() const {
+std::string Server::getRoot() const {
     return (this->root);
 }
 
-std::vector<std::string> getIndex(std::string location) {
-    return (this->index);
+//std::vector<std::string> Server::getIndex(std::string location) const{
+//    return (this->index);
+//}
+
+std::string Server::getServerName() const {
+    return (this->serverName.back());
 }
 
-std::string getServerName() const {
-    return (this->serverName);
-}
-
-static std::string Server::getCGIInterpreter(std::string &extension) const {
+std::string Server::getCGIInterpreter(std::string &extension) {
     CGIList::iterator it = supportedCGI.find(extension);
     if (it != supportedCGI.end()) {
         return (it->second);
     } else {
-        return ("")
+        return ("");
     }
 }

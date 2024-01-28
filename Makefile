@@ -28,7 +28,7 @@ $(NAME): $(OBJS)
 
 $(BUILDDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CP) $(CPPFLAGS) $(INCFLAGS) -c $< -o $@
+	@$(CP) $(CPPFLAGS) $(INCFLAGS) -c $< -o $@
 
 all: $(NAME)
 

@@ -71,8 +71,8 @@ public:
 
 	static void printServer(Server &server);
     static std::string getCGIInterpreter(std::string &extension);
-    static const char *getStatusMessage(uint16_t status) const;
+    static const char *getStatusMessage(uint16_t status);
     std::string getRoot() const;
-    std::vector<std::string> getIndex() const;
+//    std::vector<std::string> getIndex(std::string &location) const;
     std::string getServerName() const;
 };

@@ -47,7 +47,7 @@ void Location::setMethod(std::string method) {
 			break;
 	if (i == methodNr)
 		throw std::runtime_error("Configuration file error: method does not exist.\n");
-	this->allowedMethods.push_back(static_cast<Methods>(i));
+	this->allowedMethods.push_back(static_cast<RequestMethod>(i));
 }
 
 
@@ -55,7 +55,7 @@ void printListTab(std::string index)
 {
 	std::cout << "\t\t" << index << std::endl;
 }
-void printListMethods(Methods meth)
+void printListMethods(RequestMethod meth)
 {
 	std::string method;
 	if (meth == GET)

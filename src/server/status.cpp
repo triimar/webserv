@@ -1,6 +1,6 @@
 #include "../../include/Server.hpp"
 
-static const char *Server::getStatusMessage(uint16_t status) const {
+const char *Server::getStatusMessage(uint16_t status) {
     switch (status) {
     // info
     case 100: return (STATUS_100);

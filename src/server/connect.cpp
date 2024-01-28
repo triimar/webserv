@@ -109,50 +109,6 @@ void Server::closeServer() {
 	close(socketFd);
 }
 
-void Server::setPort(unsigned short port) {
-	if (!port)
-		throw std::runtime_error("Config file error: port cannot be initialized to 0.\n");
-	if (this->port)
-		throw std::runtime_error("Config file error: server's port was initialized twice.\n");
-	this->port = port;
-}
-
-void Server::setHost(in_addr_t host) {
-	this->host.s_addr = host;
-}
-
-void Server::setName(std::string name) {
-	this->serverName = name;
-}
-
-void Server::setRoot(std::string root) {
-	this->root = root;
-}
-
-void Server::setIndex(std::string index) {
-	this->index.push_back(index);
-}
-
-void Server::setIP() {
-	if (!host.s_addr || !port)
-		return;//Throw exception?
-	this->ipAddress = inet_ntoa(this->host);
-	this->ipAddress += ":";
-	this->ipAddress += this->port;
-}
-
-void Server::setClientSize(unsigned long clientSize) {
-	if (!clientSize)
-		throw std::runtime_error("Config file error: client size can't be 0.\n");
-	if (this->clientSize)
-		throw std::runtime_error("Config file error: client size was initialized twice.\n");
-	this->clientSize = clientSize;
-}
-
-void Server::setErrorPage(std::string errorPage) {
-	this->errorPages.push_back(errorPage);
-}
-
 void printList(std::string index)
 {
 	std::cout << "\t" << index << std::endl;
