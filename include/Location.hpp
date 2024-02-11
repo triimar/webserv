@@ -32,5 +32,7 @@ public:
 	void setMethod(std::string method);
 	void setIndex(std::string index);
 
+	std::string getName();
+
 	static void printLocation(Location &location);
 };

@@ -20,7 +20,7 @@ Server::Server() {
 Server::Server(const Server &server) : port(server.port), host(server.host),
 serverName(server.serverName), root(server.root), index(server.index),
 ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-socketFd(server.socketFd){
+locations(server.locations), socketFd(server.socketFd){
 	return;
 }
 
@@ -64,11 +64,21 @@ void Server::setName(std::string name) {
 }
 
 void Server::setRoot(std::string root) {
-	this->root = root;
+	struct stat sb;
+
+	if (stat(root.c_str(), &sb) == 0)
+		this->root = root;
+	else
+		throw std::runtime_error("Config file error: root directory does not exist.\n");
 }
 
 void Server::setIndex(std::string index) {
-	this->index.push_back(index);
+	struct stat sb;
+
+	if (stat(index.c_str(), &sb) == 0)
+		this->index.push_back(index);
+	else
+		throw std::runtime_error("Config file error: index directory does not exist.\n");
 }
 
 void Server::setIP() {
@@ -89,8 +99,10 @@ void Server::setClientSize(unsigned long clientSize) {
 	this->clientSize = clientSize;
 }
 
-void Server::setErrorPage(std::string errorPage) {
-	this->errorPages.push_back(errorPage);
+void Server::setErrorPage(unsigned int key, std::string errorPage) {
+	if (key > 511 || key < 400)
+		throw std::runtime_error("Config file error: error codes from 400 to 511.\n");
+	this->errorPages.insert(std::make_pair(key, errorPage));
 }
 
 //void Server::pushLocation() {

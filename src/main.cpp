@@ -10,13 +10,13 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	(void) argv;
-//	Server server;
-//	std::string parameter = "0.0.0.0";
-//	server.setPort(4242);
-//	server.setHost(parameter.data());
-//	server.setIP();
-//	server.startServer();
-//	server.startListen();
+	// Server server;
+	// std::string parameter = "0.0.0.0";
+	// server.setPort(4242);
+	// server.setHost(parameter.data());
+	// server.setIP();
+	// server.startServer();
+	// server.startListen();
 
 	try{
 		std::vector<Server> list;

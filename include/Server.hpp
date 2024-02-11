@@ -23,18 +23,23 @@ private:
 	unsigned long				clientSize;
 
 	//Change to map for error code as key
-	std::vector<std::string>	errorPages;
+	std::map<unsigned int, std::string>	errorPages;
 	//Map with name
-	std::vector<Location>		locations;
+//	std::vector<Location>		locations;
+	std::map<std::string, Location> locations;
 	bool						autoindex;
 	std::vector<std::string>	cgi_info;
+
+	/* ************************************************************************** */
+	/*                                  SOCKET ATTRIBUTES                         */
+	/* ************************************************************************** */
 
 	int							socketFd;
 	sockaddr_in					socketAddress;
 	int 						newSocket;
 //	long 						incomingMsg;
 	unsigned int				socketLen;
-//	uint32_t ipAddress;
+//	uint32_t					ipAddress;
 
 public:
 	Server();
@@ -54,7 +59,7 @@ public:
 	void setIndex(std::string index);
 	void setIP();
 	void setClientSize(unsigned long clientSize);
-	void setErrorPage(std::string errorPage);
+	void setErrorPage(unsigned int key, std::string errorPage);
 	void setLocation(std::string line, std::ifstream &stream);
 //	void pushLocation();
 

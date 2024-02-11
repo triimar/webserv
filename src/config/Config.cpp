@@ -29,6 +29,7 @@ Config::Config(const Config &file) {
 Config::~Config() {
 	if (str.is_open())
 		str.close();
+	// std::cout << "Deconstructor called!\n";
 }
 
 /**
@@ -131,13 +132,18 @@ void Config::parseServerLine(Server &server, std::string line) {
 		}
 		//ERROR_PAGE
 		case 4: {
+			std::vector<unsigned int> errorCodes;
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
-			ss >> word;
+			while (ss >> word && word[word.length() - 1] != ';')
+				errorCodes.push_back(atoi(word.c_str()));
 			if (word.empty() || word[word.length() - 1] != ';')
 				throw std::runtime_error("Config file error: invalid keyword format.\n");
 			word.erase(word.length() - 1);
-			server.setErrorPage(word);
+			for(std::vector<unsigned int>::iterator it = errorCodes.begin();
+			it != errorCodes.end(); it++)
+				server.setErrorPage(*it, word);
+//			server.setErrorPage(word);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\" .\n");
 			break;
