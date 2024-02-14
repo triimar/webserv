@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cctype>
 #include "utils.hpp"
 
 #define CRLF "\r\n"
@@ -41,10 +40,10 @@ private:
 	std::string			httpVer_;
 
 	std::map<std::string, std::string> headers_;
-
-	int					errorCode_; //is 0 if no error is found
-	std::string			errorMsg_;
 	std::vector<char> 	body_;
+
+	int					statusCode_; //is 0 if no problem is found
+	std::string			errorMsg_;
 
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
@@ -66,8 +65,6 @@ private:
 	
 	std::string& trimString(std::string& str);
 	bool 		containsControlChar(std::string& str) const;
-
-
 
 public:
 	Request();
@@ -94,3 +91,5 @@ public:
 	std::vector<char>::const_iterator					getBodyBegin() const;
 	std::vector<char>::const_iterator					getBodyEnd() const;
 };
+
+std::ostream& operator<<(std::ostream& out, const Request& rhs);
