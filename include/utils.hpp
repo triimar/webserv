@@ -73,6 +73,9 @@ typedef std::map<std::string, std::string> CGIList;
 #define SSTR(x) static_cast<std::ostringstream &>(\
         (std::ostringstream() << std::dec << x)).str()
 
+#define CRLF "\r\n"
+#define CRLFCRLF "\r\n\r\n"
+
 /* ************************************************************************** */
 /*                                 FUNCTIONS                                  */
 /* ************************************************************************** */

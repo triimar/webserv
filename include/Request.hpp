@@ -2,9 +2,6 @@
 
 #include "utils.hpp"
 
-#define CRLF "\r\n"
-#define CRLFCRLF "\r\n\r\n"
-
 enum ParseState {
 	stateParseRequestLine,
 	stateParseHeaders,
@@ -32,9 +29,8 @@ private:
 
 	std::string			methodStr_;
 	RequestMethod		method_;
-	std::string			uri_; //can be either abs URI or abs path. I dont handle '*' or authority
-	std::string         path_; //is absolute path in relation to the root of the server, extracted from URI
-	std::string			params_;
+	std::string			uri_; //can be either abs URI or abs path. We don't handle '*' or authority
+	std::string         path_; //is absolute path in relation to the root or location of the server, extracted from URI
 	std::string     	query_;
 	std::string         fragment_;
 	std::string			httpVer_;
@@ -43,7 +39,7 @@ private:
 	std::vector<char> 	body_;
 
 	int					statusCode_; //is 0 if no problem is found
-	std::string			errorMsg_;
+	std::string			errorMsg_; //mostly for debugging to get the precise source of error
 
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
@@ -80,16 +76,16 @@ public:
 	const std::string&  getFragment() const;
 	const int&			getErrorCode() const;
 	const std::string&	getErrorMsg() const;
-    const std::vector<char>& getBody() const;
-	
-	bool				isTransferEncodingChunked() const;
-	bool 				isConnectionClose() const;
 	std::string			getHeaderValueForKey(const std::string& key) const;
+    const std::vector<char>& getBody() const;
 
 	std::map<std::string, std::string>::const_iterator	getHeadersBegin() const;
 	std::map<std::string, std::string>::const_iterator	getHeadersEnd() const;
 	std::vector<char>::const_iterator					getBodyBegin() const;
 	std::vector<char>::const_iterator					getBodyEnd() const;
+
+	bool				isTransferEncodingChunked() const;
+	bool 				isConnectionClose() const;
 };
 
 std::ostream& operator<<(std::ostream& out, const Request& rhs);
