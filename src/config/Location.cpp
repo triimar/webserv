@@ -8,7 +8,7 @@ Location::Location(){
 
 Location::Location(const Location &location) : name(location.name),
 											   root(location.root), allowedMethods(location.allowedMethods),
-											   index(location.index){}
+											   index(location.index), autoindex(location.autoindex){}
 
 Location &Location::operator=(const Location &location) {
 	if (&location != this)
@@ -17,6 +17,7 @@ Location &Location::operator=(const Location &location) {
 		root = location.root;
 		allowedMethods = location.allowedMethods;
 		index = location.index;
+		autoindex = location.autoindex;
 	}
 	return *this;
 }
@@ -26,12 +27,12 @@ Location::~Location() {}
 void Location::setName(std::string name) {
 	if (!this->name.empty())
 		throw std::runtime_error("Configuration file error: declared name twice.\n");
-	struct stat sb;
+//	struct stat sb;
 
-	if (stat(root.c_str(), &sb) == 0)
+//	if (stat(root.c_str(), &sb) == 0)
 		this->name = name;
-	else
-		throw std::runtime_error("Config file location error: location directory does not exist.\n");
+//	else
+//		throw std::runtime_error("Config file location error: location directory does not exist.\n");
 }
 
 void Location::setRoot(std::string root) {
@@ -47,12 +48,12 @@ void Location::setRoot(std::string root) {
 }
 
 void Location::setIndex(std::string index) {
-	struct stat sb;
-
-	if (stat(index.c_str(), &sb) == 0)
+//	struct stat sb;
+//
+//	if (stat(index.c_str(), &sb) == 0)
 		this->index.push_back(index);
-	else
-		throw std::runtime_error("Config file error: index directory does not exist.\n");
+//	else
+//		throw std::runtime_error("Config file error: index directory does not exist.\n");
 }
 
 void Location::setMethod(std::string method) {
@@ -67,6 +68,16 @@ void Location::setMethod(std::string method) {
 	this->allowedMethods.push_back(static_cast<RequestMethod>(i));
 }
 
+void Location::setAutoIndex(std::string autoindex) {
+	if (autoindex == "true"){
+		this->autoindex = true;
+	}
+	else if (autoindex == "false"){
+		this->autoindex = false;
+	}
+	else
+		throw std::runtime_error("Config file error: autoindex can only be set to true or false.\n");
+}
 
 void printListTab(std::string index)
 {
@@ -90,6 +101,7 @@ void Location::printLocation(Location &location) {
 	std::for_each(location.index.begin(), location.index.end(), printListTab);
 	std::cout << "\tAllowed:\n";
 	std::for_each(location.allowedMethods.begin(), location.allowedMethods.end(), printListMethods);
+	std::cout << "\tAutoindex: " << location.autoindex << std::endl;
 }
 
 std::string Location::getName() {

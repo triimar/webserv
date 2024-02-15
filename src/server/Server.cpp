@@ -20,7 +20,7 @@ Server::Server() {
 Server::Server(const Server &server) : port(server.port), host(server.host),
 serverName(server.serverName), root(server.root), index(server.index),
 ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-locations(server.locations), socketFd(server.socketFd){
+locations(server.locations), autoindex(server.autoindex), socketFd(server.socketFd){
 	return;
 }
 
@@ -35,6 +35,7 @@ Server &Server::operator=(const Server &server) {
 		this->ipAddress = server.ipAddress;
 		this->clientSize = server.clientSize;
 		this->errorPages = server.errorPages;
+		this->autoindex = server.autoindex;
 		this->socketFd = server.socketFd;
 	}
 	return *this;
@@ -73,12 +74,12 @@ void Server::setRoot(std::string root) {
 }
 
 void Server::setIndex(std::string index) {
-	struct stat sb;
-
-	if (stat(index.c_str(), &sb) == 0)
-		this->index.push_back(index);
-	else
-		throw std::runtime_error("Config file error: index directory does not exist.\n");
+//	struct stat sb;
+//
+//	if (stat(index.c_str(), &sb) == 0)
+	this->index.push_back(index);
+//	else
+//		throw std::runtime_error("Config file error: index directory does not exist.\n");
 }
 
 void Server::setIP() {
@@ -103,6 +104,17 @@ void Server::setErrorPage(unsigned int key, std::string errorPage) {
 	if (key > 511 || key < 400)
 		throw std::runtime_error("Config file error: error codes from 400 to 511.\n");
 	this->errorPages.insert(std::make_pair(key, errorPage));
+}
+
+void Server::setAutoIndex(std::string autoindex) {
+	if (autoindex == "true"){
+		this->autoindex = true;
+	}
+	else if (autoindex == "false"){
+		this->autoindex = false;
+	}
+	else
+		throw std::runtime_error("Config file error: autoindex can only be set to true or false.\n");
 }
 
 //void Server::pushLocation() {

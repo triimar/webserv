@@ -83,7 +83,12 @@ void Server::printServer(Server &server) {
 	std::for_each(server.serverName.begin(), server.serverName.end(), printList);
 	std::cout << "IP: " << server.ipAddress <<
 	"\nRoot: " << server.root <<
-	"\nIndex: ";
+	"\nAutindex: ";
+	if (server.autoindex)
+		std::cout << "true";
+	else
+		std::cout << "false";
+	std::cout << "\nIndex: ";
 	std::for_each(server.index.begin(), server.index.end(), printList);
 	std::cout << "Client Size: " << server.clientSize <<
 	"\nError Pages:";
@@ -104,7 +109,7 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 
 	std::stringstream ss(line);
 	std::string word;
-	std::string keywords[] = {"allow", "root", "index"};
+	std::string keywords[] = {"allow", "root", "index", "autoindex"};
 	while (ss >> word && word != "location")
 		throw std::runtime_error("Config file error location a: invalid keyword format.\n");
 	ss >> word;
@@ -137,6 +142,8 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 					throw std::runtime_error("Config file error location: invalid keyword format.\n");
 				word.erase(word.length() - 1);
 				location.setMethod(word);
+				if (lss >> word)
+					throw std::runtime_error("Config file error location: command should end after ;.\n");
 				break;
 			}
 			//ROOT
@@ -145,6 +152,8 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 					throw std::runtime_error("Config file error location: invalid keyword format.\n");
 				word.erase(word.length() - 1);
 				location.setRoot(word);
+				if (lss >> word)
+					throw std::runtime_error("Config file error location: command should end after ;.\n");
 				break;
 			}
 			//INDEX
@@ -155,10 +164,20 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 					throw std::runtime_error("Config file error location: invalid keyword format.\n");
 				word.erase(word.length() - 1);
 				location.setIndex(word);
+				if (lss >> word)
+					throw std::runtime_error("Config file error location: command should end after ;.\n");
 				break;
 			}
-			default:
-			{
+			case 3: {
+				if (!(lss >> word) || word[word.length() - 1] != ';')
+					throw std::runtime_error("Config file error location: invalid keyword format.\n");
+				word.erase(word.length() - 1);
+				location.setAutoIndex(word);
+				if (lss >> word)
+					throw std::runtime_error("Config file error location: command should end after ;.\n");
+				break;
+			}
+			default: {
 				// std::cout << word << "\n";
 				throw std::runtime_error("Config file error location: invalid keyword.\n");
 			}

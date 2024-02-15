@@ -16,7 +16,7 @@ class Location
 private:
 	std::string					name;
 	std::string					root;
-	std::vector<RequestMethod>		allowedMethods;
+	std::vector<RequestMethod>	allowedMethods;
 	std::vector<std::string>	index;
 	bool						autoindex;
 	std::vector<std::string>	cgi_info;
@@ -31,6 +31,7 @@ public:
 	void setRoot(std::string root);
 	void setMethod(std::string method);
 	void setIndex(std::string index);
+	void setAutoIndex(std::string autoindex);
 
 	std::string getName();
 
