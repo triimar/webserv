@@ -20,7 +20,10 @@ int main(int argc, char **argv)
 
 	try{
 		std::vector<Server> list;
-		Config config(argv[1]);
+		std::string file = DEFAULT_CONFIG;
+		if (argc > 1)
+			file = argv[1];
+		Config config(file.c_str());
 		list = config.createServers();
 		std::for_each(list.begin(), list.end(), Server::printServer);
 	}

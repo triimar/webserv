@@ -61,7 +61,7 @@ enum Pipe {
 /* ************************************************************************** */
 
 #define BUFFER_SIZE 30720
-#define DEFAULT_CONFIG "webserv.conf"
+#define DEFAULT_CONFIG "conf_files/default.conf"
 
 // Define macro for CGI extensions and interpreters
 // define a pair separated by a '='

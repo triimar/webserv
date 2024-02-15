@@ -8,8 +8,8 @@
  * ifstream doesn't open, or the name of the file is wrong, it will throw
  * an error.
  * @param file address of the file that will be parsed*/
-Config::Config(char *file) {
-	char *conf = strstr(file, ".conf");
+Config::Config(const char *file) {
+	const char *conf = strstr(file, ".conf");
 	if (!conf || strlen(file) == 5 || strcmp(conf, &file[strlen(file) - 5]))
 		throw std::runtime_error("Error: wrong file format.\n");
 	str.open(file);

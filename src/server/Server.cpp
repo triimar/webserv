@@ -159,14 +159,16 @@ std::string Server::getCGIInterpreter(const std::string &extension) {
  * @return the location, provided it exists. Otherwise, it will throw an error.
  */
 Location &Server::getLocation(std::string &path) {
-	std::vector<std::string> paths = splitString(path, '/');
+//	std::vector<std::string> paths = splitString(path, '/');
 	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++)
 	{
-		for (std::vector<std::string>::iterator pit = paths.begin(); pit != paths.end(); pit++)
-		{
-			if (*pit == it->first)
-				return it->second;
-		}
+//		for (std::vector<std::string>::iterator pit = paths.begin(); pit != paths.end(); pit++)
+//		{
+//			if (*pit == it->first)
+//				return it->second;
+//		}
+		if (path.compare(0, it->first.size(), it->first) == 0)
+			return it->second;
 	}
 	throw std::runtime_error("Could not find location\n");
 }
