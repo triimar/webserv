@@ -62,9 +62,11 @@ public:
 //	void pushLocation();
 
 	static void printServer(Server &server);
+
     static std::string getCGIInterpreter(const std::string &extension);
     static const char *getStatusMessage(uint16_t status);
     std::string getRoot() const;
+	Location &getLocation(std::string &path);
 //    std::vector<std::string> getIndex(std::string &location) const;
     std::string getServerName() const;
 
