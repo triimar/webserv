@@ -32,5 +32,7 @@ public:
 	void setMethod(std::string method);
 	void setIndex(std::string index);
 
+    const std::vector<RequestMethod> &getAllowedMethods() const;
+
 	static void printLocation(Location &location);
 };

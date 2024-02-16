@@ -8,7 +8,10 @@ bool Response::isValidCGI(std::string &path) {
     std::string extension = path.substr(ext + 1);
     _cgiInterpreter = _server.getCGIInterpreter(extension);
     if (_cgiInterpreter.empty()) {
-        return (false); // file extension isn't supported
+        throw 501; // file extension not supported
+    }
+    if (std::find(_location.getCgiInfo().begin(), _location.getCgiInfo().end(), extension) == _location.getCgiInfo().end()) {
+        throw 403; // file extension not allowed
     }
     return (access(path.c_str(), R_OK) == 0);
 }
@@ -23,20 +26,30 @@ bool Response::isCGI() {
 }
 
 void Response::executeCGI() {
-    _status = 500; // default fail, gets set back to 0 on success
+    _isCGI = true;
+    if (_request.getMethod() == DELETE) {
+        throw 501;
+    }
     int cgiOutput[2];
     if (pipe(cgiOutput) == -1) {
-        return ;
+        throw 500;
     }
     pid_t cgi = fork();
     if (cgi == -1) {
-        return ;
+        throw 500;
     } else if (cgi == 0) {
         cgiProcess(cgiOutput);
     }
     close(cgiOutput[PIPEIN]);
-    _status = waitForCGI(cgi);
-    readToVector(cgiOutput[PIPEOUT], _response);
+    if ((_status = waitForCGI(cgi)) == 0) {
+        if (readToVector(cgiOutput[PIPEOUT], _response) == RETURN_FAILURE) {
+            _status = 500;
+        } else if (request.getMethod() == POST) {
+            _status = 201;
+        } else {
+            _status = 200;
+        }
+    }
     close(cgiOutput[PIPEOUT]);
 }
 
@@ -65,7 +78,7 @@ void Response::cgiProcess(int cgiOutput[2]) {
     exit(EXIT_FAILURE);
 }
 
-uint16_t Response::waitForCGI(pid_t cgi) {
+int Response::waitForCGI(pid_t cgi) {
     size_t time = CGI_TIMEOUT_SEC * 1000;
     int waitStatus;
 
@@ -81,13 +94,13 @@ uint16_t Response::waitForCGI(pid_t cgi) {
         return (503); // timeout and no fail on the waits
     } else if (WIFEXITED(waitStatus)) {
         switch (WEXITSTATUS(waitStatus)) {
-        case 0: return (200);
+        case 0: return (0);
         case 2: return (400);
         case 127: return (404);
         case 128: return (400);
+        default: return (500);
         }
     }
-    return (500);
 }
 
 char **Response::getCGIEnvironment() {

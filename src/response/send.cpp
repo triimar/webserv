@@ -28,10 +28,17 @@ void Response::makeErrorPage() {
 
 void Response::setHeaders() {
     _headers["Server"] = _server.getServerName();
-    _headers["Content-Length"] = SSTR(_body.size());
-    // if (_reqest.getMethod() == GET) {
-    //    _headers["Content-Type"] = getContentType();
-    // }
+    // _headers["Date"]
+    _headers["Content-Length"] = "0";
+    switch (_reqest.getMethod()) {
+    case GET:
+        _headers["Content-Length"] = SSTR(_body.size());
+        // _headers["Content-Type"] = getContentType();
+        break ;
+    case POST:
+        // _headers["Location"] = path;
+        break ;
+    }
     
 }
 

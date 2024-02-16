@@ -1,93 +1,90 @@
 #include "../../include/Response.hpp"
 
-uint16_t Response::processRequest() {
-    if ((_status = checkRequest()) != 0) {
-        return (_status);
-    }
+void Response::processRequest() {
+    checkLocation();
+
     if (isCGI()) {
-        _isCGI = true;
-        if (_request.getMethod() == DELETE) {
-            return (501);
-        }
-        if (_server.isLocationMethodAllowed(_path, _request.getMethod())) {
-            return (405);
-        }
         executeCGI();
-        return (_status);
+        return ;
     }
+   
     switch (_request.getMethod()) {
-    case GET:
-        return (performGET());
-    case POST:
-        return (performPOST());
-    case DELETE:
-        return (performDELETE());
-    default: return (501);
+    case GET: 
+        performGET();
+        return ;
+    case POST: 
+        performPOST();
+        return ;
+    case DELETE: 
+        performDELETE();
+        return ;
+    default:
+        _status = 501;
     }
 }
 
-uint16_t Response::checkRequest() {
-    if (_request.getMethod() == OTHER) {
-        return (501);
-    } else if (_server.checkLocationMethod(_request.getPath(), _request.getMethod()) == false) {
-        return (405);
-    }
-    // ???
-    // if (_server.hasLocationReturn(_request.getPath(), _status, _body) == true) {
-    //     return (_status);
-    // }
+void Response::checkLocation() {
+    _location = getLocation(_request.getPath());
 
-    _path = _server.getLocationPath(_request.getPath());
-    if (access(_path.c_str(), F_OK) == 0) {
-        return (404);
+    std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
+    if (std::find(allowedMethods.begin(), allowedMethods.end(), _request.getMethod()) == allowedMethods.end()) {
+       throw 405; // request method is not allowed
+    }
+
+    _path = _location.getRoot() + _request.getPath();
+    if (access(_path.c_str(), F_OK) != 0) {
+        throw 404;
     }
     if (stat(_path.c_str(), &_pathStat) != 0) {
-        return (500);
+        throw 500;
     }
 
-    return (0);
+    // int returnStatus = _location.getReturn();
+    // if (returnStatus != 0) {
+    //     throw returnStatus;
+    // }
 }
 
-uint16_t Response::fileToBody(std::string &path) {
+void Response::fileToBody(std::string &path) {
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1) {
         if (errno == ENOENT) {
-            return (404);
+            throw 404;
         }
-        return (500);
+        throw 500;
     }
     if (readToVector(fd, _body) == RETURN_FAILURE) {
         close(fd);
-        return (500);
+        throw 500;
     }
     close(fd);
-    return (200);
+    _status = 200;
 }
 
-uint16_t Response::performGET() {
-    if (S_ISDIR(_pathStat.st_mode == false)) {
-        return (fileToBody(_path));
+void Response::performGET() {
+    if (S_ISDIR(_pathStat.st_mode) == false) {
+        fileToBody(_path);
+        return ;
     }
     if (_path.back() != '/') {
-        return (301); // why???
+        throw 301; // why???
     }
     std::string index = getIndex();
     if (index.empty() == false) {
-        return (fileToBody(index));
+        fileToBody(index);
+        return ;
     }
-    // ???
-    // if (_server.getAutoIndexing() == true) {
-    //     if (makeAutoIndex() == RETURN_SUCCESS) {
-    //         return (200);
-    //     }
-    //     return (500);
-    // }
-    return (403);
+
+    if (_server.getAutoIndexing() == true) {
+        makeDirectoryListing();
+    }
+
+    throw 403;
 }
 
-uint16_t Response::performPOST() {
+void Response::performPOST() {
     if (_request.getHeaderValueForKey("Content-Length").empty()) {
-        return (411);
+        throw 411;
     }
     // if (Response::isSupportedMIMEType(_request.getHeaderValueForKey("Content-Type")) == false) {
     //     return (415);
@@ -101,25 +98,25 @@ uint16_t Response::performPOST() {
     //     return (403);
     // }
 
-    // _headers["Location"] = path;
-    return (201);
+    _status = 201;
 }
 
-uint16_t Response::performDELETE() {
-    if (S_ISDIR(_pathStat.st_mode == false)) {
+void Response::performDELETE() {
+    if (S_ISDIR(_pathStat.st_mode) == false) {
         if (std::remove(_path.c_str()) == -1) {
-            return (500);
+            throw 500;
         }
-        return (204);
+        _status = 204;
+        return ;
     }
     if (_path.back() != '/') {
-        return (409); // why??
+        throw 409; // why??
     }
     if (access(_path.c_str(), W_OK) == -1) {
-        return (403);
+        throw 403;
     }
     if (rmdir(_path.c_str()) == -1) {
-        return (500);
+        throw 500;
     }
-    return (204);
+    _status = 204;
 }

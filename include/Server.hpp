@@ -62,16 +62,6 @@ public:
     static std::string getCGIInterpreter(const std::string &extension);
     static const char *getStatusMessage(uint16_t status);
     std::string getRoot() const;
-//    std::vector<std::string> getIndex(std::string &location) const;
     std::string getServerName() const;
 
-
-
-    // TODO implement location_util.cpp
-    bool checkLocationMethod(const std::string &path, RequestMethod method) const;
-    std::string getLocationPath(const std::string &path) const;
-    bool isLocationMethodAllowed(const std::string &path, RequestMethod method) const;
-    std::string getLocationErrorPage(const std::string &path, uint16_t status) const;
-    std::vector<std::string> getLocationIndexes(const std::string &path) const;
-    std::string getErrorPage(const std::string &path, uint16_t status) const;
 };

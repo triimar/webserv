@@ -56,13 +56,14 @@ private:
 
     const Server &_server;
     const Request &_request;
+    const Location _location;
     std::string _cgiPath;
     std::string _cgiInterpreter;
     bool _isCGI;
     char **_cgiEnv;
     std::string _path;
     struct stat _pathStat;
-    uint16_t _status;
+    int _status;
     std::map<std::string, std::string> _headers;
     std::vector<char> _body;
     std::vector<char> _response;
