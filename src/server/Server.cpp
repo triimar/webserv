@@ -162,10 +162,10 @@ std::string Server::getCGIInterpreter(const std::string &extension) {
 
 /**
  * This function returns the location that holds the directory given in the path.
- * For the moment, this function checks every directory inside the path. Could be changed to
- * only comparing to the last directory. TBD
- * @param path the path containing the directory of the location
- * @return the location, provided it exists. Otherwise, it will throw an error.
+ * It checks the location directory with the path up until the location name ends.
+ * @param path the path from which to extract a location
+ * @return the location, provided it exists. Otherwise, it will return a Location with
+ * the same values as the server.
  */
 Location Server::getLocation(std::string &path) {
 //	std::vector<std::string> paths = splitString(path, '/');
