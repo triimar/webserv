@@ -20,7 +20,7 @@ Server::Server() {
 Server::Server(const Server &server) : port(server.port), host(server.host),
 serverName(server.serverName), root(server.root), index(server.index),
 ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-locations(server.locations), socketFd(server.socketFd){
+locations(server.locations), autoindex(server.autoindex), cgi_info(server.cgi_info), socketFd(server.socketFd){
 	return;
 }
 
@@ -35,6 +35,8 @@ Server &Server::operator=(const Server &server) {
 		this->ipAddress = server.ipAddress;
 		this->clientSize = server.clientSize;
 		this->errorPages = server.errorPages;
+		this->autoindex = server.autoindex;
+		this->cgi_info = server.cgi_info;
 		this->socketFd = server.socketFd;
 	}
 	return *this;
@@ -73,12 +75,12 @@ void Server::setRoot(std::string root) {
 }
 
 void Server::setIndex(std::string index) {
-	struct stat sb;
-
-	if (stat(index.c_str(), &sb) == 0)
-		this->index.push_back(index);
-	else
-		throw std::runtime_error("Config file error: index directory does not exist.\n");
+//	struct stat sb;
+//
+//	if (stat(index.c_str(), &sb) == 0)
+	this->index.push_back(index);
+//	else
+//		throw std::runtime_error("Config file error: index directory does not exist.\n");
 }
 
 void Server::setIP() {
@@ -105,6 +107,17 @@ void Server::setErrorPage(unsigned int key, std::string errorPage) {
 	this->errorPages.insert(std::make_pair(key, errorPage));
 }
 
+void Server::setAutoIndex(std::string autoindex) {
+	if (autoindex == "true"){
+		this->autoindex = true;
+	}
+	else if (autoindex == "false"){
+		this->autoindex = false;
+	}
+	else
+		throw std::runtime_error("Config file error: autoindex can only be set to true or false.\n");
+}
+
 //void Server::pushLocation() {
 //	Location location;
 //	this->locations.push_back(location);
@@ -122,9 +135,17 @@ std::string Server::getRoot() const {
     return (this->root);
 }
 
-//std::vector<std::string> Server::getIndex(std::string location) const{
-//    return (this->index);
-//}
+std::vector<std::string> Server::getIndex() const{
+    return (this->index);
+}
+
+bool Server::getAutoIndex() const {
+	return this->autoindex;
+}
+
+std::vector <std::string> Server::getCgiInfo() const {
+	return this->cgi_info;
+}
 
 std::string Server::getServerName() const {
     return (this->serverName.back());
@@ -137,4 +158,29 @@ std::string Server::getCGIInterpreter(const std::string &extension) {
     } else {
         return ("");
     }
+}
+
+/**
+ * This function returns the location that holds the directory given in the path.
+ * For the moment, this function checks every directory inside the path. Could be changed to
+ * only comparing to the last directory. TBD
+ * @param path the path containing the directory of the location
+ * @return the location, provided it exists. Otherwise, it will throw an error.
+ */
+Location Server::getLocation(std::string &path) {
+//	std::vector<std::string> paths = splitString(path, '/');
+	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++)
+	{
+		if (path.compare(0, it->first.size(), it->first) == 0)
+			return it->second;
+	}
+	Location location;
+	location.autoCompleteFromServer(*this);
+	return location;
+}
+
+void Server::autoCompleteLocations() {
+	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++) {
+		it->second.autoCompleteFromServer(*this);
+	}
 }

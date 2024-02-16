@@ -1,45 +1,43 @@
 #pragma once
 
 
-#include "Location.hpp"
 
 #define BUFFER_SIZE 30720
+#include "Location.hpp"
 #include "Request.hpp"
 #include "Status.hpp"
 #include "utils.hpp"
 
 static CGIList              supportedCGI;
+class Location;
 class Server
 {
 private:
 
-    std::string                 configPath;
-	unsigned short				port;
-	in_addr						host;
-	std::vector<std::string>	serverName;
-	std::string					root;
-	std::vector<std::string>	index;
-	std::string					ipAddress;
-	unsigned long				clientSize;
+    std::string                 		configPath;
+	unsigned short						port;
+	in_addr								host;
+	std::vector<std::string>			serverName;
+	std::string							root;
+	std::vector<std::string>			index;
+	std::string							ipAddress;
+	unsigned long						clientSize;
 
-	//Change to map for error code as key
 	std::map<unsigned int, std::string>	errorPages;
-	//Map with name
-//	std::vector<Location>		locations;
-	std::map<std::string, Location> locations;
-	bool						autoindex;
-	std::vector<std::string>	cgi_info;
+	std::map<std::string, Location> 	locations;
+	bool								autoindex;
+	std::vector<std::string>			cgi_info;
 
 	/* ************************************************************************** */
 	/*                                  SOCKET ATTRIBUTES                         */
 	/* ************************************************************************** */
 
-	int							socketFd;
-	sockaddr_in					socketAddress;
-	int 						newSocket;
-//	long 						incomingMsg;
-	unsigned int				socketLen;
-//	uint32_t					ipAddress;
+	int									socketFd;
+	sockaddr_in							socketAddress;
+	int 								newSocket;
+	unsigned int						socketLen;
+//	long 								incomingMsg;
+//	uint32_t							ipAddress;
 
 public:
 	Server();
@@ -61,15 +59,23 @@ public:
 	void setClientSize(unsigned long clientSize);
 	void setErrorPage(unsigned int key, std::string errorPage);
 	void setLocation(std::string line, std::ifstream &stream);
+	void setAutoIndex(std::string autoindex);
 //	void pushLocation();
 
 	static void printServer(Server &server);
-    static std::string getCGIInterpreter(const std::string &extension);
-    static const char *getStatusMessage(uint16_t status);
-    std::string getRoot() const;
-//    std::vector<std::string> getIndex(std::string &location) const;
-    std::string getServerName() const;
 
+    static std::string			getCGIInterpreter(const std::string &extension);
+    static const char			*getStatusMessage(uint16_t status);
+    std::string					getRoot() const;
+//    std::vector<std::string> getIndex(std::string &location) const;
+    std::string					getServerName() const;
+	std::vector<std::string>	getIndex() const;
+	bool						getAutoIndex() const;
+	Location					getLocation(std::string &path);
+	std::vector<std::string>	getCgiInfo() const;
+
+
+	void				autoCompleteLocations();
 
 
     // TODO implement location_util.cpp
