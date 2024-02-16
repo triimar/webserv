@@ -20,7 +20,7 @@ Server::Server() {
 Server::Server(const Server &server) : port(server.port), host(server.host),
 serverName(server.serverName), root(server.root), index(server.index),
 ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-locations(server.locations), autoindex(server.autoindex), socketFd(server.socketFd){
+locations(server.locations), autoindex(server.autoindex), cgi_info(server.cgi_info), socketFd(server.socketFd){
 	return;
 }
 
@@ -36,6 +36,7 @@ Server &Server::operator=(const Server &server) {
 		this->clientSize = server.clientSize;
 		this->errorPages = server.errorPages;
 		this->autoindex = server.autoindex;
+		this->cgi_info = server.cgi_info;
 		this->socketFd = server.socketFd;
 	}
 	return *this;
@@ -134,9 +135,17 @@ std::string Server::getRoot() const {
     return (this->root);
 }
 
-//std::vector<std::string> Server::getIndex(std::string location) const{
-//    return (this->index);
-//}
+std::vector<std::string> Server::getIndex() const{
+    return (this->index);
+}
+
+bool Server::getAutoIndex() const {
+	return this->autoindex;
+}
+
+std::vector <std::string> Server::getCgiInfo() const {
+	return this->cgi_info;
+}
 
 std::string Server::getServerName() const {
     return (this->serverName.back());
@@ -158,17 +167,20 @@ std::string Server::getCGIInterpreter(const std::string &extension) {
  * @param path the path containing the directory of the location
  * @return the location, provided it exists. Otherwise, it will throw an error.
  */
-Location &Server::getLocation(std::string &path) {
+Location Server::getLocation(std::string &path) {
 //	std::vector<std::string> paths = splitString(path, '/');
 	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++)
 	{
-//		for (std::vector<std::string>::iterator pit = paths.begin(); pit != paths.end(); pit++)
-//		{
-//			if (*pit == it->first)
-//				return it->second;
-//		}
 		if (path.compare(0, it->first.size(), it->first) == 0)
 			return it->second;
 	}
-	throw std::runtime_error("Could not find location\n");
+	Location location;
+	location.autoCompleteFromServer(*this);
+	return location;
+}
+
+void Server::autoCompleteLocations() {
+	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++) {
+		it->second.autoCompleteFromServer(*this);
+	}
 }

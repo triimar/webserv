@@ -239,6 +239,7 @@ std::vector <Server> Config::createServers() {
 				std::getline(str, line);
 			}
 			server.setIP();
+			server.autoCompleteLocations();
 			list.push_back(server);
 		}
 		else if (!isEmptyLine(line))

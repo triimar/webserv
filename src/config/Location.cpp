@@ -4,11 +4,13 @@ Location::Location(){
 	name = "";
 	root = "";
 	autoindex = true;
+	autoindexSet = false;
 }
 
 Location::Location(const Location &location) : name(location.name),
 											   root(location.root), allowedMethods(location.allowedMethods),
-											   index(location.index), autoindex(location.autoindex){}
+											   index(location.index), autoindex(location.autoindex), cgi_info(location.cgi_info),
+											   autoindexSet(location.autoindexSet){}
 
 Location &Location::operator=(const Location &location) {
 	if (&location != this)
@@ -18,6 +20,8 @@ Location &Location::operator=(const Location &location) {
 		allowedMethods = location.allowedMethods;
 		index = location.index;
 		autoindex = location.autoindex;
+		cgi_info = location.cgi_info;
+		autoindexSet = location.autoindexSet;
 	}
 	return *this;
 }
@@ -77,6 +81,11 @@ void Location::setAutoIndex(std::string autoindex) {
 	}
 	else
 		throw std::runtime_error("Config file error: autoindex can only be set to true or false.\n");
+	this->autoindexSet = true;
+}
+
+void Location::changeAutoIndex(bool ai) {
+	this->autoindex = ai;
 }
 
 void printListTab(std::string index)
@@ -104,6 +113,17 @@ void Location::printLocation(Location &location) {
 	std::cout << "\tAutoindex: " << location.autoindex << std::endl;
 }
 
-std::string Location::getName() {
+const std::string &Location::getName() {
 	return this->name;
+}
+
+void Location::autoCompleteFromServer(const Server &server) {
+	if (root.empty())
+		this->root = server.getRoot();
+	if (index.empty())
+		this->index = server.getIndex();
+	if (!autoindexSet)
+		this->autoindex = server.getAutoIndex();
+	if (this->cgi_info.empty())
+		this->cgi_info = server.getCgiInfo();
 }

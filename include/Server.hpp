@@ -1,14 +1,15 @@
 #pragma once
 
 
-#include "Location.hpp"
 
 #define BUFFER_SIZE 30720
+#include "Location.hpp"
 #include "Request.hpp"
 #include "Status.hpp"
 #include "utils.hpp"
 
 static CGIList              supportedCGI;
+class Location;
 class Server
 {
 private:
@@ -63,13 +64,18 @@ public:
 
 	static void printServer(Server &server);
 
-    static std::string getCGIInterpreter(const std::string &extension);
-    static const char *getStatusMessage(uint16_t status);
-    std::string getRoot() const;
-	Location &getLocation(std::string &path);
+    static std::string			getCGIInterpreter(const std::string &extension);
+    static const char			*getStatusMessage(uint16_t status);
+    std::string					getRoot() const;
 //    std::vector<std::string> getIndex(std::string &location) const;
-    std::string getServerName() const;
+    std::string					getServerName() const;
+	std::vector<std::string>	getIndex() const;
+	bool						getAutoIndex() const;
+	Location					getLocation(std::string &path);
+	std::vector<std::string>	getCgiInfo() const;
 
+
+	void				autoCompleteLocations();
 
 
     // TODO implement location_util.cpp

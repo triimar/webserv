@@ -1,15 +1,9 @@
 #pragma once
 
-//#include <iostream>
-//#include <string>
-//#include <vector>
 #include "utils.hpp"
+#include "Server.hpp"
 
-//enum Methods{
-//	GET,
-//	POST,
-//	DELETE,
-//};
+class Server;
 
 class Location
 {
@@ -20,6 +14,7 @@ private:
 	std::vector<std::string>	index;
 	bool						autoindex;
 	std::vector<std::string>	cgi_info;
+	bool						autoindexSet;
 
 public:
 	Location();
@@ -32,8 +27,13 @@ public:
 	void setMethod(std::string method);
 	void setIndex(std::string index);
 	void setAutoIndex(std::string autoindex);
+	//TODO CGI info
+	void setCgiInfo(std::string cgiInfo);
+	void changeAutoIndex(bool ai);
 
-	std::string getName();
+	void autoCompleteFromServer(const Server &server);
+
+	const std::string 					&getName();
 
 	static void printLocation(Location &location);
 };
