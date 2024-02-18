@@ -84,6 +84,10 @@ void Location::setAutoIndex(std::string autoindex) {
 	this->autoindexSet = true;
 }
 
+void Location::setCgiInfo(std::string cgiInfo) {
+	this->cgi_info.push_back(cgiInfo);
+}
+
 void Location::changeAutoIndex(bool ai) {
 	this->autoindex = ai;
 }

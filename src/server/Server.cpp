@@ -118,6 +118,10 @@ void Server::setAutoIndex(std::string autoindex) {
 		throw std::runtime_error("Config file error: autoindex can only be set to true or false.\n");
 }
 
+void Server::setCgiInfo(std::string info) {
+	this->cgi_info.push_back(info);
+}
+
 //void Server::pushLocation() {
 //	Location location;
 //	this->locations.push_back(location);

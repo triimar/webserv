@@ -27,7 +27,6 @@ public:
 	void setMethod(std::string method);
 	void setIndex(std::string index);
 	void setAutoIndex(std::string autoindex);
-	//TODO CGI info
 	void setCgiInfo(std::string cgiInfo);
 	void changeAutoIndex(bool ai);
 

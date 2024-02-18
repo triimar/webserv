@@ -55,8 +55,8 @@ bool Config::isEmptyLine(std::string line) {
 void Config::parseServerLine(Server &server, std::string line) {
 	if (isEmptyLine(line))
 		return;
-	unsigned long keySize = 9;
-	std::string keywords[] = {"listen", "server_name", "client_size", "autoindex", "error_page", "root", "host", "location", "index"};
+	unsigned long keySize = 10;
+	std::string keywords[] = {"listen", "server_name", "client_size", "autoindex", "error_page", "root", "host", "location", "index", "cgi_info"};
 	unsigned long i;
 	for (i = 0; i < keySize; i++)
 	{
@@ -187,6 +187,19 @@ void Config::parseServerLine(Server &server, std::string line) {
 				throw std::runtime_error("Config file error: invalid keyword format on index command.\n");
 			word.erase(word.length() - 1);
 			server.setIndex(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\"\n");
+			break;
+		}
+		case 9: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.\n");
+			while (ss >> word && word[word.length() - 1] != ';')
+				server.setCgiInfo(word);
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.\n");
+			word.erase(word.length() - 1);
+			server.setCgiInfo(word);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\"\n");
 			break;

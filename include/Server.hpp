@@ -60,6 +60,7 @@ public:
 	void setErrorPage(unsigned int key, std::string errorPage);
 	void setLocation(std::string line, std::ifstream &stream);
 	void setAutoIndex(std::string autoindex);
+	void setCgiInfo(std::string info);
 //	void pushLocation();
 
 	static void printServer(Server &server);
