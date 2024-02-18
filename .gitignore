@@ -11,3 +11,4 @@
 !.gitignore
 !webserv.conf
 .DS_Store
+!request_grammar.bnf
