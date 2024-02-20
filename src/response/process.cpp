@@ -121,6 +121,7 @@ void Response::appendHtmlRow(std::string& subPath, std::string& modTime, std::st
 	appendStringToVector(_body, "</p></div>");
 }
 
+//generates html with the directory listing and appends it to the _body
 void Response::makeDirectoryListing(std::string& path) {
 	appendHtmlHead();
 	appendStringToVector(_body, "<body><main>"
