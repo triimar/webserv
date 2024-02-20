@@ -107,8 +107,17 @@ void Response::appendHtmlHead() {
 					
 }
 
-void Response::appendHtmlRow(std::string& subPath, std::string& modTime, std::string& bytes) {
+void Response::appendHtmlBodyStart()
+{
+	appendStringToVector(_body, "<body><main>"
+								"<h1>Index of ");
+	const std::string requestPath = _request.getPath();
+	_body.insert(_body.end(), requestPath.begin(), requestPath.end());
+	appendStringToVector(_body, "</h1>"
+								"<hr>");
+}
 
+void Response::appendHtmlRow(std::string& subPath, std::string& modTime, std::string& bytes) {
 	appendStringToVector(_body, "<div class=\"rows\">"
 								"<a href=\"/..\">");
 	_body.insert(_body.end(), subPath.begin(), subPath.end());
@@ -121,17 +130,15 @@ void Response::appendHtmlRow(std::string& subPath, std::string& modTime, std::st
 	appendStringToVector(_body, "</p></div>");
 }
 
+void Response::appendHtmlEnd() {
+	appendStringToVector(_body, "</main></body></html>");
+}
 //generates html with the directory listing and appends it to the _body
 void Response::makeDirectoryListing(std::string& path) {
 	appendHtmlHead();
-	appendStringToVector(_body, "<body><main>"
-								"<h1>Index of ");
-	const std::string requestPath = _request.getPath();
-	_body.insert(_body.end(), requestPath.begin(), requestPath.end());
-	appendStringToVector(_body, "</h1>"
-								"<hr>");
+	appendHtmlBodyStart();
 	DIR *dir = opendir(path.c_str());
-    if (dir = NULL)
+    if (dir == NULL)
         throw 500;					//actual error - should be caught
     struct dirent *dp;
     while ((dp = readdir(dir)) != NULL) {
@@ -154,7 +161,7 @@ void Response::makeDirectoryListing(std::string& path) {
 		else 
        		throw 500;			//error - should be caught
 	}
-	appendStringToVector(_body, "</main></body></html>");
+	appendHtmlEnd();
 	closedir(dir);
 }
 // ------------

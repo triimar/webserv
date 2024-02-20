@@ -47,7 +47,9 @@ private:
 	std::string formatModificationTime(time_t modifTime);
 	std::string formatSize(off_t size);
 	void appendHtmlHead();
+	void appendHtmlBodyStart();
 	void appendHtmlRow(std::string& subPath, std::string& modTime, std::string& bytes);
+	void appendHtmlEnd();
 	void makeDirectoryListing(std::string& path);
     
 	uint16_t performGET();
