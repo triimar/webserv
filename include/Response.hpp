@@ -43,7 +43,14 @@ private:
     uint16_t processRequest();
     uint16_t checkRequest();
     uint16_t fileToBody(std::string &path);
-    uint16_t performGET();
+
+	std::string formatModificationTime(time_t modifTime);
+	std::string formatSize(off_t size);
+	void appendHtmlHead();
+	void appendHtmlRow(std::string& subPath, std::string& modTime, std::string& bytes);
+	void makeDirectoryListing(std::string& path);
+    
+	uint16_t performGET();
     uint16_t performPOST();
     uint16_t performDELETE();
     // index

@@ -25,6 +25,8 @@
 #include <sstream>
 #include <unistd.h>
 #include <fstream>
+#include <dirent.h>
+#include <ctime>
 
 /* ************************************************************************** */
 /*                                   ENUMS                                    */
