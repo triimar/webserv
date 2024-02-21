@@ -1,8 +1,12 @@
 #include "../../include/Response.hpp"
 
 void Response::send() {
-    makeErrorPage();
     if (_isCGI == false || _response.empty()) {
+        if (_status >= 300) {
+            _headers.clear();
+            _body.clear();
+            makeErrorPage();
+        }
         setHeaders();
         constructResponse();
     }
@@ -10,13 +14,12 @@ void Response::send() {
 }
 
 void Response::makeErrorPage() {
-    std::string path = _server.getErrorPage(_path, _status);
-    if (path.empty()) {
-        return ;
+    std::string path = _location.getErrorPage(_path, _status);
+    int fd = -1;
+    if (path.empty() == false) {
+        fd = open(path.c_str(), O_RDONLY);
     }
-    int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1 || readToVector(fd, _body) == RETURN_FAILURE) {
-        _body.clear();
         appendStringToVector(_body, Server::getStatusMessage(_status));
     }
     if (fd != -1) {
