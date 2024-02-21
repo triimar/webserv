@@ -36,17 +36,18 @@ private:
     bool isCGI();
     bool isValidCGI(std::string &path);
     void executeCGI();
+    void checkCGI();
     void cgiProcess(int cgiOutput[2]);
-    uint16_t waitForCGI(pid_t cgi);
+    int waitForCGI(pid_t cgi);
     char **getCGIEnvironment();
     // process
-    uint16_t processRequest();
-    uint16_t checkRequest();
-    uint16_t fileToBody(std::string &path);
+    void processRequest();
+    void checkLocation();
+    void fileToBody(std::string &path);
 
-	uint16_t performGET();
-    uint16_t performPOST();
-    uint16_t performDELETE();
+	void performGET();
+    void performPOST();
+    void performDELETE();
 	
 	// autoindex
 	std::string formatModificationTime(time_t modifTime);
@@ -68,9 +69,9 @@ private:
     const Request &_request;
     const Location _location;
     std::string _cgiPath;
-    std::string _cgiInterpreter;
+    std::string _cgiExtension;
+    std::vector<std::string> _cgiArgv;
     bool _isCGI;
-    char **_cgiEnv;
     std::string _path;
     struct stat _pathStat;
     int _status;

@@ -11,8 +11,4 @@ Response::Response(const Server &serv, const Request &req) :
     }
 }
 
-Response::~Response() {
-    if (_cgiEnv != NULL) {
-        delete[] _cgiEnv;
-    }
-}
+Response::~Response() {}

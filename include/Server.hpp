@@ -8,7 +8,7 @@
 #include "Status.hpp"
 #include "utils.hpp"
 
-static CGIList              supportedCGI;
+
 class Server
 {
 private:
@@ -59,9 +59,9 @@ public:
 //	void pushLocation();
 
 	static void printServer(Server &server);
-    static std::string getCGIInterpreter(const std::string &extension);
     static const char *getStatusMessage(uint16_t status);
     std::string getRoot() const;
     std::string getServerName() const;
+    unsigned short getPort() const;
 
 };

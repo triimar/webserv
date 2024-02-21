@@ -313,6 +313,11 @@ void	Request::processRequest(const char* requestBuf, int messageLen) { //what if
 const RequestMethod&	Request::getMethod() const {
 	return method_;
 }
+
+const std::string&  Request::getMethodStr() const {
+    return methodStr_;
+}
+
 const std::string&		Request::getUri() const {
 	return uri_;
 }

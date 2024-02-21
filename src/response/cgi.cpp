@@ -1,17 +1,23 @@
 #include "../../include/Response.hpp"
 
+static bool isSupportedCGI(const std::string &extension) {
+    std::string supported = SUPPORTED_CGI;
+    supported.insert(supported.begin(), ',');
+    supported.insert(supported.end(), ',');
+    return (supported.find("," + extension + ",") != std::string::npos);
+}
+
 bool Response::isValidCGI(std::string &path) {
+    if (_request.getMethod() == DELETE) {
+        return (false); //405
+    }
     size_t ext = path.rfind('.');
     if (ext == std::string::npos) {
         return (false); // file without extension
     }
-    std::string extension = path.substr(ext + 1);
-    _cgiInterpreter = _server.getCGIInterpreter(extension);
-    if (_cgiInterpreter.empty()) {
-        throw 501; // file extension not supported
-    }
-    if (std::find(_location.getCgiInfo().begin(), _location.getCgiInfo().end(), extension) == _location.getCgiInfo().end()) {
-        throw 403; // file extension not allowed
+    _cgiExtension = path.substr(ext + 1);
+    if (isSupportedCGI(_cgiExtension)) {
+        return (false); // file extension not supported
     }
     return (access(path.c_str(), R_OK) == 0);
 }
@@ -25,11 +31,32 @@ bool Response::isCGI() {
     return (_cgiPath.empty() == false);
 }
 
+void Response::checkCGI() {
+    if (std::find(_location.getCgiInfo().begin(), _location.getCgiInfo().end(), _cgiExtension) == _location.getCgiInfo().end()) {
+        throw 403; // file extension not allowed
+    }
+    std::string shebang;
+    std::ifstream file(_cgiPath);
+    if (file.is_open() == false) {
+        throw 500; // failed opening file
+    }
+    std::getline(file, shebang);
+    file.close();
+    if (shebang.compare(0, 2, SHEBANG) == std::string::npos) {
+        throw 500; // no shebang
+    }
+    shebang.erase(0, 2);
+    _cgiArgv = splitString(shebang, " \t");
+    if (_cgiArgv.front().front() != '/' || _cgiArgv.front().size() < 2
+        || access(_cgiArgv.front().c_str(), X_OK) != 0) {
+        throw 500; // invalid interpreter
+    }
+    _cgiArgv.push_back(_cgiPath);
+}
+
 void Response::executeCGI() {
     _isCGI = true;
-    if (_request.getMethod() == DELETE) {
-        throw 501;
-    }
+    checkCGI();
     int cgiOutput[2];
     if (pipe(cgiOutput) == -1) {
         throw 500;
@@ -65,16 +92,18 @@ void Response::cgiProcess(int cgiOutput[2]) {
             exit(EXIT_FAILURE);
         }
     }
-    char **cgiEnv = getCGIEnvironment();
-    if (cgiEnv == NULL) {
+    char **argv = vectorToArray(_cgiArgv);
+    if (argv == NULL) {
         exit(EXIT_FAILURE);
     }
-    char *argv[3] = {
-        const_cast<char *>(_cgiInterpreter.c_str()),
-        const_cast<char *>(_cgiPath.c_str()),
-        NULL
-    };
-    execve(argv[0], argv, cgiEnv);
+    char **env = getCGIEnvironment();
+    if (env == NULL) {
+        free_2d_array(static_cast<void**>(argv));
+        exit(EXIT_FAILURE);
+    }
+    execve(argv[0], argv, env);
+    free_2d_array(static_cast<void**>(argv));
+    free_2d_array(static_cast<void**>(env));
     exit(EXIT_FAILURE);
 }
 
@@ -103,9 +132,45 @@ int Response::waitForCGI(pid_t cgi) {
     }
 }
 
-char **Response::getCGIEnvironment() {
-    // pass header to script via env variables
+char **vectorToArray(const std::vector<std::string> &vec) {
+    if (vec.empty()) {
+        return (NULL);
+    }
+    char **res = new char*[vec.size() + 1];
+    size_t i = 0;
+    for (; i < vec.size(); ++i) {
+        res[i] = new char[vec[i].size() + 1];
+        std::strcpy(res[i], vec[i].c_str());
+    }
+    res[i] = NULL;
+    return (res);
+}
 
-    // Everything after the ? in the URL appears in the QUERY_STRING environment variable
-    return (NULL);
+char **Response::getCGIEnvironment() {
+    std::vector<std::string> temp;
+
+    temp.push_back("GATEWAY_INTERFACE=webserv_cgi");
+    temp.push_back("SERVER_NAME=" + _server.getServerName());
+    temp.push_back("SERVER_SOFTWARE=webserv_1.0");
+    temp.push_back("SERVER_PROTOCOL=" + _request.getHttpVer());
+    temp.push_back("SERVER_PORT=" + SSTR(_server.getPort()));
+    temp.push_back("REQUEST_METHOD=" + getMethodStr());
+    temp.push_back("PATH_INFO");
+    temp.push_back("PATH_TRANSLATED");
+    temp.push_back("SCRIPT_NAME=" + _request.getPath());
+    temp.push_back("DOCUMENT_ROOT=" + _location.getRoot());
+    temp.push_back("QUERY_STRING=" + _request.getQuery());
+    temp.push_back("CONTENT_TYPE=" + _request.getHeaderValueForKey("Content-Type"));
+    temp.push_back("CONTENT_LENGTH=" + SSTR(_request.getBody().size()));
+    temp.push_back("REMOTE_HOST");
+    temp.push_back("REMOTE_ADDR");
+    temp.push_back("AUTH_TYPE");
+    temp.push_back("REMOTE_USER=" + _request.getHeaderValueForKey("Proxy-Authenticate"));
+    temp.push_back("REMOTE_IDENT");
+    temp.push_back("HTTP_FROM=" + _request.getHeaderValueForKey("From"));
+    temp.push_back("HTTP_ACCEPT" + _request.getHeaderValueForKey("Accept"));
+    temp.push_back("HTTP_USER_AGENT" + _request.getHeaderValueForKey("User-Agent"));
+    temp.push_back("HTTP_REFERER" + _request.getHeaderValueForKey("Referer"));
+
+    return (vectorToArray(temp));
 }

@@ -8,13 +8,6 @@ Server::Server() {
 	ipAddress = "";
 	clientSize = 0;
 	autoindex = true;
-    // translates SUPPORTED_CGI macro to usable map
-	//TODO move to more global so not to have it every server
-    std::vector<std::string> cgiPairs = splitString(SUPPORTED_CGI, '&');
-    for (size_t i = 0; i < cgiPairs.size(); ++i) {
-        std::vector<std::string> pair = splitString(cgiPairs[i], '=');
-        supportedCGI[pair[0]] = pair[1];
-    }
 }
 
 Server::Server(const Server &server) : port(server.port), host(server.host),
@@ -110,19 +103,10 @@ std::string Server::getRoot() const {
     return (this->root);
 }
 
-//std::vector<std::string> Server::getIndex(std::string location) const{
-//    return (this->index);
-//}
-
 std::string Server::getServerName() const {
     return (this->serverName.back());
 }
 
-std::string Server::getCGIInterpreter(const std::string &extension) {
-    CGIList::iterator it = supportedCGI.find(extension);
-    if (it != supportedCGI.end()) {
-        return (it->second);
-    } else {
-        return ("");
-    }
+unsigned short Server::getPort() const {
+    return (this->port);
 }

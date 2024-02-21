@@ -62,15 +62,10 @@ enum Pipe {
 
 #define BUFFER_SIZE 30720
 #define DEFAULT_CONFIG "webserv.conf"
-
-// Define macro for CGI extensions and interpreters
-// define a pair separated by a '='
-// define as many pairs as you want separated by '&'
-// make sure the interpreter exists at the given path
-#define SUPPORTED_CGI "sh=/bin/sh&py=/usr/bin/python3&perl=/usr/bin/perl"
-typedef std::map<std::string, std::string> CGIList;
+#define SUPPORTED_CGI "sh,py,perl"
 
 #define CGI_TIMEOUT_SEC 42
+#define SHEBANG "#!"
 
 #define SSTR(x) static_cast<std::ostringstream &>(\
         (std::ostringstream() << std::dec << x)).str()
@@ -83,7 +78,7 @@ typedef std::map<std::string, std::string> CGIList;
 WebservError ft_perror(WebservError err, const char *context);
 
 // split
-std::vector<std::string> splitString(const std::string str, char delim);
+std::vector<std::string> splitString(const std::string& input, const std::string delim);
 
 // paths
 std::string combinePaths(std::string &lhs, std::string &rhs);
@@ -91,3 +86,6 @@ std::string combinePaths(std::string &lhs, std::string &rhs);
 // vector
 void appendStringToVector(std::vector<char> &vector, const char *str);
 Return readToVector(int fd, std::vector<char> &vec);
+
+// free
+void free_2d_array(void **array);
