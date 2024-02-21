@@ -16,6 +16,8 @@
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <exception>
@@ -25,6 +27,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <fstream>
+//#include "Server.hpp"
 
 /* ************************************************************************** */
 /*                                   ENUMS                                    */
@@ -59,7 +62,7 @@ enum Pipe {
 /* ************************************************************************** */
 
 #define BUFFER_SIZE 30720
-#define DEFAULT_CONFIG "webserv.conf"
+#define DEFAULT_CONFIG "conf_files/default.conf"
 
 // Define macro for CGI extensions and interpreters
 // define a pair separated by a '='
@@ -72,6 +75,9 @@ typedef std::map<std::string, std::string> CGIList;
 
 #define SSTR(x) static_cast<std::ostringstream &>(\
         (std::ostringstream() << std::dec << x)).str()
+
+#define CRLF "\r\n"
+#define CRLFCRLF "\r\n\r\n"
 
 /* ************************************************************************** */
 /*                                 FUNCTIONS                                  */
