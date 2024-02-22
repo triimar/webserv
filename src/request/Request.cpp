@@ -53,28 +53,6 @@ void Request::clearRequest() {
 	body_.clear();
 }
 
-std::string& Request::trimString(std::string& str) {
-	size_t start = str.find_first_not_of(" \t\r\n");
-	if (start != std::string::npos)
-		str.erase(0, start);
-	else {
-		str.clear();
-		return str;
-	}
-	size_t end = str.find_last_not_of(" \t\r\n");
-	if (end != std::string::npos)
-		str.erase(end + 1);
-	return str;
-}
-
-bool Request::containsControlChar(std::string& str) const {
-	for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
-		if (std::iscntrl(static_cast<unsigned char>(*it))) {
-			return true;
-		}
-	}
-	return false;
-}
 
 // Extracts from buffer request-line + headers  as a stringstream.
 // Returns a pointer to the start of the body or NULL in case empty line is not found.
@@ -207,6 +185,7 @@ void Request::parseHeader(std::stringstream& headersStream) {
 		if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r'))
 			return setError(requestERROR, 400, "Syntax error in Headers");
 		trimString(key);
+		strToLower(key);
 		trimString(value);
 	}
 	else
@@ -242,7 +221,7 @@ void	Request::checkForBody(const char *bodyStart, const char *msgEnd) {
 
 void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
 
-	std::string bodyLenStr = getHeaderValueForKey("Content-Length");
+	std::string bodyLenStr = getHeaderValueForKey("content-length");
 	if (bodyLenStr.empty())
 		return setError(requestERROR, 411, "Content-length header missing");
 	char *endptr;
@@ -382,7 +361,7 @@ std::vector<char>::const_iterator	Request::getBodyEnd() const {
 /* ************************************************************************** */
 bool	Request::isTransferEncodingChunked() const {
 	std::map<std::string, std::string>::const_iterator it;
-	it = headers_.find("Transfer-Encoding");
+	it = headers_.find("transfer-encoding");
 	if (it != headers_.end() && it->second == "chunked")
 		return true;
 	return false;
@@ -390,7 +369,7 @@ bool	Request::isTransferEncodingChunked() const {
 
 bool	Request::isConnectionClose() const {
 	std::map<std::string, std::string>::const_iterator it;
-	it = headers_.find("Connection");
+	it = headers_.find("connection");
 	if (it != headers_.end() && it->second == "close")
 		return true;
 	return false;
