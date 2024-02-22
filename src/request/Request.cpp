@@ -242,7 +242,7 @@ void	Request::checkForBody(const char *bodyStart, const char *msgEnd) {
 
 void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
 
-	std::string bodyLenStr = getHeaderValueForKey("Content-Length");
+	std::string bodyLenStr = getHeaderValueForKey("Content-Length"); // check case sensitivity
 	if (bodyLenStr.empty())
 		return setError(requestERROR, 411, "Content-length header missing");
 	char *endptr;
@@ -254,7 +254,7 @@ void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
 	while (bodyStart != msgEnd && contentLen > 0) {
 		body_.push_back(*bodyStart);
 		bodyStart++;
-		contentLen--;
+		contentLen--;    //is mismatch a problem??
 	}
 	state_ = requestOK;
 }
