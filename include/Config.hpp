@@ -19,7 +19,7 @@ private:
 	Config();
 
 public:
-	Config(char *file);
+	Config(const char *file);
 	Config(const Config& file);
 	~Config();
 	Config &operator=(const Config& config);
