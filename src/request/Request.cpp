@@ -174,34 +174,59 @@ void	Request::parseHTTPver(std::stringstream& requestLine) {
 	return ;
 }
 
-void Request::parseHeader(std::stringstream& headersStream) {
+// void Request::parseHeader(std::stringstream& headersStream) { //handling obsolete line folding
+// 	std::string line;
+// 	std::string key, value;
+
+// 	if ((!headersStream.eof() && (headersStream.peek() == 32 || headersStream.peek() == 10)))
+// 		return setError(requestERROR, 400, "Syntax error: no headers in request");
+// 	if (std::getline(headersStream, line)) {
+// 		std::istringstream iss(line);
+// 		if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r'))
+// 			return setError(requestERROR, 400, "Syntax error in Headers");
+// 		trimString(key);
+// 		strToLower(key);
+// 		trimString(value);
+// 	}
+// 	else
+// 		return setError(requestERROR, 500, "Failure to extract line from headers");
+// 	while ((headersStream && (headersStream.peek() == 32 || headersStream.peek() == 10))) {
+// 		std::string moreValue;
+// 		std::getline(headersStream, line);
+// 		std::stringstream more(line);
+// 		if ( !std::getline(more, moreValue, '\r'))
+// 			return setError(requestERROR, 400, "");
+// 		value.append(moreValue);
+// 		trimString(value);
+// 	}
+// 	if (headersStream.bad())
+// 		return setError(requestERROR, 500, "Failure extracting header data");
+// 	headers_.insert(std::make_pair(key, value));
+// 	if (headersStream.eof())
+// 		state_ = stateCheckBody;
+// }
+
+void Request::parseHeader(std::stringstream& headersStream) { //not handling obsolete line folding
 	std::string line;
 	std::string key, value;
-
-	if ((!headersStream.eof() && (headersStream.peek() == 32 || headersStream.peek() == 10)))
-		return setError(requestERROR, 400, "Syntax error: no headers in request");
-	if (std::getline(headersStream, line)) {
-		std::istringstream iss(line);
-		if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r'))
-			return setError(requestERROR, 400, "Syntax error in Headers");
-		trimString(key);
-		strToLower(key);
-		trimString(value);
-	}
-	else
+	if ((!headersStream.eof() && (headersStream.peek() == ' ' || headersStream.peek() == '\t')))
+		return setError(requestERROR, 400, "Syntax error: obsolete line folding in headers");
+	if (!std::getline(headersStream, line))
 		return setError(requestERROR, 500, "Failure to extract line from headers");
-	while ((headersStream && (headersStream.peek() == 32 || headersStream.peek() == 10))) {
-		std::string moreValue;
-		std::getline(headersStream, line);
-		std::stringstream more(line);
-		if ( !std::getline(more, moreValue, '\r'))
-			return setError(requestERROR, 400, "");
-		value.append(moreValue);
-		trimString(value);
-	}
+	std::istringstream iss(line);
+	if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r') \
+		|| containsControlChar(key) || containsControlChar(value))
+		return setError(requestERROR, 400, "Syntax error in Headers");
+	trimString(key);
+	strToLower(key);
+	trimString(value);
 	if (headersStream.bad())
 		return setError(requestERROR, 500, "Failure extracting header data");
-	headers_.insert(std::make_pair(key, value));
+	std::map<std::string, std::string>::iterator found = headers_.find(key);
+	if (found == headers_.end())
+		headers_.insert(std::make_pair(key, value));
+	else
+		found->second.append(", " + value);
 	if (headersStream.eof())
 		state_ = stateCheckBody;
 }

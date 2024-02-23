@@ -58,9 +58,6 @@ private:
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	void		clearRequest();
-	
-	std::string& trimString(std::string& str);
-	bool 		containsControlChar(std::string& str) const;
 
 public:
 	Request();
