@@ -5,22 +5,24 @@ void Server::startServer() {
 	if (socketFd < 0)
 		throw std::runtime_error("Error: unable to start server.\n");
 
-	socketLen = sizeof(socketAddress);
-	memset(&socketAddress, 0, sizeof(socketAddress));
 	this->socketAddress.sin_family = AF_INET;
 	this->socketAddress.sin_port = htons(port);
 	this->socketAddress.sin_addr = host;
 
-//	std::cout << "Socketfd = " << socketFd << "\nSocket address fam = " << (int) socketAddress.sin_family <<
-//	"\nSocket port = " << socketAddress.sin_port << "\nSocket addr = " << socketAddress.sin_addr.s_addr <<
-//	"\n Socket length = " << socketLen << std::endl;
-//
-//	std::cout << "Port: " << port << std::endl;
-	if (bind(socketFd, (sockaddr *)&socketAddress, (socklen_t)socketLen) < 0)
+	if (bind(socketFd, (sockaddr *)&socketAddress, sizeof(socketAddress)) < 0)
 	{
 		perror("Error binding socket");
 		throw std::runtime_error("Error: cannot connect socket to address.\n");
 	}
+
+	if (fcntl(socketFd, F_SETFL, O_NONBLOCK) == -1)
+	{
+//		perror("Error binding socket");
+		throw std::runtime_error("Error: cannot set socket to non-blocking.\n");
+	}
+
+	if (listen(socketFd, 20) < 0)
+		throw std::runtime_error("Error: socket listen failed.\n");
 }
 
 void Server::startListen() {
@@ -104,6 +106,7 @@ void Server::printServer(Server &server) {
 	{
 		Location::printLocation(it->second);
 	}
+	std::cout << std::endl;
 }
 
 void Server::setLocation(std::string line, std::ifstream &stream) {

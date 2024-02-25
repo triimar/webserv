@@ -44,6 +44,7 @@ Server &Server::operator=(const Server &server) {
 
 Server::~Server() {
 	closeServer();
+//	std::cout << "Server destroyed\n";
 }
 
 void Server::setPort(unsigned short port) {

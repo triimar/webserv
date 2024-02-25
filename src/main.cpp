@@ -26,7 +26,9 @@ int main(int argc, char **argv)
 		Config config(file.c_str());
 //		list = config.createServers();
 //		std::for_each(list.begin(), list.end(), Server::printServer);
-		config.printServers();
+//		config.printServers();
+		config.startServers();
+		config.runServers();
 	}
 	catch (std::exception &e)
 	{

@@ -5,18 +5,21 @@ Client::Client() : clientfd(0){
 }
 
 Client::Client(Server *server) {
-	struct sockaddr clientAddress;
+	struct sockaddr_in clientAddress;
 	socklen_t socketLen = sizeof(clientAddress);
 
-	clientfd = accept(server->getSocketFd(), &clientAddress, &socketLen);
+	clientfd = accept(server->getSocketFd(), (struct sockaddr *)&clientAddress, &socketLen);
 
-	if (clientfd <= 0)
+	if (clientfd == -1)
 		throw std::runtime_error("Client starting error: failed to connect client.\n");
 
 	this->server = server;
 	time(&connectionStart);
 	this->isActive = true;
 	this->keepAlive = true;
+
+
+	std::cout << "Client Connected!\n";
 	return;
 }
 
@@ -27,7 +30,7 @@ isActive(client.isActive){
 }
 
 Client::~Client() {
-	close(this->clientfd);
+//	close(this->clientfd);
 	return;
 }
 

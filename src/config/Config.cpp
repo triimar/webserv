@@ -269,3 +269,79 @@ void Config::createServers() {
 void Config::printServers() {
 	std::for_each(this->serverList.begin(), this->serverList.end(), Server::printServer);
 }
+
+void Config::addFdToPoll(int fd) {
+	struct pollfd newPollFd;
+	newPollFd.fd = fd;
+	newPollFd.events =  POLLIN;
+	this->fds.push_back(newPollFd);
+}
+
+std::vector <Server> Config::getServerList() {
+	return this->serverList;
+}
+
+std::map<int, Client> Config::getClientMap() {
+	return this->clientList;
+}
+
+void Config::startServers() {
+	for(std::vector<Server>::iterator it = this->serverList.begin(); it != this->serverList.end(); it++)
+	{
+		it->startServer();
+		addFdToPoll(it->getSocketFd());
+	}
+}
+
+void Config::runServers() {
+	while(fds.size() < 5)
+	{
+		int eventNr = poll(fds.data(), fds.size(), 5000);
+		std::cout << fds.size() << " size\n";
+		if (eventNr == -1){
+			throw std::runtime_error("Poll error.\n");
+		}
+		if (eventNr == 0)
+			continue;
+		for (size_t i = 0; i < fds.size() && eventNr; i++)
+		{
+			std::cout << i << " server, " << fds.size() << "\n";
+			if (i < serverList.size() && (fds[i].revents & POLLIN))
+			{
+				try{
+					std::cout << "Setting up new client\n";
+					Client newClient(&serverList[i]);
+					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
+					addFdToPoll(newClient.getClientFd());
+					eventNr--;
+					std::cout << "New client set up\n";
+				}
+				catch (std::exception &e)
+				{
+					std::cout << "Error accepting new client\n";
+					continue;
+				}
+			}
+
+			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
+				char buf[1024];
+				ssize_t num_read = read(fds[i].fd, buf, sizeof(buf));
+				if (num_read == -1) {
+					perror("read");
+					exit(EXIT_FAILURE);
+				}
+				if (num_read == 0) {
+					// Connection closed by client
+					std::cout << "Client with fd " << fds[i].fd << " closed the connection." << std::endl;
+					close(fds[i].fd);
+					this->clientList.erase(i - this->serverList.size());
+					fds.erase(fds.begin() + i);
+					eventNr--;
+					break;
+				}
+				std::cout << "Read " << num_read << " bytes from client with fd " << fds[i].fd << ": " << std::string(buf, num_read) << std::endl;
+			}
+		}
+	}
+	std::cout << clientList.size() << " client size, " << clientList.begin()->first <<"\n";
+}
