@@ -97,6 +97,8 @@ void Server::printServer(Server &server) {
 	{
 		std::cout << "\t" << it->first << ": " << it->second << std::endl;
 	}
+	std::cout << "CGI Info: ";
+	std::for_each(server.cgi_info.begin(), server.cgi_info.end(), printList);
 //	std::for_each(server.locations.begin(), server.locations.end(), Location::printLocation);
 	for (std::map<std::string, Location>::iterator it = server.locations.begin(); it != server.locations.end(); ++it)
 	{

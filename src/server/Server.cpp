@@ -188,3 +188,7 @@ void Server::autoCompleteLocations() {
 		it->second.autoCompleteFromServer(*this);
 	}
 }
+
+int Server::getSocketFd() const {
+	return this->socketFd;
+}

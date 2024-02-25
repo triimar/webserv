@@ -44,9 +44,7 @@ void Location::setRoot(std::string root) {
 		throw std::runtime_error("Configuration file error: declared root twice.\n");
 	struct stat sb;
 
-	if (stat(root.c_str(), &sb) == 0)
-		this->root = root;
-	else
+	if (stat(root.c_str(), &sb) != 0)
 		throw std::runtime_error("Config file error: root directory does not exist.\n");
 	this->root = root;
 }
@@ -112,6 +110,8 @@ void Location::printLocation(Location &location) {
 	std::cout << "Location: " << location.name <<
 			  "\n\tRoot: " << location.root << "\n\tIndex:\n";
 	std::for_each(location.index.begin(), location.index.end(), printListTab);
+	std::cout << "\tCGI Info:\n";
+	std::for_each(location.cgi_info.begin(), location.cgi_info.end(), printListTab);
 	std::cout << "\tAllowed:\n";
 	std::for_each(location.allowedMethods.begin(), location.allowedMethods.end(), printListMethods);
 	std::cout << "\tAutoindex: " << location.autoindex << std::endl;

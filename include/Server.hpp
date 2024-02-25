@@ -7,6 +7,7 @@
 #include "Request.hpp"
 #include "Status.hpp"
 #include "utils.hpp"
+#include "../../../Random/Temp/Client.hpp"
 
 static CGIList              supportedCGI;
 class Location;
@@ -36,6 +37,8 @@ private:
 	sockaddr_in							socketAddress;
 	int 								newSocket;
 	unsigned int						socketLen;
+
+	std::map<int, Client>				clients;
 //	long 								incomingMsg;
 //	uint32_t							ipAddress;
 
@@ -74,6 +77,9 @@ public:
 	bool						getAutoIndex() const;
 	Location					getLocation(std::string &path);
 	std::vector<std::string>	getCgiInfo() const;
+
+	int							getSocketFd() const;
+
 
 
 	void				autoCompleteLocations();
