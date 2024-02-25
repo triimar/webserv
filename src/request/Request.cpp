@@ -1,13 +1,18 @@
-#include "Request.hpp"
+#include "../../include/Request.hpp"
 
-Request::Request(): state_(stateParseRequestLine), rlstate_(stateParseMethod), method_(OTHER), statusCode_(0) {
+Request::Request(): state_(stateGetHeaderData), rlstate_(stateParseMethod), headersStream_(""), \
+					headersLen_(0), method_(OTHER), contentLen_(0), statusCode_(0) {
 }
 
 Request::~Request() {}
 
-Request::Request(const Request& rhs): state_(rhs.state_), rlstate_(rhs.rlstate_), methodStr_(rhs.methodStr_), method_(rhs.method_), \
+Request::Request(const Request& rhs): state_(rhs.state_), rlstate_(rhs.rlstate_), headersLen_(rhs.headersLen_), \
+								methodStr_(rhs.methodStr_), method_(rhs.method_), \
 								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
-								headers_(rhs.headers_), body_(rhs.body_), statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {
+								headers_(rhs.headers_), body_(rhs.body_), contentLen_(rhs.contentLen_), \
+								statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {
+	if (!rhs.headersStream_.eofbit && !headersStream_.str().empty())
+		headersStream_ << rhs.headersStream_.str();
 }
 
 Request& Request::operator=(const Request& rhs) {
@@ -15,6 +20,9 @@ Request& Request::operator=(const Request& rhs) {
 		state_ = rhs.state_;
 		rlstate_ = rhs.rlstate_;
 		methodStr_ = rhs.methodStr_;
+		if (!rhs.headersStream_.eofbit && !headersStream_.str().empty())
+			headersStream_ << rhs.headersStream_.str();
+		headersLen_ = rhs.headersLen_;
 		method_ = rhs.method_;
 		uri_ = rhs.uri_;
 		path_ = rhs.path_;
@@ -23,6 +31,7 @@ Request& Request::operator=(const Request& rhs) {
 		httpVer_ = rhs.httpVer_;
 		headers_ = rhs.headers_;
 		body_ = rhs.body_;
+		contentLen_ = rhs.contentLen_;
 		statusCode_ = rhs.statusCode_;
 		errorMsg_ = rhs.errorMsg_;
 
@@ -42,6 +51,8 @@ void Request::setError(ParseState type, int statusCode, const char *message) {
 
 // Clears data in case of invalid request, state_, rlstate_, statusCode_ and errorMsg_ are not cleared
 void Request::clearRequest() {
+	headersStream_.clear();
+	headersLen_ = 0;
 	methodStr_.clear();
 	method_ = OTHER;
 	uri_.clear();
@@ -51,36 +62,38 @@ void Request::clearRequest() {
 	httpVer_.clear();
 	headers_.clear();
 	body_.clear();
+	contentLen_ = 0;
 }
 
-
-// Extracts from buffer request-line + headers  as a stringstream.
-// Returns a pointer to the start of the body or NULL in case empty line is not found.
-const char *Request::extractHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd) {
-
-	while (requestBuf != msgEnd && std::isspace(*requestBuf))
-		requestBuf++;
-	if (requestBuf == msgEnd)
-		return NULL;
-	const char* headersEnd = std::strstr(requestBuf, CRLFCRLF); // can we guarantee that it's \0 terminated?
-	if (!headersEnd)
-		return NULL;
-	std::size_t len = static_cast<std::size_t>(headersEnd - requestBuf);
-	char tmp[len + 1];
-	std::memcpy(tmp, requestBuf, len);
-	tmp[len] = '\0';
-	const char *bodyStart = headersEnd + 4; //moving pointer past CRLFCRLF; if now (bodyStart == msgEnd) -> no body
-	headersStream << tmp;
-	return bodyStart;
+const char *Request::extractHeadersStream(const char *requestBuf, int messageLen) {
+	char emptyLine[] = CRLFCRLF;
+	int	addLen = messageLen;
+	const char* headersEnd = std::search(requestBuf, &requestBuf[messageLen - 1], emptyLine, emptyLine + 3);
+	if (headersEnd != &requestBuf[messageLen - 1])
+		addLen = static_cast<int>(headersEnd - requestBuf);
+	if (headersLen_ + messageLen > MAX_HEADER_SIZE) {
+		setError(requestERROR, 413, "Content too long");
+		return requestBuf;
+	}
+	char tmp[addLen + 1];
+	std::memcpy(tmp, requestBuf, addLen);
+	tmp[addLen] = '\0';
+	headersStream_ << tmp;
+	headersLen_ += addLen;
+	if (headersEnd != &requestBuf[messageLen - 1]) {
+		state_ = stateParseRequestLine;
+		return (headersEnd);
+	}
+	return &requestBuf[messageLen - 1];
 }
 
 /* ************************************************************************** */
 /*                                  PARSERS                                   */
 /* ************************************************************************** */
-void	Request::parseRequestLine(std::stringstream& headersStream) {
+void	Request::parseRequestLine() {
 	std::string rl;
-	std::getline(headersStream, rl);
-	if (!headersStream || rl.empty())
+	std::getline(headersStream_, rl);
+	if (!headersStream_ || rl.empty())
 		return setError(requestParseFAIL, 500, "Failure to extract request line");
 	else if (rl.back() != '\r')
 		return setError(requestERROR, 400, "Syntax error in request line");
@@ -174,44 +187,12 @@ void	Request::parseHTTPver(std::stringstream& requestLine) {
 	return ;
 }
 
-// void Request::parseHeader(std::stringstream& headersStream) { //handling obsolete line folding
-// 	std::string line;
-// 	std::string key, value;
-
-// 	if ((!headersStream.eof() && (headersStream.peek() == 32 || headersStream.peek() == 10)))
-// 		return setError(requestERROR, 400, "Syntax error: no headers in request");
-// 	if (std::getline(headersStream, line)) {
-// 		std::istringstream iss(line);
-// 		if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r'))
-// 			return setError(requestERROR, 400, "Syntax error in Headers");
-// 		trimString(key);
-// 		strToLower(key);
-// 		trimString(value);
-// 	}
-// 	else
-// 		return setError(requestERROR, 500, "Failure to extract line from headers");
-// 	while ((headersStream && (headersStream.peek() == 32 || headersStream.peek() == 10))) {
-// 		std::string moreValue;
-// 		std::getline(headersStream, line);
-// 		std::stringstream more(line);
-// 		if ( !std::getline(more, moreValue, '\r'))
-// 			return setError(requestERROR, 400, "");
-// 		value.append(moreValue);
-// 		trimString(value);
-// 	}
-// 	if (headersStream.bad())
-// 		return setError(requestERROR, 500, "Failure extracting header data");
-// 	headers_.insert(std::make_pair(key, value));
-// 	if (headersStream.eof())
-// 		state_ = stateCheckBody;
-// }
-
-void Request::parseHeader(std::stringstream& headersStream) { //not handling obsolete line folding
+void Request::parseHeader() {
 	std::string line;
 	std::string key, value;
-	if ((!headersStream.eof() && (headersStream.peek() == ' ' || headersStream.peek() == '\t')))
+	if ((!headersStream_.eof() && (headersStream_.peek() == ' ' || headersStream_.peek() == '\t')))
 		return setError(requestERROR, 400, "Syntax error: obsolete line folding in headers");
-	if (!std::getline(headersStream, line))
+	if (!std::getline(headersStream_, line))
 		return setError(requestERROR, 500, "Failure to extract line from headers");
 	std::istringstream iss(line);
 	if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value, '\r') \
@@ -220,94 +201,112 @@ void Request::parseHeader(std::stringstream& headersStream) { //not handling obs
 	trimString(key);
 	strToLower(key);
 	trimString(value);
-	if (headersStream.bad())
+	if (headersStream_.bad())
 		return setError(requestERROR, 500, "Failure extracting header data");
 	std::map<std::string, std::string>::iterator found = headers_.find(key);
 	if (found == headers_.end())
 		headers_.insert(std::make_pair(key, value));
 	else
 		found->second.append(", " + value);
-	if (headersStream.eof())
+	if (headersStream_.eof())
 		state_ = stateCheckBody;
 }
 
-void	Request::checkForBody(const char *bodyStart, const char *msgEnd) {
+const char	*Request::checkForBody(const char *start, const char *msgEnd) {
+	start = start + 3; //moving past CRLFCRLF
+	if (start != msgEnd)
+		++start;
 	if (method_ == GET || method_ == DELETE) {
 		state_ = requestOK;
-		return ;
+		return msgEnd;
 	}
-	if (bodyStart == msgEnd)
-		return setError(requestERROR, 400, "Post request does not have a body");
 	if (isTransferEncodingChunked())
 		state_ = stateParseChunkedBody;
-	else
+	else {
+		std::string bodyLenStr = getHeaderValueForKey("content-length");
+		if (bodyLenStr.empty()) {
+			setError(requestERROR, 411, "Content-length header missing");
+			return msgEnd;
+		}
+		char *endptr;
+		contentLen_ = strtol(bodyLenStr.c_str(), &endptr, 10);
 		state_ = stateParseMessageBody;
+	}	
+	return start;
 }
 
-void	Request::storeBody(const char *bodyStart, const char *msgEnd) {
+const char *Request::storeBody(const char *bodyStart, const char *msgEnd) {
 
-	std::string bodyLenStr = getHeaderValueForKey("content-length");
-	if (bodyLenStr.empty())
-		return setError(requestERROR, 411, "Content-length header missing");
-	char *endptr;
-	long contentLen = strtol(bodyLenStr.c_str(), &endptr, 10);
-	if (contentLen != msgEnd - bodyStart - 3) { //-2 when I assume it is not 0 terminated
-		// std::cout << bodyLenStr << "   " << contentLen << " **** " << (msgEnd - bodyStart - 3) << std::endl;
-		return setError(requestERROR, 400, "Mismatch between actual and declared Content-Length");
-	}
-	while (bodyStart != msgEnd && contentLen > 0) {
+	if (bodyStart == msgEnd)
+			return msgEnd ;
+	while (contentLen_ > 0) {
 		body_.push_back(*bodyStart);
+		contentLen_--;
+		if (bodyStart == msgEnd)
+			break ;
 		bodyStart++;
-		contentLen--;    //is mismatch a problem??
 	}
-	state_ = requestOK;
-}
-
-const char *Request::decodeChunked(const char *chunkStart, const char *msgEnd) {
-	unsigned long len;
-	const char *content = std::strstr(chunkStart, CRLF);
-	std::string lenLine(chunkStart, content);
-	content = content + 2;
-	std::stringstream ss(lenLine);
-    ss >> std::hex >> len;
-	if (!ss) {
-		setError(requestParseFAIL, 500, "std::stringstream failure in body");
-		return content;
-	}
-	if (len == 0) {
+	if (contentLen_ == 0 && !isTransferEncodingChunked())
 		state_ = requestOK;
-		return content;
-	}
-	while (content != msgEnd && len > 0) {
-		body_.push_back(*content);
-		content++;
-		len--;
-	}
-	if (content == msgEnd && len != 0) {
-		setError(requestERROR, 400, "Syntax error in chunk");
-		return content;
-	}
-	content = content + 2;
-	return content;
+	return bodyStart;
 }
 
-void	Request::processRequest(const char* requestBuf, int messageLen) { //what if len == 0?
-	std::stringstream headersStream;
+const char *Request::skipCRLF(const char *start, const char *msgEnd) {
+	start += 1;
+	if (start != msgEnd)
+		start += 1;
+	return start;
+}
+
+const char *Request::decodeChunked(const char *start, const char *msgEnd) {
+	if (contentLen_ == 0 && state_ == stateParseChunkedBody)
+	{
+		char lineEnd[] = CRLF;
+		const char* found = std::search(start, msgEnd, lineEnd, lineEnd + 1);
+		if (found == msgEnd) {
+			setError(requestERROR, 400, "Syntax error in chunk");
+			return msgEnd;
+		}
+		std::string lenLine(start, found);
+		std::stringstream ss(lenLine);
+		ss >> std::hex >> contentLen_;
+		if (!ss) {
+			setError(requestParseFAIL, 500, "std::stringstream failure in body");
+			return start;
+		}
+		start = found;
+		if (contentLen_ == 0) {
+			state_ = requestOK;
+			return start;
+		}
+		start = skipCRLF(start, msgEnd);
+	}
+	if ((start = storeBody(start, msgEnd)) == msgEnd)
+		return msgEnd;
+	if (*start != '\r' && *(start + 1) != '\n') {
+		setError(requestERROR, 400, "Syntax error in chunk");
+		return msgEnd;
+	}
+	start = skipCRLF(start, msgEnd);
+	return start;
+}
+
+void	Request::processRequest(const char* requestBuf, int messageLen) {
 	const char *msgEnd = &requestBuf[messageLen - 1];
-	const char *bodyStart = extractHeadersStream(headersStream, requestBuf, msgEnd);
-	if (!bodyStart)
-		return setError(requestERROR, 400, "Syntax error : no empty line");
-	while (state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
+	const char *start = requestBuf;
+	while (start != msgEnd && state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
 		switch (state_) {
-			case stateParseRequestLine: parseRequestLine(headersStream);
+			case stateGetHeaderData: start = extractHeadersStream(requestBuf, messageLen);
 				break;
-			case stateParseHeaders: parseHeader(headersStream);
+			case stateParseRequestLine: parseRequestLine();
 				break;
-			case stateCheckBody: checkForBody(bodyStart, msgEnd);
+			case stateParseHeaders: parseHeader();
 				break;
-			case stateParseMessageBody:storeBody(bodyStart, msgEnd);
+			case stateCheckBody: start = checkForBody(start, msgEnd);
 				break;
-			case stateParseChunkedBody: bodyStart = decodeChunked(bodyStart, msgEnd);
+			case stateParseMessageBody: start = storeBody(start, msgEnd);
+				break;
+			case stateParseChunkedBody: start = decodeChunked(start, msgEnd);
 				break;
 			case requestParseFAIL:
 			case requestERROR:
@@ -384,6 +383,13 @@ std::vector<char>::const_iterator	Request::getBodyEnd() const {
 /* ************************************************************************** */
 /*                                  CHECKERS                                  */
 /* ************************************************************************** */
+
+bool	Request::requestComplete() const{
+	if (state_ == requestERROR || state_ == requestParseFAIL || state_ == requestOK)
+		return true;
+	return false;
+}
+
 bool	Request::isTransferEncodingChunked() const {
 	std::map<std::string, std::string>::const_iterator it;
 	it = headers_.find("transfer-encoding");
