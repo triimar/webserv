@@ -7,7 +7,7 @@
 #include "Request.hpp"
 #include "Status.hpp"
 #include "utils.hpp"
-#include "../../../Random/Temp/Client.hpp"
+#include "Client.hpp"
 
 static CGIList              supportedCGI;
 class Location;
@@ -38,7 +38,7 @@ private:
 	int 								newSocket;
 	unsigned int						socketLen;
 
-	std::map<int, Client>				clients;
+//	std::map<int, Client>				clients;
 //	long 								incomingMsg;
 //	uint32_t							ipAddress;
 

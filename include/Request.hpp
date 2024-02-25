@@ -41,11 +41,9 @@ private:
 	int					statusCode_; //is 0 if no problem is found
 	std::string			errorMsg_; //mostly for debugging to get the precise source of error
 
-	Request(const Request& rhs);
-	Request &operator=(const Request& rhs);
 
 	const char *extractHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
-	
+
 	void		parseRequestLine(std::stringstream& headersStream);
 	void		parseMethod(std::stringstream& requestLine);
 	void		parseURI(std::stringstream& requestLine);
@@ -58,13 +56,15 @@ private:
 
 	void 		setError(ParseState type, int errorCode, const char *message);
 	void		clearRequest();
-	
+
 	std::string& trimString(std::string& str);
 	bool 		containsControlChar(std::string& str) const;
 
 public:
 	Request();
 	~Request();
+	Request(const Request& rhs);
+	Request &operator=(const Request& rhs);
 
 	void				processRequest(const char* requestBuf, int messageLen);
 

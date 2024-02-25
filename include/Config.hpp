@@ -13,16 +13,20 @@ private:
 //	std::vector<std::string> serverNames;
 //	int errorLogFd;
 	std::ifstream str;
+	std::vector<Server> serverList;
+	std::map<int, Client> clientList;
+
 	Server getServer();
 	bool isEmptyLine(std::string line);
 	void parseServerLine(Server &server, std::string line);
 	Config();
+	void createServers();
 
 public:
 	Config(const char *file);
 	Config(const Config& file);
 	~Config();
 	Config &operator=(const Config& config);
+	void printServers();
 
-	std::vector<Server> createServers();
 };

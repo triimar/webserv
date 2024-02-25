@@ -15,10 +15,11 @@ Config::Config(const char *file) {
 	str.open(file);
 	if (!str.is_open())
 		throw std::runtime_error("Error: cannot open config file.\n");
+	createServers();
 }
 
 /**This should not be called. It doesn't do anything*/
-Config::Config(const Config &file) {
+Config::Config(const Config &file) : serverList(file.serverList), clientList(file.clientList){
 	if (file.str.is_open())
 		return;
 }
@@ -210,7 +211,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 	}
 }
 
-std::vector <Server> Config::createServers() {
+void Config::createServers() {
 	std::vector<Server> list;
 	std::string line;
 	std::getline(str, line);
@@ -261,5 +262,10 @@ std::vector <Server> Config::createServers() {
 			std::getline(str, line);
 	}
 //	close(str);
-	return list;
+	this->serverList = list;
+//	return list;
+}
+
+void Config::printServers() {
+	std::for_each(this->serverList.begin(), this->serverList.end(), Server::printServer);
 }
