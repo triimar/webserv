@@ -20,7 +20,9 @@ Request& Request::operator=(const Request& rhs) {
 		state_ = rhs.state_;
 		rlstate_ = rhs.rlstate_;
 		methodStr_ = rhs.methodStr_;
-		if (!rhs.headersStream_.eofbit && !headersStream_.str().empty())
+		headersStream_.str("");
+		headersStream_.clear();
+		if (!rhs.headersStream_.eofbit && !headersStream_.str().empty());
 			headersStream_ << rhs.headersStream_.str();
 		headersLen_ = rhs.headersLen_;
 		method_ = rhs.method_;
@@ -51,15 +53,22 @@ void Request::setError(ParseState type, int statusCode, const char *message) {
 
 // Clears data in case of invalid request, state_, rlstate_, statusCode_ and errorMsg_ are not cleared
 void Request::clearRequest() {
+	headersStream_.str("");
 	headersStream_.clear();
 	headersLen_ = 0;
 	methodStr_.clear();
+	methodStr_ = "";
 	method_ = OTHER;
 	uri_.clear();
+	uri_ = "";
 	path_.clear();
+	path_ = "";
 	query_.clear();
+	query_ = "";
 	fragment_.clear();
+	fragment_ = "";
 	httpVer_.clear();
+	httpVer_ = "";
 	headers_.clear();
 	body_.clear();
 	contentLen_ = 0;
@@ -292,6 +301,8 @@ const char *Request::decodeChunked(const char *start, const char *msgEnd) {
 }
 
 void	Request::processRequest(const char* requestBuf, int messageLen) {
+	if (messageLen == 1)
+		setError(requestERROR, 400, "Request length 1 not accepted");
 	const char *msgEnd = &requestBuf[messageLen - 1];
 	const char *start = requestBuf;
 	while (start != msgEnd && state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
@@ -314,6 +325,18 @@ void	Request::processRequest(const char* requestBuf, int messageLen) {
 				break;
 		}
 	}
+}
+
+/* ************************************************************************** */
+/*                                 RESET FOR NEW PARSING                      */
+/* ************************************************************************** */
+void		Request::resetRequest() {
+	clearRequest();
+	state_ = stateGetHeaderData;
+	rlstate_ = stateParseMethod;
+	statusCode_ = 0;
+	errorMsg_.clear();
+
 }
 
 /* ************************************************************************** */

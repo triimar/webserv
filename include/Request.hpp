@@ -70,6 +70,7 @@ public:
 	Request &operator=(const Request& rhs);
 
 	void		processRequest(const char* requestBuf, int messageLen);
+	void		resetRequest();
 
 	const RequestMethod& getMethod() const;
 	const std::string&	getUri() const;
