@@ -11,7 +11,7 @@ Request::Request(const Request& rhs): state_(rhs.state_), rlstate_(rhs.rlstate_)
 								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
 								headers_(rhs.headers_), body_(rhs.body_), contentLen_(rhs.contentLen_), \
 								statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {
-	if (!rhs.headersStream_.eofbit && !headersStream_.str().empty())
+	if (!rhs.headersStream_.str().empty())
 		headersStream_ << rhs.headersStream_.str();
 }
 
@@ -22,7 +22,7 @@ Request& Request::operator=(const Request& rhs) {
 		methodStr_ = rhs.methodStr_;
 		headersStream_.str("");
 		headersStream_.clear();
-		if (!rhs.headersStream_.eofbit && !headersStream_.str().empty());
+		if (!rhs.headersStream_.str().empty())
 			headersStream_ << rhs.headersStream_.str();
 		headersLen_ = rhs.headersLen_;
 		method_ = rhs.method_;

@@ -287,11 +287,16 @@ std::map<int, Client> Config::getClientMap() {
 
 void Config::closeTimeoutClients() {
 	int i = 0;
-	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end(); it++, i++) {
+	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
 		if (it->second.isTimeout()){
 			close(it->second.getClientFd());
 			fds.erase(fds.begin() + serverList.size() + i);
-			clientList.erase(it);
+			it = clientList.erase(it);
+		}
+		else
+		{
+			it++;
+			i++;
 		}
 	}
 }
@@ -305,8 +310,9 @@ void Config::startServers() {
 }
 
 void Config::runServers() {
-	while(fds.size() < 5)
+	while(true)
 	{
+		this->closeTimeoutClients();
 		int eventNr = poll(fds.data(), fds.size(), 5000);
 		std::cout << fds.size() << " size\n";
 		if (eventNr == -1){
@@ -379,7 +385,9 @@ void Config::runServers() {
 				{
 					currentClient.updateTime();
 					fds[i].events = POLLIN;
+					currentClient.getRequest().resetRequest();
 				}
+				eventNr--;
 			}
 		}
 	}
