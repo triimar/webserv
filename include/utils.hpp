@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <poll.h>
+#include <csignal>
 //#include "Server.hpp"
 
 /* ************************************************************************** */

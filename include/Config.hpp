@@ -26,6 +26,8 @@ private:
 	void addFdToPoll(int fd);
 	void closeTimeoutClients();
 
+	static void sigintHandler(int signum);
+
 public:
 	Config(const char *file);
 	Config(const Config& file);

@@ -1,5 +1,7 @@
 #include "../../include/Config.hpp"
 
+bool running = true;
+
 // Config::Config() {}
 
 /**
@@ -309,24 +311,33 @@ void Config::startServers() {
 	}
 }
 
+void Config::sigintHandler(int signum) {
+	(void) signum;
+	running = false;
+}
+
 void Config::runServers() {
-	while(true)
-	{
+	if (signal(SIGINT, Config::sigintHandler) == SIG_ERR) {
+		perror("signal");
+		exit(EXIT_FAILURE);
+	}
+
+	while (running) {
 		this->closeTimeoutClients();
 		int eventNr = poll(fds.data(), fds.size(), 5000);
 		std::cout << fds.size() << " size\n";
-		if (eventNr == -1){
+		if (eventNr == -1) {
+			if (!running)
+				break;
 			throw std::runtime_error("Poll error.\n");
 		}
 		if (eventNr == 0)
 			continue;
-		for (size_t i = 0; i < fds.size() && eventNr; i++)
-		{
+		for (size_t i = 0; i < fds.size() && eventNr; i++) {
 			int current_fd = fds[i].fd;
 			std::cout << i << " server, " << fds.size() << "\n";
-			if (i < serverList.size() && (fds[i].revents & POLLIN))
-			{
-				try{
+			if (i < serverList.size() && (fds[i].revents & POLLIN)) {
+				try {
 					std::cout << "Setting up new client\n";
 					Client newClient(&serverList[i]);
 					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
@@ -334,13 +345,12 @@ void Config::runServers() {
 					eventNr--;
 					std::cout << "New client set up\n";
 				}
-				catch (std::exception &e)
-				{
+				catch (std::exception &e) {
 					std::cout << "Error accepting new client\n";
 					continue;
 				}
-			}
-			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
+			} else if (i >= serverList.size() &&
+					   fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
 				char buf[1024];
 				ssize_t num_read = read(current_fd, buf, sizeof(buf));
 				if (num_read == -1) {
@@ -362,11 +372,9 @@ void Config::runServers() {
 				if (currentClient.getRequest().requestComplete()) {
 					currentClient.confirmKeepAlive();
 					fds[i].events = POLLOUT;
-				}
-				else
+				} else
 					fds[i].events = POLLIN;
-			}
-			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
+			} else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
 				std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nwhat!";
 				//create response with request and server as input
@@ -380,9 +388,7 @@ void Config::runServers() {
 					close(current_fd);
 					clientList.erase(current_fd);
 					fds.erase(fds.begin() + i);
-				}
-				else
-				{
+				} else {
 					currentClient.updateTime();
 					fds[i].events = POLLIN;
 					currentClient.getRequest().resetRequest();
@@ -391,5 +397,8 @@ void Config::runServers() {
 			}
 		}
 	}
-	std::cout << clientList.size() << " client size, " << clientList.begin()->first <<"\n";
+	for (std::vector<pollfd>::iterator it = fds.begin(); it != fds.end(); it++) {
+		close(it->fd);
+	}
+//	std::cout << clientList.size() << " client size, " << clientList.begin()->first <<"\n";
 }
