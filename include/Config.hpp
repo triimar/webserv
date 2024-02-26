@@ -24,6 +24,7 @@ private:
 	Config();
 	void createServers();
 	void addFdToPoll(int fd);
+	void closeTimeoutClients();
 
 public:
 	Config(const char *file);

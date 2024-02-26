@@ -285,6 +285,17 @@ std::map<int, Client> Config::getClientMap() {
 	return this->clientList;
 }
 
+void Config::closeTimeoutClients() {
+	int i = 0;
+	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end(); it++, i++) {
+		if (it->second.isTimeout()){
+			close(it->second.getClientFd());
+			fds.erase(fds.begin() + serverList.size() + i);
+			clientList.erase(it);
+		}
+	}
+}
+
 void Config::startServers() {
 	for(std::vector<Server>::iterator it = this->serverList.begin(); it != this->serverList.end(); it++)
 	{
@@ -305,6 +316,7 @@ void Config::runServers() {
 			continue;
 		for (size_t i = 0; i < fds.size() && eventNr; i++)
 		{
+			int current_fd = fds[i].fd;
 			std::cout << i << " server, " << fds.size() << "\n";
 			if (i < serverList.size() && (fds[i].revents & POLLIN))
 			{
@@ -322,10 +334,9 @@ void Config::runServers() {
 					continue;
 				}
 			}
-
 			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
 				char buf[1024];
-				ssize_t num_read = read(fds[i].fd, buf, sizeof(buf));
+				ssize_t num_read = read(current_fd, buf, sizeof(buf));
 				if (num_read == -1) {
 					perror("read");
 					exit(EXIT_FAILURE);
@@ -337,9 +348,38 @@ void Config::runServers() {
 					this->clientList.erase(i - this->serverList.size());
 					fds.erase(fds.begin() + i);
 					eventNr--;
-					break;
+					continue;
 				}
-				std::cout << "Read " << num_read << " bytes from client with fd " << fds[i].fd << ": " << std::string(buf, num_read) << std::endl;
+				Client &currentClient = clientList.at(current_fd);
+				currentClient.getRequest().processRequest(buf, num_read);
+//				std::cout << currentClient.getRequest();
+				if (currentClient.getRequest().requestComplete()) {
+					currentClient.confirmKeepAlive();
+					fds[i].events = POLLOUT;
+				}
+				else
+					fds[i].events = POLLIN;
+			}
+			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
+				Client &currentClient = clientList.at(current_fd);
+				std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nwhat!";
+				//create response with request and server as input
+				//send response & check for errors
+				std::cout << currentClient.getRequest();
+
+				if (write(current_fd, response.c_str(), response.size()) == -1) {
+					perror("Could not write in client socket\n");
+				}
+				if (!currentClient.getKeepAlive()) {
+					close(current_fd);
+					clientList.erase(current_fd);
+					fds.erase(fds.begin() + i);
+				}
+				else
+				{
+					currentClient.updateTime();
+					fds[i].events = POLLIN;
+				}
 			}
 		}
 	}

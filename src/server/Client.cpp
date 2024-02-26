@@ -60,15 +60,17 @@ void Client::confirmKeepAlive() {
 }
 //timeout count needs to be set after connection is established and updated after each response has been sent
 //and socket is ready to read.
-void Client::updateTime {
-		time(connectionStart);
+void Client::updateTime() {
+	time(&connectionStart);
 }
 
-bool Client::isTimeout {
-		t_time current = time(NULL);
-		if (time - connectionStart >= KEEPALIVE_TIMEOUT)
+bool Client::isTimeout() {
+	time_t current;
+
+	time(&current);
+	if (current - this->connectionStart >= KEEPALIVE_TIMEOUT)
 		return true;
-		return false;
+	return false;
 }
 
 int &Client::getClientFd() {
