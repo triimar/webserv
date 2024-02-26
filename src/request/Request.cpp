@@ -330,7 +330,7 @@ void	Request::processRequest(const char* requestBuf, int messageLen) {
 /* ************************************************************************** */
 /*                                 RESET FOR NEW PARSING                      */
 /* ************************************************************************** */
-void		Request::resetRequest() {
+void	Request::resetRequest() {
 	clearRequest();
 	state_ = stateGetHeaderData;
 	rlstate_ = stateParseMethod;

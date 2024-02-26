@@ -24,8 +24,11 @@ int main(int argc, char **argv)
 		if (argc > 1)
 			file = argv[1];
 		Config config(file.c_str());
-		list = config.createServers();
-		std::for_each(list.begin(), list.end(), Server::printServer);
+//		list = config.createServers();
+//		std::for_each(list.begin(), list.end(), Server::printServer);
+//		config.printServers();
+		config.startServers();
+		config.runServers();
 	}
 	catch (std::exception &e)
 	{

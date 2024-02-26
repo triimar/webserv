@@ -20,7 +20,9 @@ Just construct response with server and request & then call send()
         response.send();
 
 */
- 
+
+class Server;
+
 class Response {
 
 public:

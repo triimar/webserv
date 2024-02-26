@@ -44,6 +44,7 @@ Server &Server::operator=(const Server &server) {
 
 Server::~Server() {
 	closeServer();
+//	std::cout << "Server destroyed\n";
 }
 
 void Server::setPort(unsigned short port) {
@@ -187,4 +188,8 @@ void Server::autoCompleteLocations() {
 	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++) {
 		it->second.autoCompleteFromServer(*this);
 	}
+}
+
+int Server::getSocketFd() const {
+	return this->socketFd;
 }

@@ -32,7 +32,7 @@ public:
 
 	void autoCompleteFromServer(const Server &server);
 
-	const std::string 					&getName();
+	const std::string 	&getName();
 
 	static void printLocation(Location &location);
 };

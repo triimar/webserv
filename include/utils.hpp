@@ -27,6 +27,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <fstream>
+#include <poll.h>
 //#include "Server.hpp"
 
 /* ************************************************************************** */
