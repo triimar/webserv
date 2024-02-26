@@ -1,3 +1,4 @@
+#define KEEPALIVE_TIMEOUT 60
 #include "../../include/Client.hpp"
 
 Client::Client() : clientfd(0){
@@ -45,6 +46,29 @@ Client &Client::operator=(Client &client) {
 		this->isActive = client.isActive;
 	}
 	return *this;
+}
+
+
+// Timeout Expiry:
+// If there is no activity (no requests from the client) for the duration of the keep-alive timeout, the server may close the connection to free up resources.
+// It's important to note that the keep-alive timeout is often a server-side configuration, and the server determines how long it keeps a connection open based on its settings.
+
+
+//for client after request kas been parsed
+void Client::confirmKeepAlive() {
+	keepAlive = request.isKeepAlive(); //Triin changed the isConnectionClose to iskeepAlive
+}
+//timeout count needs to be set after connection is established and updated after each response has been sent
+//and socket is ready to read.
+void Client::updateTime {
+		time(connectionStart);
+}
+
+bool Client::isTimeout {
+		t_time current = time(NULL);
+		if (time - connectionStart >= KEEPALIVE_TIMEOUT)
+		return true;
+		return false;
 }
 
 int &Client::getClientFd() {

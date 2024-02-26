@@ -25,6 +25,10 @@ public:
 	Client &operator=(Client &client);
 	~Client();
 
+	void	confirmKeepAlive();
+	void	updateTime();
+	bool	isTimeout();
+
 	int		&getClientFd();
 	Server	*getServer();
 	Request	&getRequest();
