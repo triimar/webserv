@@ -88,7 +88,7 @@ public:
 	std::vector<char>::const_iterator					getBodyEnd() const;
 
 	bool				isTransferEncodingChunked() const;
-	bool 				isConnectionClose() const;
+	bool 				isKeepAlive() const;
 	bool				requestComplete() const;
 };
 

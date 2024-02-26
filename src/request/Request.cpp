@@ -398,12 +398,12 @@ bool	Request::isTransferEncodingChunked() const {
 	return false;
 }
 
-bool	Request::isConnectionClose() const {
+bool	Request::isKeepAlive() const {
 	std::map<std::string, std::string>::const_iterator it;
 	it = headers_.find("connection");
 	if (it != headers_.end() && it->second == "close")
-		return true;
-	return false;
+		return false;
+	return true;
 }
 
 /* ************************************************************************** */
