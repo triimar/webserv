@@ -96,3 +96,8 @@ std::string combinePaths(std::string &lhs, std::string &rhs);
 // vector
 void appendStringToVector(std::vector<char> &vector, const char *str);
 Return readToVector(int fd, std::vector<char> &vec);
+
+// string
+void strToLower(std::string& str);
+std::string& trimString(std::string& str);
+bool containsControlChar(std::string& str);

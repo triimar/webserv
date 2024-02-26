@@ -1,15 +1,17 @@
 #pragma once
 
 #include "utils.hpp"
+#define MAX_HEADER_SIZE 8175 //8kb
 
 enum ParseState {
+	stateGetHeaderData,
 	stateParseRequestLine,
 	stateParseHeaders,
 	stateCheckBody,
 	stateParseMessageBody,
 	stateParseChunkedBody,
-	requestParseFAIL, //indicates falure of parser as opposed to problem with request
-	requestERROR, // indicates a problem in the request
+	requestParseFAIL, //indicates internal failure
+	requestERROR, //indicates a error in the recieved request
 	requestOK,
 };
 
@@ -27,38 +29,39 @@ private:
 	ParseState			state_;
 	RequestLineState	rlstate_;
 
+	std::stringstream 	headersStream_;
+	int					headersLen_;
+
 	std::string			methodStr_;
 	RequestMethod		method_;
 	std::string			uri_; //can be either abs URI or abs path. We don't handle '*' or authority
-	std::string         path_; //is absolute path in relation to the root or location of the server, extracted from URI
-	std::string     	query_;
+	std::string         path_;
+	std::string     	query_; 
 	std::string         fragment_;
 	std::string			httpVer_;
 
 	std::map<std::string, std::string> headers_;
+	
 	std::vector<char> 	body_;
+	long				contentLen_;
 
 	int					statusCode_; //is 0 if no problem is found
-	std::string			errorMsg_; //mostly for debugging to get the precise source of error
+	std::string			errorMsg_;
 
-
-	const char *extractHeadersStream(std::stringstream& headersStream, const char *requestBuf, const char *msgEnd);
-
-	void		parseRequestLine(std::stringstream& headersStream);
+	const char *extractHeadersStream(const char *requestBuf, int MessageLen);
+	void		parseRequestLine();
 	void		parseMethod(std::stringstream& requestLine);
 	void		parseURI(std::stringstream& requestLine);
 	void		parseHTTPver(std::stringstream& requestLine);
 
-	void		parseHeader(std::stringstream& headersStream);
-	void		checkForBody(const char *bodyStart, const char *msgEnd);
-	void		storeBody(const char *bodyStart, const char *msgEnd);
-	const char 	*decodeChunked(const char *chunkStart, const char *msgEnd);
-
+	void		parseHeader();
+	const char *checkForBody(const char *bodyStart, const char *msgEnd);
+	const char *storeBody(const char *bodyStart, const char *msgEnd);
+	const char *decodeChunked(const char *chunkStart, const char *msgEnd);
+	const char *skipCRLF(const char *start, const char *msgEnd);
+	
 	void 		setError(ParseState type, int errorCode, const char *message);
 	void		clearRequest();
-
-	std::string& trimString(std::string& str);
-	bool 		containsControlChar(std::string& str) const;
 
 public:
 	Request();
@@ -66,7 +69,7 @@ public:
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
 
-	void				processRequest(const char* requestBuf, int messageLen);
+	void		processRequest(const char* requestBuf, int messageLen);
 
 	const RequestMethod& getMethod() const;
 	const std::string&	getUri() const;
@@ -85,7 +88,8 @@ public:
 	std::vector<char>::const_iterator					getBodyEnd() const;
 
 	bool				isTransferEncodingChunked() const;
-	bool 				isConnectionClose() const;
+	bool 				isKeepAlive() const;
+	bool				requestComplete() const;
 };
 
 std::ostream& operator<<(std::ostream& out, const Request& rhs);
