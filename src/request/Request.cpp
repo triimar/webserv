@@ -440,8 +440,8 @@ bool	Request::isKeepAlive() const {
 /*                                  DEBUG PRINT                               */
 /* ************************************************************************** */
 std::ostream& operator<<(std::ostream& out, const Request& rhs) { 
-	std::cout << "------REQUEST LINE---------------" <<std::endl;
-	std::cout << "Method: " << rhs.getMethodStr() << ", enum: " << rhs.getMethod() << std::endl;
+	std::cout << "------REQUEST LINE---------------" << std::endl;
+	std::cout << "Method: " << rhs.getMethodStr() << std::endl;
 	std::cout << "URI: " << rhs.getUri() << std::endl;
 	std::cout << "path: " << rhs.getPath() << std::endl;
 	std::cout << "query: " << rhs.getQuery() << std::endl;
