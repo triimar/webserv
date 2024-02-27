@@ -217,8 +217,11 @@ void Request::parseHeader() {
 		headers_.insert(std::make_pair(key, value));
 	else
 		found->second.append(", " + value);
-	if (headersStream_.eof())
+	if (headersStream_.eof()) {
+		headersStream_.str() = "";
+		headersStream_.clear();
 		state_ = stateCheckBody;
+	}
 }
 
 const char	*Request::checkForBody(const char *start, const char *msgEnd) {
@@ -346,6 +349,10 @@ const RequestMethod&	Request::getMethod() const {
 	return method_;
 }
 
+const std::string&		Request::getMethodStr() const {
+	return methodStr_;
+}
+
 const std::string&		Request::getUri() const {
 	return uri_;
 }
@@ -433,8 +440,8 @@ bool	Request::isKeepAlive() const {
 /*                                  DEBUG PRINT                               */
 /* ************************************************************************** */
 std::ostream& operator<<(std::ostream& out, const Request& rhs) { 
-	std::cout << "------REQUEST LINE---------------" << std::endl;
-	std::cout << "Method enum: " << rhs.getMethod() << std::endl;
+	std::cout << "------REQUEST LINE---------------" <<std::endl;
+	std::cout << "Method: " << rhs.getMethodStr() << ", enum: " << rhs.getMethod() << std::endl;
 	std::cout << "URI: " << rhs.getUri() << std::endl;
 	std::cout << "path: " << rhs.getPath() << std::endl;
 	std::cout << "query: " << rhs.getQuery() << std::endl;
