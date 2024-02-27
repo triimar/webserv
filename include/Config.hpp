@@ -18,14 +18,15 @@ private:
 	std::map<int, Client>	clientList;
 	std::vector<pollfd>		fds;
 
+	Config();
+
 	Server getServer();
 	bool isEmptyLine(std::string line);
 	void parseServerLine(Server &server, std::string line);
-	Config();
 	void createServers();
 	void addFdToPoll(int fd);
 	void closeTimeoutClients();
-
+	void closeClient(int fd, size_t &index);
 	static void sigintHandler(int signum);
 
 public:
