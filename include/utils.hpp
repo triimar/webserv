@@ -29,6 +29,27 @@
 #include <ctime>
 
 /* ************************************************************************** */
+/*                                  DEFINES                                   */
+/* ************************************************************************** */
+
+#define BUFFER_SIZE 30720
+#define DEFAULT_CONFIG "webserv.conf"
+#define SERVER_VERSION "webserv/1.0"
+#define CGI_VERSION "CGI/1.1"
+#define SUPPORTED_CGI "sh,py,perl"
+#define CGI_TIMEOUT 3.0
+#define SHEBANG "#!"
+#define DATE_FORMAT "%a, %d %b %Y %T GMT"
+#define DATE_FORMAT_LEN 29
+#define REDIRECTION_LIMIT 5
+
+#define CRLF "\r\n"
+#define CRLFCRLF "\r\n\r\n"
+
+#define SSTR(x) static_cast<std::ostringstream &>(\
+        (std::ostringstream() << std::dec << x)).str()
+
+/* ************************************************************************** */
 /*                                   ENUMS                                    */
 /* ************************************************************************** */
 
@@ -52,23 +73,9 @@ enum Return {
 };
 
 enum Pipe {
-    PIPEIN,
-    PIPEOUT
+    PIPE_READ,
+    PIPE_WRITE
 };
-
-/* ************************************************************************** */
-/*                                  DEFINES                                   */
-/* ************************************************************************** */
-
-#define BUFFER_SIZE 30720
-#define DEFAULT_CONFIG "webserv.conf"
-#define SUPPORTED_CGI "sh,py,perl"
-
-#define CGI_TIMEOUT_SEC 42
-#define SHEBANG "#!"
-
-#define SSTR(x) static_cast<std::ostringstream &>(\
-        (std::ostringstream() << std::dec << x)).str()
 
 /* ************************************************************************** */
 /*                                 FUNCTIONS                                  */
@@ -84,8 +91,9 @@ std::vector<std::string> splitString(const std::string& input, const std::string
 std::string combinePaths(std::string &lhs, std::string &rhs);
 
 // vector
-void appendStringToVector(std::vector<char> &vector, const char *str);
+void appendStringToVector(std::vector<char> &vector, std::string str);
 Return readToVector(int fd, std::vector<char> &vec);
+std::vector<char>::iterator findSubstring(std::vector<char>::iterator begin, std::vector<char>::iterator end, std::string s);
 
 // free
 void free_2d_array(void **array);

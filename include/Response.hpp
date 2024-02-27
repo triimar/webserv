@@ -32,23 +32,16 @@ public:
     void send();
 
 private:
-    // cgi
-    bool isCGI();
-    bool isValidCGI(std::string &path);
-    void executeCGI();
-    void checkCGI();
-    void cgiProcess(int cgiOutput[2]);
-    int waitForCGI(pid_t cgi);
-    char **getCGIEnvironment();
     // process
     void processRequest();
-    void checkLocation();
-    void fileToBody(std::string &path);
-
 	void performGET();
     void performPOST();
     void performDELETE();
-	
+	// cgi
+    bool isCGI();
+    bool isValidCGI(std::string &path);
+    static bool isSupportedCGI(const std::string &extension);
+    std::string getCGIIndex();
 	// autoindex
 	std::string formatModificationTime(time_t modifTime);
 	std::string formatSize(off_t size);
@@ -57,25 +50,30 @@ private:
 	void appendHtmlRow(std::string& subPath, std::string& modTime, std::string& bytes);
 	void appendHtmlEnd();
 	void makeDirectoryListing();
-    // index
-    std::string getIndex();
-    std::string getCGIIndex();
-    // send
+    // construct
     void constructResponse();
     void makeErrorPage();
     void setHeaders();
+    // send
+    void send(int socket);
+    // utils
+    void fileToBody(std::string &path);
+    std::string getIndex();
 
     const Server &_server;
     const Request &_request;
     const Location _location;
-    std::string _cgiPath;
-    std::string _cgiExtension;
-    std::vector<std::string> _cgiArgv;
-    bool _isCGI;
-    std::string _path;
-    struct stat _pathStat;
-    int _status;
     std::map<std::string, std::string> _headers;
     std::vector<char> _body;
     std::vector<char> _response;
+    std::string _path;
+    bool _pathIsDir;
+    int _status;
+    std::vector<std::string> _redirectHistory;
+    bool _isCGI;
+    std::string _cgiPath;
+    std::string _cgiExtension;
+    std::string _cgiPathInfo;
+    std::vector<std::string> _cgiArgv;
+    static std::string _supportedCGI;
 };

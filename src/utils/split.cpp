@@ -10,8 +10,8 @@ std::vector<std::string> splitString(const std::string& input, const std::string
             pos = input.find_first_not_of(delimiter, next);
         } else {
             result.push_back(input.substr(pos));
-            break;
+            break ;
         }
     }
-    return result;
+    return (result);
 }

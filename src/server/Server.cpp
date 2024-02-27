@@ -110,3 +110,7 @@ std::string Server::getServerName() const {
 unsigned short Server::getPort() const {
     return (this->port);
 }
+
+std::string &getIpAddr() const {
+    return (this->ipAddress);
+}

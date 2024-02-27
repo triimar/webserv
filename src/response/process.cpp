@@ -1,9 +1,30 @@
 #include "../../include/Response.hpp"
 
 void Response::processRequest() {
-    checkLocation();
+    if (_status = (_request.getErrorCode()) != 0) {
+        return ;
+    }
 
-    if (isCGI()) {
+    _location = _server.getLocation(_request.getPath());
+
+    std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
+    if (std::find(allowedMethods.begin(), allowedMethods.end(), _request.getMethod()) == allowedMethods.end()) {
+       throw 405; // request method is not allowed
+    }
+
+    _path = _location.getRoot() + _request.getPath();
+    if (_request.getMethod() != POST) {
+        if (access(_path.c_str(), F_OK) != 0) {
+            throw 404;
+        }
+        struct stat pathStat;
+        if (stat(_path.c_str(), &pathStat) != 0) {
+            throw 500;
+        }
+        _pathIsDir = S_ISDIR(pathStat.st_mode);
+    }
+
+    if ((_isCGI = isCGI()) == true) {
         executeCGI();
         return ;
     }
@@ -23,46 +44,12 @@ void Response::processRequest() {
     }
 }
 
-void Response::checkLocation() {
-    _location = getLocation(_request.getPath());
-
-    std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
-    if (std::find(allowedMethods.begin(), allowedMethods.end(), _request.getMethod()) == allowedMethods.end()) {
-       throw 405; // request method is not allowed
-    }
-
-    _path = _location.getRoot() + _request.getPath();
-    if (access(_path.c_str(), F_OK) != 0) {
-        throw 404;
-    }
-    if (stat(_path.c_str(), &_pathStat) != 0) {
-        throw 500;
-    }
-
-    // int returnStatus = _location.getReturn();
-    // if (returnStatus != 0) {
-    //     throw returnStatus;
-    // }
-}
-
-void Response::fileToBody(std::string &path) {
-    int fd = open(path.c_str(), O_RDONLY);
-    if (fd == -1) {
-        if (errno == ENOENT) {
-            throw 404;
-        }
-        throw 500;
-    }
-    if (readToVector(fd, _body) == RETURN_FAILURE) {
-        close(fd);
-        throw 500;
-    }
-    close(fd);
-    _status = 200;
-}
-
 void Response::performGET() {
-    if (S_ISDIR(_pathStat.st_mode) == false) {
+    if (access(_path.c_str(), R_OK) != 0) {
+        throw 403;
+    }
+    
+    if (_pathIsDir == false) {
         fileToBody(_path);
         return ;
     }
@@ -83,12 +70,12 @@ void Response::performGET() {
 }
 
 void Response::performPOST() {
-    if (_request.getHeaderValueForKey("Content-Length").empty()) {
+    if (_request.getHeaderValueForKey("content-length").empty()) {
         throw 411;
     }
-    // if (Response::isSupportedMIMEType(_request.getHeaderValueForKey("Content-Type")) == false) {
-    //     return (415);
-    // }
+    if (Response::isSupportedMIMEType(_request.getHeaderValueForKey("content-type")) == false) {
+        return (415);
+    }
 
     // what happends with directories
 
@@ -102,7 +89,7 @@ void Response::performPOST() {
 }
 
 void Response::performDELETE() {
-    if (S_ISDIR(_pathStat.st_mode) == false) {
+    if (_pathIsDir == false) {
         if (std::remove(_path.c_str()) == -1) {
             throw 500;
         }

@@ -63,5 +63,6 @@ public:
     std::string getRoot() const;
     std::string getServerName() const;
     unsigned short getPort() const;
+    std::string &getIpAddr() const;
 
 };
