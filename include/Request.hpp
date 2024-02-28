@@ -10,8 +10,8 @@ enum ParseState {
 	stateCheckBody,
 	stateParseMessageBody,
 	stateParseChunkedBody,
-	requestParseFAIL, //indicates internal failure
-	requestERROR, //indicates a error in the recieved request
+	requestParseFAIL, //internal error
+	requestERROR,
 	requestOK,
 };
 
@@ -29,8 +29,10 @@ private:
 	ParseState			state_;
 	RequestLineState	rlstate_;
 
+	std::string			buffer_;
 	std::stringstream 	headersStream_;
 	int					headersLen_;
+	size_t				skip_;
 
 	std::string			methodStr_;
 	RequestMethod		method_;
@@ -51,7 +53,6 @@ private:
 	const char *extractHeadersStream(const char *requestBuf, int MessageLen);
 	void		parseRequestLine();
 	void		parseMethod(std::stringstream& requestLine);
-	void		parseURI(std::stringstream& requestLine);
 	void		parseHTTPver(std::stringstream& requestLine);
 
 	void		parseHeader();
@@ -70,6 +71,7 @@ public:
 	Request &operator=(const Request& rhs);
 
 	void		processRequest(const char* requestBuf, int messageLen);
+	void		parseURI(std::stringstream& requestLine);
 	void		resetRequest();
 
 	const RequestMethod& getMethod() const;
