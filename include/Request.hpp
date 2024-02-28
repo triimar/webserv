@@ -76,6 +76,7 @@ public:
 
 	const RequestMethod& getMethod() const;
 	const std::string&	getMethodStr() const;
+
 	const std::string&	getUri() const;
 	const std::string& 	getHttpVer() const;
 	const std::string&	getPath() const;

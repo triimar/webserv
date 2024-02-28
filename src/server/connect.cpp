@@ -1,4 +1,5 @@
 #include "../../include/Server.hpp"
+#include "../../include/Location.hpp"
 
 void Server::startServer() {
 	this->socketFd = socket(AF_INET, SOCK_STREAM, 0);

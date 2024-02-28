@@ -1,125 +1,169 @@
 #include "../../include/Response.hpp"
 
-uint16_t Response::processRequest() {
-    if ((_status = checkRequest()) != 0) {
-        return (_status);
+void Response::processRequest() {
+    if ((_status = _request.getErrorCode()) != 0) {
+        return ;
     }
-    if (isCGI()) {
-        _isCGI = true;
-        if (_request.getMethod() == DELETE) {
-            return (501);
+
+    _location = _server.getLocation(_request.getPath());
+
+    std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
+    if (std::find(allowedMethods.begin(), allowedMethods.end(), _request.getMethod()) == allowedMethods.end()) {
+       throw 405; // request method is not allowed
+    }
+
+    _path = _location.getRoot() + cleanPath(_request.getPath());
+    if (_request.getMethod() != POST) {
+        if (access(_path.c_str(), F_OK) != 0) {
+            throw 404;
         }
-        if (_server.isLocationMethodAllowed(_path, _request.getMethod())) {
-            return (405);
+        if (stat(_path.c_str(), &_pathStat) != 0) {
+            throw 500;
         }
+    }
+
+    if ((_isCGI = isCGI()) == true) {
         executeCGI();
-        return (_status);
+        return ;
     }
+   
     switch (_request.getMethod()) {
-    case GET:
-        return (performGET());
-    case POST:
-        return (performPOST());
-    case DELETE:
-        return (performDELETE());
-    default: return (501);
+    case GET: 
+        performGET();
+        return ;
+    case POST: 
+        performPOST();
+        return ;
+    case DELETE: 
+        performDELETE();
+        return ;
+    default:
+        _status = 501;
     }
 }
 
-uint16_t Response::checkRequest() {
-    if (_request.getMethod() == OTHER) {
-        return (501);
-    } else if (_server.checkLocationMethod(_request.getPath(), _request.getMethod()) == false) {
-        return (405);
-    }
-    // ???
-    // if (_server.hasLocationReturn(_request.getPath(), _status, _body) == true) {
-    //     return (_status);
-    // }
+std::string Response::cleanPath(const std::string &path) {
+    std::vector<std::string> components;
+    std::istringstream stream(path);
+    std::string component;
 
-    _path = _server.getLocationPath(_request.getPath());
-    if (access(_path.c_str(), F_OK) == 0) {
-        return (404);
+    while (std::getline(stream, component, '/')) {
+        if (component == "..") {
+            if (components.empty()) {
+                throw 403; // directory traversal attempt
+            }
+            components.pop_back();
+        } else if (component != "." && !component.empty()) {
+            components.push_back(component);
+        }
     }
-    if (stat(_path.c_str(), &_pathStat) != 0) {
-        return (500);
+    std::ostringstream cleanedPath;
+    for (size_t i = 0; i < components.size(); ++i) {
+        cleanedPath << '/' << components[i];
     }
-
-    return (0);
+    std::string result = cleanedPath.str();
+    return (result.empty() ? "/" : result);
 }
 
-uint16_t Response::fileToBody(std::string &path) {
+void Response::performGET() {
+    if (access(_path.c_str(), R_OK) != 0) {
+        throw 403;
+    }
+    if (S_ISDIR(_pathStat.st_mode) == false) {
+        fileToBody(_path);
+    } else {
+        if (_path.back() != '/') {
+            _headers["location"] = _request.getUri() + "/";
+            throw 301;
+        }
+        std::string index = getIndex();
+        if (index.empty() == false) { // has index file
+            fileToBody(index);
+        } else if (_location.getAutoindex() == true) { // auto-indexing on
+            makeDirectoryListing();
+        } else { // directory without response
+            throw 403;
+        }
+    }
+    _status = 200;
+    _headers["content-length"] = SSTR(_body.size());
+    const char *type = Response::getMimeType(_path.c_str());
+    if (type == NULL) {
+        throw 415;
+    }
+    _headers["content-type"] = type;
+    _headers["last-modified"] = formatDate(_pathStat.st_mtimespec.tv_sec);
+}
+
+void Response::fileToBody(std::string &path) {
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1) {
         if (errno == ENOENT) {
-            return (404);
+            throw 404;
         }
-        return (500);
+        throw 500;
     }
     if (readToVector(fd, _body) == RETURN_FAILURE) {
         close(fd);
-        return (500);
+        throw 500;
     }
     close(fd);
-    return (200);
 }
 
-uint16_t Response::performGET() {
-    if (S_ISDIR(_pathStat.st_mode == false)) {
-        return (fileToBody(_path));
-    }
-    if (_path.back() != '/') {
-        return (301); // why???
-    }
-    std::string index = getIndex();
-    if (index.empty() == false) {
-        return (fileToBody(index));
-    }
-    // ???
-    // if (_server.getAutoIndexing() == true) {
-    //     if (makeAutoIndex() == RETURN_SUCCESS) {
-    //         return (200);
-    //     }
-    //     return (500);
-    // }
-    return (403);
-}
-
-uint16_t Response::performPOST() {
-    if (_request.getHeaderValueForKey("Content-Length").empty()) {
-        return (411);
-    }
-    // if (Response::isSupportedMIMEType(_request.getHeaderValueForKey("Content-Type")) == false) {
-    //     return (415);
-    // }
-
-    // what happends with directories
-
-    // create path with type
-
-    // if ( /*location doesn't support upload*/ ) {
-    //     return (403);
-    // }
-
-    // _headers["Location"] = path;
-    return (201);
-}
-
-uint16_t Response::performDELETE() {
-    if (S_ISDIR(_pathStat.st_mode == false)) {
-        if (std::remove(_path.c_str()) == -1) {
-            return (500);
+std::string Response::getIndex() {
+    std::vector<std::string> indexes = _location.getIndex();
+    for (std::vector<std::string>::iterator it = indexes.begin();
+        it != indexes.end(); ++it) {
+        std::string index = combinePaths(_path, *it);
+        if (access(index.c_str(), R_OK) == 0) {
+            return (index); // found valid index path
         }
-        return (204);
     }
-    if (_path.back() != '/') {
-        return (409); // why??
+    return (""); // no index path found
+}
+
+void Response::performPOST() {
+    if (access(_path.c_str(), F_OK) == 0) {
+        throw 403;
     }
-    if (access(_path.c_str(), W_OK) == -1) {
-        return (403);
+    const char *extension = Response::getMimeExtenstion(_request.getHeaderValueForKey("content-type").c_str());
+    if (extension == NULL) {
+        throw 415;
     }
-    if (rmdir(_path.c_str()) == -1) {
-        return (500);
+    if (_path.rfind('.') == std::string::npos) {
+        _path = _path + "." + extension;
     }
-    return (204);
+    std::ofstream file(_path, std::ios::binary);
+    if (file.is_open()) {
+        throw 500;
+    }
+    file.write(_body.data(), _body.size());
+    if (file.fail()) {
+        file.close();
+        throw 500;
+    }
+    file.close();
+    _status = 201;
+    _headers["content-length"] = "0";
+    _headers["location"] = _path.substr(_location.getRoot().size());
+}
+
+void Response::performDELETE() {
+    if (S_ISDIR(_pathStat.st_mode) == false) {
+        if (std::remove(_path.c_str()) == -1) {
+            throw 500;
+        }
+    } else {
+        if (_path.back() != '/') {
+            _headers["location"] = _request.getUri() + "/";
+            throw 301;
+        }
+        if (access(_path.c_str(), W_OK) == -1) {
+            throw 403;
+        }
+        if (rmdir(_path.c_str()) == -1) {
+            throw 500;
+        }
+    }
+    _status = 204;
 }

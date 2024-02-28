@@ -3,14 +3,14 @@
 
 
 #define BUFFER_SIZE 30720
-#include "Location.hpp"
+//#include "Location.hpp"
 #include "Request.hpp"
 #include "Status.hpp"
 #include "utils.hpp"
 #include "Client.hpp"
 
-static CGIList              supportedCGI;
 class Location;
+
 class Server
 {
 private:
@@ -69,14 +69,17 @@ public:
 	static void printServer(Server &server);
 
     static std::string			getCGIInterpreter(const std::string &extension);
-    static const char			*getStatusMessage(uint16_t status);
+    static const char			*getStatusMessage(int status);
     std::string					getRoot() const;
 //    std::vector<std::string> getIndex(std::string &location) const;
     std::string					getServerName() const;
 	std::vector<std::string>	getIndex() const;
 	bool						getAutoIndex() const;
-	Location					getLocation(std::string &path);
+	Location					getLocation(const std::string &path) const;
 	std::vector<std::string>	getCgiInfo() const;
+    unsigned short				getPort() const;
+    const std::string			&getIpAddr() const;
+//    std::string					&getIpAddr();
 
 	int							getSocketFd() const;
 
@@ -84,12 +87,6 @@ public:
 
 	void				autoCompleteLocations();
 
-
-    // TODO implement location_util.cpp
-    bool checkLocationMethod(const std::string &path, RequestMethod method) const;
-    std::string getLocationPath(const std::string &path) const;
-    bool isLocationMethodAllowed(const std::string &path, RequestMethod method) const;
-    std::string getLocationErrorPage(const std::string &path, uint16_t status) const;
-    std::vector<std::string> getLocationIndexes(const std::string &path) const;
     std::string getErrorPage(const std::string &path, uint16_t status) const;
+
 };

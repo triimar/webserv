@@ -1,5 +1,6 @@
 #define KEEPALIVE_TIMEOUT 60
 #include "../../include/Client.hpp"
+#include "../../include/Server.hpp"
 
 Client::Client() : clientfd(0){
 	return;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "utils.hpp"
-#include "Server.hpp"
 
 class Server;
 
@@ -32,7 +31,12 @@ public:
 
 	void autoCompleteFromServer(const Server &server);
 
-	const std::string 	&getName();
+	const std::string 					&getName() const;
+	const std::string 					&getRoot() const;
+	const std::vector<RequestMethod>	&getAllowedMethods() const;
+	const std::vector<std::string>		&getIndex() const;
+	bool								getAutoindex() const;
+	std::vector<std::string>			getCgiInfo() const;
 
 	static void printLocation(Location &location);
 };

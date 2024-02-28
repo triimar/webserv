@@ -4,9 +4,10 @@
 /*                                  INCLUDE                                   */
 /* ************************************************************************** */
 
-#include "Server.hpp"
 #include "Request.hpp"
 #include "utils.hpp"
+#include "Server.hpp"
+#include "Location.hpp"
 
 /* ************************************************************************** */
 /*                                   CLASS                                    */
@@ -21,53 +22,83 @@ Just construct response with server and request & then call send()
 
 */
 
+class Location;
 class Server;
 
 class Response {
 
 public:
 
-    Response(const Server &serv, const Request &req);
+    Response(const Server &serv, Request &req);
     ~Response();
 
-    // send
     void send();
     std::vector<char> &getResponse();
 
-
 private:
-    // cgi
+    // process
+    void processRequest();
+    std::string getIndex();
+    std::string cleanPath(const std::string &path);
+	void performGET();
+    void fileToBody(std::string &path);
+    void performPOST();
+    void performDELETE();
+	// cgi
     bool isCGI();
     bool isValidCGI(std::string &path);
-    void executeCGI();
-    void cgiProcess(int cgiOutput[2]);
-    uint16_t waitForCGI(pid_t cgi);
-    char **getCGIEnvironment();
-    // process
-    uint16_t processRequest();
-    uint16_t checkRequest();
-    uint16_t fileToBody(std::string &path);
-    uint16_t performGET();
-    uint16_t performPOST();
-    uint16_t performDELETE();
-    // index
-    std::string getIndex();
-    std::string getCGIIndex();
-    // send
+    static bool isSupportedCGI(const std::string &extension);
+    bool hasCGIIndex();
+	void executeCGI();
+	void checkCGI();
+	void cgiProcess(int cgiPipe[2]);
+	char **getCGIEnvironment();
+	int waitForCGI(pid_t cgi);
+	void parseCGIOutput();
+	void parseCGIHeaders();
+	void interpretCGIHeaders();
+	Return unchunkCGIBody();
+	// autoindex
+	std::string formatModificationTime(time_t modifTime);
+	std::string formatSize(off_t size);
+	void appendHtmlHead();
+	void appendHtmlBodyStart();
+	void appendHtmlRow(std::string& subPath, std::string& modTime, std::string& bytes);
+	void appendHtmlEnd();
+	void makeDirectoryListing();
+    // construct
     void constructResponse();
     void makeErrorPage();
-    void setHeaders();
+    // mime.cpp
+    static const char *getMimeType(const char *extension);
+    static const char *getMimeExtenstion(const char *type);
+    static int mimeStrcmpi(const char *s1, const char *s2);
 
     const Server &_server;
-    const Request &_request;
-    std::string _cgiPath;
-    std::string _cgiInterpreter;
-    bool _isCGI;
-    char **_cgiEnv;
-    std::string _path;
-    struct stat _pathStat;
-    uint16_t _status;
+    Request &_request;
+    Location _location;
     std::map<std::string, std::string> _headers;
     std::vector<char> _body;
     std::vector<char> _response;
+    std::string _path;
+    struct stat _pathStat;
+    bool _isCGI;
+    int _status;
+    std::vector<std::string> _redirectHistory;
+    std::string _cgiPath;
+    std::string _cgiExtension;
+    std::string _cgiPathInfo;
+    std::vector<std::string> _cgiArgv;
+    static std::string _supportedCGI;
+
+    struct mimeEntry {
+        const char *extension;
+        const char *mimeType;
+    };
+    static Response::mimeEntry _mimeTypes[347];
 };
+
+// utils
+char **vectorToArray(const std::vector<std::string> &vec);
+std::string formatDate(time_t pit);
+std::string capitalizeHeader(std::string name);
