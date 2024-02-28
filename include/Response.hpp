@@ -32,6 +32,8 @@ public:
 
     // send
     void send();
+    std::vector<char> &getResponse();
+
 
 private:
     // cgi

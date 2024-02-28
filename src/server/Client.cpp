@@ -16,7 +16,7 @@ Client::Client(Server *server) {
 
 	this->server = server;
 	time(&connectionStart);
-	this->isActive = true;
+	this->finishedChunked = true;
 	this->keepAlive = true;
 
 
@@ -26,7 +26,7 @@ Client::Client(Server *server) {
 
 Client::Client(const Client &client) : clientfd(client.clientfd), server(client.server),
 request(client.request), connectionStart(client.connectionStart), keepAlive(client.keepAlive),
-isActive(client.isActive){
+finishedChunked(client.finishedChunked){
 	return;
 }
 
@@ -43,7 +43,7 @@ Client &Client::operator=(Client &client) {
 		this->request = client.request;
 		this->connectionStart = client.connectionStart;
 		this->keepAlive = client.keepAlive;
-		this->isActive = client.isActive;
+		this->finishedChunked = client.finishedChunked;
 	}
 	return *this;
 }
@@ -73,6 +73,18 @@ bool Client::isTimeout() {
 	return false;
 }
 
+void Client::setChunkedUnfinished() {
+	this->finishedChunked = false;
+}
+
+void Client::setChunkedFinished() {
+	this->finishedChunked = true;
+}
+
+void Client::setResponse(std::vector<char> response) {
+	this->responseMsg = response;
+}
+
 int &Client::getClientFd() {
 	return this->clientfd;
 }
@@ -85,14 +97,18 @@ Request &Client::getRequest() {
 	return this->request;
 }
 
-time_t Client::getConnectionStart() {
+std::vector<char> &Client::getResponse() {
+	return this->responseMsg;
+}
+
+time_t &Client::getConnectionStart() {
 	return this->connectionStart;
 }
 
-bool Client::getKeepAlive() {
+bool &Client::getKeepAlive() {
 	return this->keepAlive;
 }
 
-bool Client::getIsActive() {
-	return this->isActive;
+bool &Client::getFinishedChunked() {
+	return this->finishedChunked;
 }

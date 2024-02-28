@@ -9,6 +9,10 @@ void Response::send() {
     // send(_socket, _response.data(), _response.size(), 0);
 }
 
+std::vector<char> &Response::getResponse() {
+	return this->_response;
+}
+
 void Response::makeErrorPage() {
     std::string path = _server.getErrorPage(_path, _status);
     if (path.empty()) {
