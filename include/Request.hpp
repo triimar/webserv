@@ -12,14 +12,14 @@ enum ParseState {
 	stateParseChunkedBody,
 	requestParseFAIL, //internal error
 	requestERROR,
-	requestOK,
+	requestOK
 };
 
 enum RequestLineState {
 	stateParseMethod,
 	stateParseUri,
 	stateParseHTTPver,
-	requestLineOK,
+	requestLineOK
 };
 
 // REQUEST CLASS provides functions to parse the request and save the Request data. 
@@ -52,8 +52,8 @@ private:
 
 	const char *extractHeadersStream(const char *requestBuf, int MessageLen);
 	void		parseRequestLine();
-	void		parseMethod(std::stringstream& requestLine);
-	void		parseHTTPver(std::stringstream& requestLine);
+	void		parseMethod(std::istringstream& requestLine);
+	void		parseHTTPver(std::istringstream& requestLine);
 
 	void		parseHeader();
 	const char *checkForBody(const char *bodyStart, const char *msgEnd);
@@ -71,7 +71,7 @@ public:
 	Request &operator=(const Request& rhs);
 
 	void		processRequest(const char* requestBuf, int messageLen);
-	void		parseURI(std::stringstream& requestLine);
+	void		parseURI(std::istringstream& requestLine);
 	void		resetRequest();
 
 	const RequestMethod& getMethod() const;

@@ -108,13 +108,11 @@ const char *Request::extractHeadersStream(const char *requestBuf, int messageLen
 /* ************************************************************************** */
 void	Request::parseRequestLine() {
 	std::string rl;
-	std::getline(headersStream_, rl);
-	if (!headersStream_ || rl.empty())
-		return setError(requestParseFAIL, 500, "Failure to extract request line");
-	else if (rl.back() != '\r')
+	if (!std::getline(headersStream_, rl, '\r'))
+		return setError(requestERROR, 500, "Failure to extract request line");
+	if (!headersStream_.eof() && headersStream_.get() != '\n') // for final when no crlf
 		return setError(requestERROR, 400, "Syntax error in request line");
-	rl.pop_back();
-	std::stringstream requestLineStream(rl);
+	std::istringstream requestLineStream(rl);
 	while (state_ != requestERROR && state_ != requestParseFAIL && rlstate_ != requestLineOK)  {
 		switch (rlstate_)
 		{
@@ -128,12 +126,16 @@ void	Request::parseRequestLine() {
 				break;
 		}
 	}
-	if (state_ != requestERROR && state_ != requestParseFAIL)
-		state_ = stateParseHeaders;
+	if (rlstate_ == requestLineOK) {
+		if (headersStream_.eof() && (method_ == GET || method_ == DELETE))
+			state_ = requestOK;
+		else
+			state_ = stateParseHeaders;
+	}
 	return ;
 }
 
-void	Request::parseMethod(std::stringstream& requestLine) {
+void	Request::parseMethod(std::istringstream& requestLine) {
 	requestLine >> methodStr_;
 	if (requestLine.fail() || methodStr_.empty())
 		return setError(requestParseFAIL, 500, "Failure to extract method from request line");
@@ -151,7 +153,7 @@ void	Request::parseMethod(std::stringstream& requestLine) {
 }
 
 //has to be public for the CGI
-void	Request::parseURI(std::stringstream& requestLine) {
+void	Request::parseURI(std::istringstream& requestLine) {
 	std::string tmp;
 	requestLine >> tmp;
 	if (requestLine.fail() || tmp.empty())
@@ -185,7 +187,7 @@ void	Request::parseURI(std::stringstream& requestLine) {
 	return ;
 }
 
-void	Request::parseHTTPver(std::stringstream& requestLine) {
+void	Request::parseHTTPver(std::istringstream& requestLine) {
 	requestLine >> httpVer_;
 	if (requestLine.fail() || httpVer_.empty())
 		return setError(requestERROR, 500, "Failure to extract HTTP version from request line");
