@@ -400,7 +400,7 @@ void Config::runServers() {
 				if (currentClient.getFinishedChunked())
 				{
 					Response response(*currentClient.getServer(), currentClient.getRequest());
-					currentClient.setResponse(response.send());
+					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}
 				int sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
@@ -420,6 +420,8 @@ void Config::runServers() {
 				}
 				if (!currentClient.getKeepAlive() && currentClient.getFinishedChunked()) {
 					closeClient(current_fd, i);
+					eventNr--;
+					continue;
 				} else if (currentClient.getKeepAlive() && currentClient.getFinishedChunked()){
 					currentClient.updateTime();
 					fds[i].events = POLLIN;
