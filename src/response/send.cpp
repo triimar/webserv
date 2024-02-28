@@ -1,11 +1,12 @@
 #include "../../include/Response.hpp"
 
-void Response::send() {
+std::vector<char> Response::send() {
     makeErrorPage();
     if (_isCGI == false || _response.empty()) {
         setHeaders();
         constructResponse();
     }
+	return this->_response;
     // send(_socket, _response.data(), _response.size(), 0);
 }
 

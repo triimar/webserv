@@ -387,25 +387,40 @@ void Config::runServers() {
 					fds[i].events = POLLOUT;
 				} else
 					fds[i].events = POLLIN;
+				eventNr--;
 			}
 
 			//HANDLING RESPONSES
 
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
-				std::string response = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nwhat!";
-				//create response with request and server as input
-				//send response & check for errors
 				std::cout << currentClient.getRequest();
+				std::vector<char> &currentResponse = currentClient.getResponse();
 
-				if (write(current_fd, response.c_str(), response.size()) == -1) {
+				if (currentClient.getFinishedChunked())
+				{
+					Response response(*currentClient.getServer(), currentClient.getRequest());
+					currentClient.setResponse(response.send());
+					currentResponse = currentClient.getResponse();
+				}
+				int sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
+				if (sentSize < 0)
+				{
 					perror("Could not write in client socket\n");
 					closeClient(current_fd, i);
 					continue;
+				} else if (static_cast<unsigned long >(sentSize) < currentResponse.size())
+				{
+					currentResponse.erase(currentResponse.begin(), currentResponse.begin() + sentSize);
+					currentClient.setChunkedUnfinished();
+					fds[i].revents = POLLOUT;
 				}
-				if (!currentClient.getKeepAlive()) {
+				else {
+					currentClient.setChunkedFinished();
+				}
+				if (!currentClient.getKeepAlive() && currentClient.getFinishedChunked()) {
 					closeClient(current_fd, i);
-				} else {
+				} else if (currentClient.getKeepAlive() && currentClient.getFinishedChunked()){
 					currentClient.updateTime();
 					fds[i].events = POLLIN;
 					currentClient.getRequest().resetRequest();

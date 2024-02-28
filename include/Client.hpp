@@ -17,7 +17,7 @@ private:
 
 	time_t				connectionStart;
 	bool				keepAlive;
-	bool				isActive;
+	bool				finishedChunked;
 
 public:
 	Client();
@@ -30,12 +30,15 @@ public:
 	void	updateTime();
 	bool	isTimeout();
 	void	setResponse(std::vector<char> response);
+	void	setChunkedUnfinished();
+	void	setChunkedFinished();
 
-	int		&getClientFd();
-	Server	*getServer();
-	Request	&getRequest();
-	time_t	getConnectionStart();
-	bool	getKeepAlive();
-	bool	getIsActive();
+	int					&getClientFd();
+	Server				*getServer();
+	Request				&getRequest();
+	std::vector<char>	&getResponse();
+	time_t				&getConnectionStart();
+	bool				&getKeepAlive();
+	bool				&getFinishedChunked();
 
 };
