@@ -28,20 +28,22 @@ public:
     Response(const Server &serv, const Request &req);
     ~Response();
 
-    // send
-    void send();
+    std::vector<char> &getResponse();
 
 private:
     // process
     void processRequest();
+    std::string getIndex();
+    void cleanPath();
 	void performGET();
+    void fileToBody(std::string &path);
     void performPOST();
     void performDELETE();
 	// cgi
     bool isCGI();
     bool isValidCGI(std::string &path);
     static bool isSupportedCGI(const std::string &extension);
-    std::string getCGIIndex();
+    bool hasCGIIndex();
 	// autoindex
 	std::string formatModificationTime(time_t modifTime);
 	std::string formatSize(off_t size);
@@ -53,12 +55,10 @@ private:
     // construct
     void constructResponse();
     void makeErrorPage();
-    void setHeaders();
-    // send
-    void send(int socket);
-    // utils
-    void fileToBody(std::string &path);
-    std::string getIndex();
+    // mime.cpp
+    static const char *getMimeType(const char *extension);
+    static const char *getMimeExtenstion(const char *type);
+    static int mimeStrcmpi(const char *s1, const char *s2);
 
     const Server &_server;
     const Request &_request;
@@ -67,7 +67,7 @@ private:
     std::vector<char> _body;
     std::vector<char> _response;
     std::string _path;
-    bool _pathIsDir;
+    struct stat _pathStat;
     int _status;
     std::vector<std::string> _redirectHistory;
     bool _isCGI;
@@ -76,4 +76,15 @@ private:
     std::string _cgiPathInfo;
     std::vector<std::string> _cgiArgv;
     static std::string _supportedCGI;
+
+    struct mimeEntry {
+        const char *extension;
+        const char *mimeType;
+    };
+    static Response::mimeEntry _mimeTypes[347];
 };
+
+// utils
+char **vectorToArray(const std::vector<std::string> &vec);
+std::string formatDate(time_t pit);
+void capitalizeHeader(std::string &name);

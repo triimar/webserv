@@ -6,14 +6,14 @@
 
 bool Response::isCGI() {
     if (_request.getMethod() == DELETE) {
-        return (false); //405
+        return (false);
     }
 
     if (isValidCGI(_path)) {
         return (true);
     }
 
-    if (_pathIsDir == false) {
+    if (S_ISDIR(_pathStat.st_mode) == false) {
         return (false);
     }
 
@@ -42,7 +42,6 @@ bool Response::isValidCGI(std::string &path) {
             _cgiPath = testPath;
             _cgiExtension = extension;
             _cgiPathInfo = path.substr(end, path.size() - end);
-            _pathIsDir = false;
             return (true);
         }
     }
@@ -180,13 +179,8 @@ int Response::waitForCGI(pid_t cgi) {
             return (503)
         }
     }
-    if (WIFEXITED(waitStatus)) {
-        switch (WEXITSTATUS(waitStatus)) {
-        case 0: return (0);
-        case 2: return (400);
-        case 127: return (404);
-        case 128: return (400);
-        }
+    if (WIFEXITED(waitStatus) && WEXITSTATUS(waitStatus) == EXIT_SUCCESS) {
+        return (0);
     }
     return (500);
 }
@@ -199,25 +193,56 @@ void Response::parseCGIOutput() {
     if (_response.empty()) {
         throw 204;
     }
+    int len = 2;
     std::vector<char>::iterator headerEnd = findSubstring(_response.begin(), _response.end(), "\n\n");
     if (headerEnd == _response.end()) {
+        len = 4;
         headerEnd = findSubstring(_response.begin(), _response.end(), CRLFCRLF);
         if (headerEnd == _response.end()) {
             throw 500;
         }
     }
-    _body.insert(_body.begin(), headerEnd + 4, _response.end());
-    _response.erase(headerEnd + 4);
+    _body.insert(_body.begin(), headerEnd + len, _response.end());
+    _response.erase(headerEnd + len / 2); // empty line and body removed
     
     parseCGIHeaders();
     interpretCGIHeaders();
-
-    // erase all but the supported headers (delete _headers.erase() from Status and Transfer-Encoding)
 }
 
-void Response::parseCGIHeaders() {
-    // parse headers into map -> syntax error 500
-
+void parseCGIHeaders() {
+    while (_response.empty() == false) {
+        std::vector<char>::iterator fieldEnd = std::find(_response.begin(), _response.end(), '\n');
+        if (fieldEnd == _response.end()) {
+            throw 500;
+        }
+        std::string test = std::string(_response.begin(), fieldEnd);
+        std::istringstream field(test);
+        _response.erase(_response.begin(), fieldEnd + 1);
+        if ((!field.eof() && (field.peek() == ' ' || field.peek() == '\t'))) {
+            throw 500;
+        }
+        std::string line, key, value;
+        if (!std::getline(field, line, '\n')) {
+            throw 500;
+        }
+        if (line.back() == '\r') {
+            line.pop_back();
+        }
+        std::istringstream iss(line);
+        if (!std::getline(iss, key, ':') || std::isspace(key.back())
+            || !std::getline(iss, value) || containsControlChar(key)
+            || containsControlChar(value)) {
+            throw 500;
+        }
+        trimString(key);
+        strToLower(key);
+        trimString(value);
+        std::map<std::string, std::string>::iterator found = _headers.find(key);
+        if (!field || found != _headers.end()) {
+            throw 500;
+        }
+        _headers[key] = value;
+    }
 }
 
 void Response::interpretCGIHeaders() {
@@ -248,8 +273,8 @@ void Response::interpretCGIHeaders() {
             if (_redirectHistory.size() < REDIRECTION_LIMIT && 
                 std::find(_redirectHistory.begin(), uriHistory.end(), searchIt->second) != _redirectHistory.end()) {
                 // relative URI -> local redirect
-                std::stringstream ss(searchIt->second);
-                _request.parseURI(ss);
+                std::istringstream iss(searchIt->second);
+                _request.parseURI(iss);
                 _headers.clear();
                 _body.clear();
                 _response.clear();

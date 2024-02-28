@@ -1,5 +1,33 @@
 #include "../../include/Response.hpp"
 
+void Response::constructResponse() {
+    _response.clear();
+    if (_status >= 300) {
+        _body.clear();
+        if (_status >= 400) {
+            _headers.clear();
+            makeErrorPage();
+        }
+    }
+    appendStringToVector(_response, _request.getHttpVer().c_str());
+    appendStringToVector(_response, " ");
+    appendStringToVector(_response, Server::getStatusMessage(_status));
+    appendStringToVector(_response, CRLF);
+    _headers["server"] = _server.getServerName();
+    _headers["date"] = formatDate(time(0));
+    for (std::map<std::string, std::string>::iterator it = _headers.begin();
+        it != _headers.end(); ++it) {
+        capitalizeHeader(it->first);
+        appendStringToVector(_response, it->first.c_str());
+        appendStringToVector(_response, ": ");
+        appendStringToVector(_response, it->second.c_str());
+        appendStringToVector(_response, CRLF);
+    }
+    appendStringToVector(_response, CRLF);
+    _response.insert(_response.end(), _body.begin(), _body.end());
+    appendStringToVector(_response, CRLFCRLF);
+}
+
 void Response::makeErrorPage() {
     std::string path = _location.getErrorPage(_path, _status);
     int fd = -1;
@@ -12,54 +40,4 @@ void Response::makeErrorPage() {
     if (fd != -1) {
         close(fd);
     }
-}
-
-// std::string Response::getContentType
-
-
-
-void Response::setHeaders() {
-    if (_isCGI) {
-        // Status -> _status
-        // update content-length
-        // which are invalid??
-    }
-
-
-    _headers["Server"] = _server.getServerName();
-    _headers["Date"] = getCurrentDate();
-    _headers["Content-Length"] = "0";
-    switch (_reqest.getMethod()) {
-    case GET:
-        _headers["Content-Length"] = SSTR(_body.size());
-        // _headers["Content-Type"] = getContentType();
-        break ;
-    case POST:
-        // _headers["Location"] = path;
-        break ;
-    }
-    
-}
-
-void Response::constructResponse() {
-    setHeaders();
-    if (_status >= 300) {
-        _headers.clear();
-        _body.clear();
-        makeErrorPage();
-    }
-    appendStringToVector(_response, _request.getHttpVer().c_str());
-    appendStringToVector(_response, " ");
-    appendStringToVector(_response, Server::getStatusMessage(_status));
-    appendStringToVector(_response, CRLF);
-    for (std::map<std::string, std::string>::iterator it = _headers.begin();
-        it != _headers.end(); ++it) {
-        appendStringToVector(_response, it->first.c_str());
-        appendStringToVector(_response, ": ");
-        appendStringToVector(_response, it->second.c_str());
-        appendStringToVector(_response, CRLF);
-    }
-    appendStringToVector(_response, CRLF);
-    _response.insert(_response.end(), _body.begin(), _body.end());
-    appendStringToVector(_response, CRLFCRLF);
 }

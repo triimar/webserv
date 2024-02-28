@@ -16,3 +16,7 @@ Response::Response(const Server &serv, const Request &req) :
 }
 
 Response::~Response() {}
+
+std::vector<char> &Response::getResponse() {
+    return (_response);
+}
