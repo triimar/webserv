@@ -27,9 +27,35 @@
 #include <sstream>
 #include <unistd.h>
 #include <fstream>
+<<<<<<< HEAD
 #include <poll.h>
 #include <csignal>
 //#include "Server.hpp"
+=======
+#include <dirent.h>
+#include <ctime>
+
+/* ************************************************************************** */
+/*                                  DEFINES                                   */
+/* ************************************************************************** */
+
+#define BUFFER_SIZE 30720
+#define DEFAULT_CONFIG "webserv.conf"
+#define SERVER_VERSION "webserv/1.0"
+#define CGI_VERSION "CGI/1.1"
+#define SUPPORTED_CGI "sh,py,perl"
+#define CGI_TIMEOUT 3.0
+#define SHEBANG "#!"
+#define DATE_FORMAT "%a, %d %b %Y %T GMT"
+#define DATE_FORMAT_LEN 29
+#define REDIRECTION_LIMIT 5
+
+#define CRLF "\r\n"
+#define CRLFCRLF "\r\n\r\n"
+
+#define SSTR(x) static_cast<std::ostringstream &>(\
+        (std::ostringstream() << std::dec << x)).str()
+>>>>>>> e9d52dcaf47869d64ef4cca5d2b91c7025f10a83
 
 /* ************************************************************************** */
 /*                                   ENUMS                                    */
@@ -55,11 +81,12 @@ enum Return {
 };
 
 enum Pipe {
-    PIPEIN,
-    PIPEOUT
+    PIPE_READ,
+    PIPE_WRITE
 };
 
 /* ************************************************************************** */
+<<<<<<< HEAD
 /*                                  DEFINES                                   */
 /* ************************************************************************** */
 
@@ -82,6 +109,8 @@ typedef std::map<std::string, std::string> CGIList;
 #define CRLFCRLF "\r\n\r\n"
 
 /* ************************************************************************** */
+=======
+>>>>>>> e9d52dcaf47869d64ef4cca5d2b91c7025f10a83
 /*                                 FUNCTIONS                                  */
 /* ************************************************************************** */
 
@@ -89,16 +118,23 @@ typedef std::map<std::string, std::string> CGIList;
 WebservError ft_perror(WebservError err, const char *context);
 
 // split
-std::vector<std::string> splitString(const std::string str, char delim);
+std::vector<std::string> splitString(const std::string& input, const std::string delim);
 
 // paths
 std::string combinePaths(std::string &lhs, std::string &rhs);
 
 // vector
-void appendStringToVector(std::vector<char> &vector, const char *str);
+void appendStringToVector(std::vector<char> &vector, std::string str);
 Return readToVector(int fd, std::vector<char> &vec);
+<<<<<<< HEAD
 
 // string
 void strToLower(std::string& str);
 std::string& trimString(std::string& str);
 bool containsControlChar(std::string& str);
+=======
+std::vector<char>::iterator findSubstring(std::vector<char>::iterator begin, std::vector<char>::iterator end, std::string s);
+
+// free
+void free_2d_array(void **array);
+>>>>>>> e9d52dcaf47869d64ef4cca5d2b91c7025f10a83

@@ -34,5 +34,7 @@ public:
 
 	const std::string 	&getName();
 
+    const std::vector<RequestMethod> &getAllowedMethods() const;
+
 	static void printLocation(Location &location);
 };

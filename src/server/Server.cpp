@@ -8,13 +8,6 @@ Server::Server() {
 	ipAddress = "";
 	clientSize = 0;
 	autoindex = true;
-    // translates SUPPORTED_CGI macro to usable map
-	//TODO move to more global so not to have it every server
-    std::vector<std::string> cgiPairs = splitString(SUPPORTED_CGI, '&');
-    for (size_t i = 0; i < cgiPairs.size(); ++i) {
-        std::vector<std::string> pair = splitString(cgiPairs[i], '=');
-        supportedCGI[pair[0]] = pair[1];
-    }
 }
 
 Server::Server(const Server &server) : port(server.port), host(server.host),
@@ -140,56 +133,14 @@ std::string Server::getRoot() const {
     return (this->root);
 }
 
-std::vector<std::string> Server::getIndex() const{
-    return (this->index);
-}
-
-bool Server::getAutoIndex() const {
-	return this->autoindex;
-}
-
-std::vector <std::string> Server::getCgiInfo() const {
-	return this->cgi_info;
-}
-
 std::string Server::getServerName() const {
     return (this->serverName.back());
 }
 
-std::string Server::getCGIInterpreter(const std::string &extension) {
-    CGIList::iterator it = supportedCGI.find(extension);
-    if (it != supportedCGI.end()) {
-        return (it->second);
-    } else {
-        return ("");
-    }
+unsigned short Server::getPort() const {
+    return (this->port);
 }
 
-/**
- * This function returns the location that holds the directory given in the path.
- * It checks the location directory with the path up until the location name ends.
- * @param path the path from which to extract a location
- * @return the location, provided it exists. Otherwise, it will return a Location with
- * the same values as the server.
- */
-Location Server::getLocation(std::string &path) {
-//	std::vector<std::string> paths = splitString(path, '/');
-	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++)
-	{
-		if (path.compare(0, it->first.size(), it->first) == 0)
-			return it->second;
-	}
-	Location location;
-	location.autoCompleteFromServer(*this);
-	return location;
-}
-
-void Server::autoCompleteLocations() {
-	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++) {
-		it->second.autoCompleteFromServer(*this);
-	}
-}
-
-int Server::getSocketFd() const {
-	return this->socketFd;
+std::string &getIpAddr() const {
+    return (this->ipAddress);
 }

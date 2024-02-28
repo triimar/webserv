@@ -9,8 +9,12 @@
 #include "utils.hpp"
 #include "Client.hpp"
 
+<<<<<<< HEAD
 static CGIList              supportedCGI;
 class Location;
+=======
+
+>>>>>>> e9d52dcaf47869d64ef4cca5d2b91c7025f10a83
 class Server
 {
 private:
@@ -67,6 +71,7 @@ public:
 //	void pushLocation();
 
 	static void printServer(Server &server);
+<<<<<<< HEAD
 
     static std::string			getCGIInterpreter(const std::string &extension);
     static const char			*getStatusMessage(uint16_t status);
@@ -92,4 +97,12 @@ public:
     std::string getLocationErrorPage(const std::string &path, uint16_t status) const;
     std::vector<std::string> getLocationIndexes(const std::string &path) const;
     std::string getErrorPage(const std::string &path, uint16_t status) const;
+=======
+    static const char *getStatusMessage(uint16_t status);
+    std::string getRoot() const;
+    std::string getServerName() const;
+    unsigned short getPort() const;
+    std::string &getIpAddr() const;
+
+>>>>>>> e9d52dcaf47869d64ef4cca5d2b91c7025f10a83
 };

@@ -1,22 +1,20 @@
 #include "../../include/utils.hpp"
 
-void appendStringToVector(std::vector<char> &vector, const char *str) {
-    if (str) {
-        std::string temp(str);
-        vector.insert(vector.end(), temp.begin(), temp.end());
+void appendStringToVector(std::vector<char> &vector, std::string str) {
+    if (str.empty() == false) {
+        vector.insert(vector.end(), str.begin(), str.end());
     }
 }
 
 Return readToVector(int fd, std::vector<char> &vec) {
-    char buf[BUFFER_SIZE + 1] = {'\0'};
+    char buf[BUFFER_SIZE];
     ssize_t readBytes;
     while ((readBytes = read(fd, buf, BUFFER_SIZE)) > 0) {
-        for (ssize_t i = 0; i < readBytes; ++i) {
-            vec.push_back(buf[i]);
-        }
+        vec.insert(vec.end(), buf, buf + readBytes);
     }
-    if (readBytes == -1) {
-        return (RETURN_FAILURE);
-    }
-    return (RETURN_SUCCESS);
+    return ((readBytes == -1) ? RETURN_FAILURE : RETURN_SUCCESS);
+}
+
+std::vector<char>::iterator findSubstring(std::vector<char>::iterator begin, std::vector<char>::iterator end, std::string s) {
+    return (std::search(begin, end, s.begin(), s.end()));
 }
