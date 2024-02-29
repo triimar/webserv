@@ -1,4 +1,4 @@
-#include "../../include/Config.hpp"
+#include "../../include/webserv.hpp"
 
 bool running = true;
 
@@ -349,7 +349,7 @@ void Config::runServers() {
 			if (i < serverList.size() && (fds[i].revents & POLLIN)) {
 				try {
 					std::cout << "Setting up new client\n";
-					Client newClient(&serverList[i]);
+					Client newClient(serverList[i]);
 					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
 					addFdToPoll(newClient.getClientFd());
 					eventNr--;
@@ -395,14 +395,19 @@ void Config::runServers() {
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
 				std::cout << currentClient.getRequest();
-				std::vector<char> &currentResponse = currentClient.getResponse();
+				std::vector<char> currentResponse = currentClient.getResponse();
 
-				if (currentClient.getFinishedChunked())
+				if (currentResponse.empty() || currentClient.getFinishedChunked())
 				{
-					Response response(*currentClient.getServer(), currentClient.getRequest());
+					Response response(currentClient.getServer(), currentClient.getRequest());
 					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}
+                std::cout << "response size : " << currentResponse.size() << std::endl;
+                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                    std::cout << *it;
+                }
+                std::cout << "-----------END RESPONSE----------------" << std::endl;
 				int sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				if (sentSize < 0)
 				{

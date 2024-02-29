@@ -1,115 +1,115 @@
-#define KEEPALIVE_TIMEOUT 60
-#include "../../include/Client.hpp"
-#include "../../include/Server.hpp"
+#include "../../include/webserv.hpp"
 
-Client::Client() : clientfd(0){
-	return;
-}
+// Client::Client() : _clientfd(0){
+// 	return;
+// }
 
-Client::Client(Server *server) {
+Client::Client(Server &_server) : _server(_server) {
+
 	struct sockaddr_in clientAddress;
 	socklen_t socketLen = sizeof(clientAddress);
 
-	clientfd = accept(server->getSocketFd(), (struct sockaddr *)&clientAddress, &socketLen);
+	_clientfd = accept(_server.getSocketFd(), (struct sockaddr *)&clientAddress, &socketLen);
 
-	if (clientfd == -1)
+	if (_clientfd == -1)
 		throw std::runtime_error("Client starting error: failed to connect client.\n");
 
-	this->server = server;
-	time(&connectionStart);
-	this->finishedChunked = true;
-	this->keepAlive = true;
-
+	time(&_connectionStart);
+	_finishedChunked = true;
+	_keepAlive = true;
 
 	std::cout << "Client Connected!\n";
 	return;
 }
 
-Client::Client(const Client &client) : clientfd(client.clientfd), server(client.server),
-request(client.request), connectionStart(client.connectionStart), keepAlive(client.keepAlive),
-finishedChunked(client.finishedChunked){
-	return;
-}
+// Client::Client(const Client &client) : _clientfd(client._clientfd), _server(client._server),
+// request(client.request), _connectionStart(client._connectionStart), _keepAlive(client._keepAlive),
+// _finishedChunked(client._finishedChunked){
+// 	return;
+// }
 
 Client::~Client() {
-//	close(this->clientfd);
+//	close(_clientfd);
 	return;
 }
 
-Client &Client::operator=(Client &client) {
-	if (client.clientfd != this->clientfd)
-	{
-		this->clientfd = client.clientfd;
-		this->server = client.server;
-		this->request = client.request;
-		this->connectionStart = client.connectionStart;
-		this->keepAlive = client.keepAlive;
-		this->finishedChunked = client.finishedChunked;
-	}
-	return *this;
-}
+// Client &Client::operator=(Client &client) {
+// 	if (client._clientfd != _clientfd)
+// 	{
+// 		_clientfd = client._clientfd;
+// 		_server = client._server;
+// 		request = client.request;
+// 		_connectionStart = client._connectionStart;
+// 		_keepAlive = client._keepAlive;
+// 		_finishedChunked = client._finishedChunked;
+// 	}
+// 	return *this;
+// }
 
 
 // Timeout Expiry:
-// If there is no activity (no requests from the client) for the duration of the keep-alive timeout, the server may close the connection to free up resources.
-// It's important to note that the keep-alive timeout is often a server-side configuration, and the server determines how long it keeps a connection open based on its settings.
+// If there is no activity (no requests from the client) for the duration of the keep-alive timeout, the _server may close the connection to free up resources.
+// It's important to note that the keep-alive timeout is often a _server-side configuration, and the _server determines how long it keeps a connection open based on its settings.
 
 
 //for client after request kas been parsed
 void Client::confirmKeepAlive() {
-	keepAlive = request.isKeepAlive(); //Triin changed the isConnectionClose to iskeepAlive
+	_keepAlive = _request.isKeepAlive(); //Triin changed the isConnectionClose to iskeepAlive
 }
 //timeout count needs to be set after connection is established and updated after each response has been sent
 //and socket is ready to read.
 void Client::updateTime() {
-	time(&connectionStart);
+	time(&_connectionStart);
 }
 
 bool Client::isTimeout() {
-	time_t current;
+    return (std::difftime(time(NULL), _connectionStart) >= KEEPALIVE_TIMEOUT);
 
-	time(&current);
-	if (current - this->connectionStart >= KEEPALIVE_TIMEOUT)
-		return true;
-	return false;
+	// time_t current;
+
+	// time(&current);
+	// if (current - _connectionStart >= KEEPALIVE_TIMEOUT)
+	// 	return true;
+	// return false;
 }
 
 void Client::setChunkedUnfinished() {
-	this->finishedChunked = false;
+	_finishedChunked = false;
+}
+// ⬆︎⬇︎ setChunkedFinished(bool isFinished) ??
+void Client::setChunkedFinished() {
+	_finishedChunked = true;
 }
 
-void Client::setChunkedFinished() {
-	this->finishedChunked = true;
-}
 
 void Client::setResponse(std::vector<char> response) {
-	this->responseMsg = response;
+	_responseMsg = response;
 }
 
 int &Client::getClientFd() {
-	return this->clientfd;
+	return _clientfd;
 }
 
-Server *Client::getServer() {
-	return this->server;
+Server &Client::getServer() {
+	return _server;
 }
 
 Request &Client::getRequest() {
-	return this->request;
+	return _request;
 }
 
 std::vector<char> &Client::getResponse() {
-	return this->responseMsg;
+	return _responseMsg;
 }
 
 time_t &Client::getConnectionStart() {
-	return this->connectionStart;
+	return _connectionStart;
 }
 
 bool &Client::getKeepAlive() {
-	return this->keepAlive;
+	return _keepAlive;
 }
 
 bool &Client::getFinishedChunked() {
-	return this->finishedChunked;
+	return _finishedChunked;
 }

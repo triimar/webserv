@@ -1,4 +1,4 @@
-#include "../../include/Response.hpp"
+#include "../../include/webserv.hpp"
 
 // credit goes to https://github.com/lasselukkari/MimeTypes
 

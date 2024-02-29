@@ -1,15 +1,8 @@
 #pragma once
 
-
-
-#define BUFFER_SIZE 30720
-//#include "Location.hpp"
-#include "Request.hpp"
+#include "Location.hpp"
 #include "Status.hpp"
 #include "utils.hpp"
-#include "Client.hpp"
-
-class Location;
 
 class Server
 {
@@ -28,10 +21,6 @@ private:
 	std::map<std::string, Location> 	locations;
 	bool								autoindex;
 	std::vector<std::string>			cgi_info;
-
-	/* ************************************************************************** */
-	/*                                  SOCKET ATTRIBUTES                         */
-	/* ************************************************************************** */
 
 	int									socketFd;
 	sockaddr_in							socketAddress;
@@ -68,10 +57,9 @@ public:
 
 	static void printServer(Server &server);
 
-    static std::string			getCGIInterpreter(const std::string &extension);
     static const char			*getStatusMessage(int status);
     std::string					getRoot() const;
-//    std::vector<std::string> getIndex(std::string &location) const;
+    // std::vector<std::string> getIndex(std::string &location) const;
     std::string					getServerName() const;
 	std::vector<std::string>	getIndex() const;
 	bool						getAutoIndex() const;
@@ -79,14 +67,11 @@ public:
 	std::vector<std::string>	getCgiInfo() const;
     unsigned short				getPort() const;
     const std::string			&getIpAddr() const;
-//    std::string					&getIpAddr();
+    // std::string					&getIpAddr();
 
 	int							getSocketFd() const;
+	void				        autoCompleteLocations();
 
-
-
-	void				autoCompleteLocations();
-
-    std::string getErrorPage(const std::string &path, uint16_t status) const;
+    std::string getErrorPage(const std::string &path, int status) const;
 
 };

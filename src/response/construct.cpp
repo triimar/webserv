@@ -1,4 +1,4 @@
-#include "../../include/Response.hpp"
+#include "../../include/webserv.hpp"
 
 void Response::constructResponse() {
     _response.clear();

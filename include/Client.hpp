@@ -1,29 +1,26 @@
 #pragma once
 
-#include "utils.hpp"
 #include "Request.hpp"
-//#include "Server.hpp"
-#include "Response.hpp"
+#include "utils.hpp"
 
 class Server;
-class Request;
 
 class Client {
 private:
-	int					clientfd;
-	Server				*server;
-	Request				request;
-	std::vector<char>	responseMsg;
+	int					_clientfd;
+	Server				&_server;
+	Request				_request;
+	std::vector<char>	_responseMsg;
 
-	time_t				connectionStart;
-	bool				keepAlive;
-	bool				finishedChunked;
+	time_t				_connectionStart;
+	bool				_keepAlive;
+	bool				_finishedChunked;
 
 public:
-	Client();
-	Client(Server *server);
-	Client(const Client &client);
-	Client &operator=(Client &client);
+	// Client();
+	Client(Server &server);
+	// Client(const Client &client);
+	// Client &operator=(Client &client);
 	~Client();
 
 	void	confirmKeepAlive();
@@ -34,7 +31,7 @@ public:
 	void	setChunkedFinished();
 
 	int					&getClientFd();
-	Server				*getServer();
+	Server				&getServer();
 	Request				&getRequest();
 	std::vector<char>	&getResponse();
 	time_t				&getConnectionStart();

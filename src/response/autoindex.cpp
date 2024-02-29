@@ -1,5 +1,4 @@
-#include "../../include/Response.hpp"
-#include "../../include/Location.hpp"
+#include "../../include/webserv.hpp"
 
 std::string Response::formatModificationTime(time_t modifTime) {
 	struct tm* timeinfo = localtime(&modifTime);

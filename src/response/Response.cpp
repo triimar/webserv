@@ -1,4 +1,4 @@
-#include "../../include/Response.hpp"
+#include "../../include/webserv.hpp"
 
 std::string Response::_supportedCGI;
 

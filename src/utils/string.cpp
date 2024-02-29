@@ -1,4 +1,3 @@
-
 #include "../../include/utils.hpp"
 
 void strToLower(std::string& str) {

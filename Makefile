@@ -25,7 +25,7 @@ COMP = compiler
 
 $(NAME): $(OBJS)
 	@$(CP) $(CPPFLAGS) $(INCFLAGS) $(OBJS) -o $(NAME)
-	@printf "$(GREEN)Compiled successfully!$(RESET)"
+	@echo "$(GREEN)Compiled successfully!$(RESET)"
 
 -include $(DEPS)
 

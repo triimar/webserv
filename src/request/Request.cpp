@@ -1,4 +1,4 @@
-#include "../../include/Request.hpp"
+#include "../../include/webserv.hpp"
 
 Request::Request(): state_(stateGetHeaderData), rlstate_(stateParseMethod), headersStream_(""), \
 					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {

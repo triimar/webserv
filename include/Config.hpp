@@ -1,13 +1,11 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <fstream>
 #include "Server.hpp"
 #include "Client.hpp"
+#include "utils.hpp"
 
-class Config{
+class Config {
+
 private:
 //	int port;
 //	std::string host;

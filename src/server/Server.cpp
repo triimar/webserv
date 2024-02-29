@@ -1,5 +1,4 @@
-#include "../../include/Server.hpp"
-#include "../../include/Location.hpp"
+#include "../../include/webserv.hpp"
 
 Server::Server() {
 	port = 0;
@@ -146,6 +145,22 @@ const std::string &Server::getIpAddr() const{
     return (this->ipAddress);
 }
 
+std::vector<std::string> Server::getIndex() const{
+    return (this->index);
+}
+
+bool Server::getAutoIndex() const {
+	return this->autoindex;
+}
+
+std::vector <std::string> Server::getCgiInfo() const {
+	return this->cgi_info;
+}
+
+int Server::getSocketFd() const {
+	return this->socketFd;
+}
+
 Location Server::getLocation(const std::string &path) const{
 	for (std::map<std::string, Location>::const_iterator it = this->locations.begin(); it != this->locations.end(); it++)
 	{
@@ -158,6 +173,15 @@ Location Server::getLocation(const std::string &path) const{
 	return location;
 }
 
-//std::string &Server::getIpAddr(){
-//    return (this->ipAddress);
-//}
+void Server::autoCompleteLocations() {
+	for (std::map<std::string, Location>::iterator it = this->locations.begin(); it != this->locations.end(); it++) {
+		it->second.autoCompleteFromServer(*this);
+	}
+}
+
+std::string Server::getErrorPage(const std::string &path, int status) const {
+    (void)path;
+    (void)status;
+
+    return ("TODO");
+}

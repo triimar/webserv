@@ -1,29 +1,10 @@
 #pragma once
 
-/* ************************************************************************** */
-/*                                  INCLUDE                                   */
-/* ************************************************************************** */
-
-#include "Request.hpp"
-#include "utils.hpp"
-#include "Server.hpp"
 #include "Location.hpp"
+#include "utils.hpp"
 
-/* ************************************************************************** */
-/*                                   CLASS                                    */
-/* ************************************************************************** */
-
-/*
-
-Just construct response with server and request & then call send()
-
-        Response response(*this, request);
-        response.send();
-
-*/
-
-class Location;
 class Server;
+class Request;
 
 class Response {
 
@@ -32,7 +13,6 @@ public:
     Response(const Server &serv, Request &req);
     ~Response();
 
-    void send();
     std::vector<char> &getResponse();
 
 private:

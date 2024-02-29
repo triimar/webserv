@@ -1,7 +1,6 @@
 #pragma once
 
 #include "utils.hpp"
-#define MAX_HEADER_SIZE 8175 //8kb
 
 enum ParseState {
 	stateGetHeaderData,

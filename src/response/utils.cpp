@@ -1,4 +1,4 @@
-#include "../../include/Response.hpp"
+#include "../../include/webserv.hpp"
 
 // only inside cgi child process
 char **vectorToArray(const std::vector<std::string> &vec) {

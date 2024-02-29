@@ -1,5 +1,4 @@
-#include "../../include/Location.hpp"
-#include "../../include/Server.hpp"
+#include "../../include/webserv.hpp"
 
 Location::Location(){
 	name = "";

@@ -1,4 +1,4 @@
-#include "../../include/Response.hpp"
+#include "../../include/webserv.hpp"
 
 void Response::processRequest() {
     if ((_status = _request.getErrorCode()) != 0) {
