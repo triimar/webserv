@@ -66,9 +66,7 @@ bool Response::hasCGIIndex() {
 
 
 void Response::executeCGI() {
-    std::cout << std::endl << "EXECUTE" << std::endl << std::endl;
     checkCGI();
-    std::cout << std::endl << "CHECK" << std::endl << std::endl;
     int cgiPipe[2];
     if (pipe(cgiPipe) == -1) {
         throw 500;
@@ -85,24 +83,21 @@ void Response::executeCGI() {
     if ((_status = waitForCGI(cgi)) == 0) {
         if (readToVector(cgiPipe[PIPE_READ], _response) == RETURN_FAILURE) {
             _status = 500;
-        } else {
-            _status = 200;
         }
     }
+    std::cout << "\033[0;31m" << "status = " << _status << "\033[0m" << std::endl;
     close(cgiPipe[PIPE_READ]);
-    std::cout << std::endl << "PARSE" << std::endl << std::endl;
+    if (_status != 0) {
+        throw _status;
+    }
     parseCGIOutput();
-    std::cout << std::endl << "DONE" << std::endl << std::endl;
 }
 
 void Response::checkCGI() {
-    std::cout << std::endl << "INFO" << std::endl << std::endl;
     std::vector<std::string> cgiInfo = _location.getCgiInfo();
     if (std::find(cgiInfo.begin(), cgiInfo.end(), _cgiExtension) == cgiInfo.end()) {
         throw 403; // file extension not allowed
     }
-
-    std::cout << std::endl << "IFSTREAM" << std::endl << std::endl;
 
     std::ifstream file(_cgiPath.c_str());
     if (file.is_open() == false) {
@@ -111,29 +106,24 @@ void Response::checkCGI() {
     std::string line;
     std::getline(file, line);
     file.close();
-    std::cout << std::endl << "COMPARE" << std::endl << std::endl;
 
     if (line.compare(0, 2, SHEBANG) != 0) {
         throw 500; // no shebang
     }
-
-    std::cout << std::endl << "DONE" << std::endl << std::endl;
-
     line.erase(0, 2);
     _cgiArgv = splitString(line, " \t");
     if (access(_cgiArgv.front().c_str(), X_OK) != 0) {
         throw 500; // interpreter invalid or not installed
     }
-    _cgiArgv.push_back(_cgiPath.substr(_location.getRoot().size()));
 
-    std::cout << "cgi Path: " << _cgiArgv.back() << std::endl;
+    _cgiArgv.push_back(_cgiPath.substr(_cgiPath.rfind("/") + 1));
 }
 
 void Response::cgiProcess(int cgiPipe[2]) {
     dup2(cgiPipe[PIPE_WRITE], STDOUT_FILENO);
     close(cgiPipe[PIPE_READ]);
     close(cgiPipe[PIPE_WRITE]);
-    if (chdir(_location.getRoot().c_str()) == -1) {
+    if (chdir(_cgiPath.substr(0, _cgiPath.rfind("/")).c_str()) == -1) {
         std::exit(EXIT_FAILURE);
     }
     if (_request.getMethod() == POST) {
@@ -185,7 +175,7 @@ int Response::waitForCGI(pid_t cgi) {
     time_t start = std::time(NULL);
     int waitStatus;
 
-    while (waitpid(cgi, &waitStatus, WNOHANG) != 1) {
+    while (waitpid(cgi, &waitStatus, WNOHANG) == 0) {
         if (difftime(std::time(NULL), start) >= CGI_TIMEOUT) {
             kill(cgi, SIGTERM);
             return (503);
@@ -205,6 +195,9 @@ void Response::parseCGIOutput() {
     if (_response.empty()) {
         throw 204;
     }
+    std::cout << std::endl << "RESPONSE:" << std::endl;
+    std::cout << std::string(_response.data(), _response.size()) << std::endl;
+
     int len = 2;
     std::vector<char>::iterator headerEnd = findSubstring(_response.begin(), _response.end(), "\n\n");
     if (headerEnd == _response.end()) {
@@ -215,7 +208,13 @@ void Response::parseCGIOutput() {
         }
     }
     _body.insert(_body.begin(), headerEnd + len, _response.end());
-    _response.erase(headerEnd + len / 2); // empty line and body removed
+    _response.erase(headerEnd + len / 2, _response.end()); // empty line and body removed
+    
+    std::cout << std::endl << "HEADERS:" << std::endl;
+    std::cout << std::string(_response.data(), _response.size()) << std::endl;
+    std::cout << std::endl << "BODY:" << std::endl;
+    std::cout << std::string(_body.data(), _body.size()) << std::endl;
+
     
     parseCGIHeaders();
     interpretCGIHeaders();
@@ -229,6 +228,7 @@ void Response::parseCGIHeaders() {
         }
         std::string test = std::string(_response.begin(), fieldEnd);
         std::istringstream field(test);
+        std::cout << test << std::endl;
         _response.erase(_response.begin(), fieldEnd + 1);
         if ((!field.eof() && (field.peek() == ' ' || field.peek() == '\t'))) {
             throw 500;
@@ -237,11 +237,11 @@ void Response::parseCGIHeaders() {
         if (!std::getline(field, line, '\n')) {
             throw 500;
         }
-        if (line.at(line.size()- 1) == '\r') {
-            line.erase(line.size()- 1);
+        if (line.at(line.size() - 1) == '\r') {
+            line.erase(line.size() - 1);
         }
         std::istringstream iss(line);
-        if (!std::getline(iss, key, ':') || std::isspace(key.at(line.size()- 1))
+        if (!std::getline(iss, key, ':') || std::isspace(key.at(key.size() - 1))
             || !std::getline(iss, value) || containsControlChar(key)
             || containsControlChar(value)) {
             throw 500;
@@ -249,8 +249,7 @@ void Response::parseCGIHeaders() {
         trimString(key);
         strToLower(key);
         trimString(value);
-        std::map<std::string, std::string>::iterator found = _headers.find(key);
-        if (!field || found != _headers.end()) {
+        if (!field || _headers.find(key) != _headers.end()) {
             throw 500;
         }
         _headers[key] = value;
@@ -261,6 +260,7 @@ void Response::interpretCGIHeaders() {
     std::map<std::string, std::string>::iterator searchIt;
 
     // Status header 
+    _status = 200;
     searchIt = _headers.find("status");
     if (searchIt != _headers.end()) {
         std::istringstream(searchIt->second) >> _status;
@@ -317,8 +317,8 @@ void Response::interpretCGIHeaders() {
         } else {
             size_t len;
             std::istringstream(searchIt->second) >> len;
-            if (len <= _body.size()) {
-                _body.erase(_body.begin(), _body.begin() + len);
+            if (len < _body.size()) {
+                _body.erase(_body.begin() + len, _body.end());
             }
         }
     }
