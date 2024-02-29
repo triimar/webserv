@@ -4,6 +4,11 @@
 # Fedon Kadifeli, 1998 - April 2003.
 # Improved by Trizen - February 2012
 
+print "Content-Length: 152\n";
+print "Content-Type: text/html\n";
+print "\n";
+
+
 my (%months) = (
                 '1'  => {LENGTH => 31, NAME => 'January'},
                 '2'  => {LENGTH => 28, NAME => 'February'},
