@@ -1,2 +1,5 @@
 #!/usr/bin/python3
-print("Hello, World!")
+print("Content-Type: text/plain\n")
+print("Content-Length: 11\n")
+print("\n")
+print("Hello World")

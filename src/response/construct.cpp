@@ -10,7 +10,7 @@ void Response::constructResponse() {
         }
         _headers["content-length"] = SSTR(_body.size());
     }
-    appendStringToVector(_response, _request.getHttpVer().c_str());
+    appendStringToVector(_response, HTTP_VERSION);
     appendStringToVector(_response, " ");
     appendStringToVector(_response, Server::getStatusMessage(_status));
     appendStringToVector(_response, CRLF);

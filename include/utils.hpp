@@ -42,6 +42,7 @@
 #define KEEPALIVE_TIMEOUT 60
 #define DEFAULT_CONFIG "./conf_files/default.conf"
 #define SERVER_VERSION "webserv/1.0"
+#define HTTP_VERSION "HTTP/1.1"
 #define CGI_VERSION "CGI/1.1"
 #define SUPPORTED_CGI "sh,py,perl"
 #define CGI_TIMEOUT 3.0

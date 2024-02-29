@@ -162,15 +162,6 @@ int Server::getSocketFd() const {
 }
 
 Location Server::getLocation(const std::string &path) const {
-	// for (std::map<std::string, Location>::const_iterator it = this->locations.begin(); it != this->locations.end(); it++)
-	// {
-	// 	if (path.compare(0, it->first.size(), it->first) == 0)
-	// 		return it->second;
-	// }
-    // Location location;
-	// location.autoCompleteFromServer(*this);
-	// return location;
-
     std::string dir = path.substr(0, path.rfind("/"));
     std::map<std::string, Location>::const_iterator it;
     while (dir.empty() == false) {

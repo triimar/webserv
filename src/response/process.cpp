@@ -26,7 +26,7 @@ void Response::processRequest() {
         executeCGI();
         return ;
     }
-   
+
     switch (_request.getMethod()) {
     case GET: 
         performGET();
