@@ -75,7 +75,7 @@ private:
         const char *extension;
         const char *mimeType;
     };
-    static Response::mimeEntry _mimeTypes[347];
+    static Response::mimeEntry _mimeTypes[348];
 };
 
 // utils

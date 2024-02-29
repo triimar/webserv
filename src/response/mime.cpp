@@ -54,7 +54,7 @@ int Response::mimeStrcmpi(const char *s1, const char *s2) {
     return (1);
 }
 
-Response::mimeEntry Response::_mimeTypes[347] =  {
+Response::mimeEntry Response::_mimeTypes[348] =  {
   {"*3gpp", "audio/3gpp"},
   {"*jpm", "video/jpm"},
   {"*mp3", "audio/mp3"},
@@ -151,6 +151,7 @@ Response::mimeEntry Response::_mimeTypes[347] =  {
   {"hqx", "application/mac-binhex40"},
   {"htm", "text/html"},
   {"html", "text/html"},
+  {"ico", "image/vnd.microsoft.icon"},
   {"ics", "text/calendar"},
   {"ief", "image/ief"},
   {"ifb", "text/calendar"},
