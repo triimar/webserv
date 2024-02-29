@@ -154,6 +154,8 @@ void	Request::parseMethod(std::istringstream& requestLine) {
 
 //has to be public for the CGI
 void	Request::parseURI(std::istringstream& requestLine) {
+	if (requestLine.eof())
+		return setError(requestERROR, 400, "Invalid version syntax");
 	std::string tmp;
 	requestLine >> tmp;
 	if (requestLine.fail() || tmp.empty())
@@ -188,6 +190,8 @@ void	Request::parseURI(std::istringstream& requestLine) {
 }
 
 void	Request::parseHTTPver(std::istringstream& requestLine) {
+	if (requestLine.eof())
+		return setError(requestERROR, 505, "Invalid version syntax");
 	requestLine >> httpVer_;
 	if (requestLine.fail() || httpVer_.empty())
 		return setError(requestERROR, 500, "Failure to extract HTTP version from request line");
