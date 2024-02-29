@@ -4,25 +4,20 @@
 # Fedon Kadifeli, 1998 - April 2003.
 # Improved by Trizen - February 2012
 
-print "Content-Length: 152\n";
-print "Content-Type: text/html\n";
-print "\n";
-
-
 my (%months) = (
-                '1'  => {LENGTH => 31, NAME => 'January'},
-                '2'  => {LENGTH => 28, NAME => 'February'},
-                '3'  => {LENGTH => 31, NAME => 'March'},
-                '4'  => {LENGTH => 30, NAME => 'April'},
-                '5'  => {LENGTH => 31, NAME => 'May'},
-                '6'  => {LENGTH => 30, NAME => 'June'},
-                '7'  => {LENGTH => 31, NAME => 'July'},
-                '8'  => {LENGTH => 31, NAME => 'August'},
-                '9'  => {LENGTH => 30, NAME => 'September'},
-                '10' => {LENGTH => 31, NAME => 'October'},
-                '11' => {LENGTH => 30, NAME => 'November'},
-                '12' => {LENGTH => 31, NAME => 'December'},
-               );
+    '1'  => {LENGTH => 31, NAME => 'January'},
+    '2'  => {LENGTH => 28, NAME => 'February'},
+    '3'  => {LENGTH => 31, NAME => 'March'},
+    '4'  => {LENGTH => 30, NAME => 'April'},
+    '5'  => {LENGTH => 31, NAME => 'May'},
+    '6'  => {LENGTH => 30, NAME => 'June'},
+    '7'  => {LENGTH => 31, NAME => 'July'},
+    '8'  => {LENGTH => 31, NAME => 'August'},
+    '9'  => {LENGTH => 30, NAME => 'September'},
+    '10' => {LENGTH => 31, NAME => 'October'},
+    '11' => {LENGTH => 30, NAME => 'November'},
+    '12' => {LENGTH => 31, NAME => 'December'},
+);
 
 my ($day, $real_month, $real_year) = (localtime time)[3 .. 5];
 my ($month, $year) = ($real_month += 1, $real_year += 1900);
@@ -50,8 +45,30 @@ if (@ARGV and $ARGV[0] =~ /^\d\d\d\d$/) {
     $year = int shift @ARGV;
 }
 
-printf "%*s\n%s\n", 11 + (5 + length($months{$month}{'NAME'})) / 2,
-  "$months{$month}{'NAME'} $year", 'Su Mo Tu We Th Fr Sa';
+print "Content-Type: text/html\n\n";  # Set the Content-Type header for HTML
+
+print <<"HTML";
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar</title>
+    <style>
+        .highlight { background-color: yellow; }
+    </style>
+</head>
+<body>
+    <h1>$months{$month}{'NAME'} $year</h1>
+    <table border="1">
+        <tr>
+            <th>Su</th>
+            <th>Mo</th>
+            <th>Tu</th>
+            <th>We</th>
+            <th>Th</th>
+            <th>Fr</th>
+            <th>Sa</th>
+        </tr>
+HTML
 
 if ($year % 400 == 0 or $year % 4 == 0 and $year % 100 != 0) {
     $months{'2'}{'LENGTH'} = 29;
@@ -60,22 +77,19 @@ if ($year % 400 == 0 or $year % 4 == 0 and $year % 100 != 0) {
 
 my $st = 1 + $year * 365 + int($year / 4) - int($year / 100) + int($year / 400);
 
-foreach my $i (1 .. $month - 1) {
-    $st += $months{$i}{'LENGTH'};
-}
-
-print q{   } x ($st % 7);
-++$year;
+print "<tr><td colspan=\"", ($st % 7), "\"></td>";
 
 foreach my $i (1 .. $months{$month}{'LENGTH'}) {
     if ($i == $day and $year == $real_year and $month == $real_month) {
-        printf '%s%2d%s ', "\e[7m", $i, "\e[0m";
+        print '<td class="highlight">', $i, '</td>';
     }
     else {
-        printf '%2d ', $i;
+        print '<td>', $i, '</td>';
     }
 
-    print "\n" if ($st + $i) % 7 == 0 and $i != $months{$month}{'LENGTH'};
+    if (($st + $i) % 7 == 0 and $i != $months{$month}{'LENGTH'}) {
+        print "</tr><tr>";
+    }
 }
 
-print "\n\n";
+print "</tr></table></body></html>\n";
