@@ -62,7 +62,7 @@ std::string Response::cleanPath(const std::string &path) {
         cleanedPath << '/' << components[i];
     }
     std::string result = cleanedPath.str();
-    if (path.back() == '/') {
+    if (path.at(path.size()- 1) == '/') {
         result.push_back('/');
     }
     return (result.empty() ? "/" : result);
@@ -76,7 +76,7 @@ void Response::performGET() {
     if (S_ISDIR(_pathStat.st_mode) == false) {
         fileToBody(_path);
     } else {
-        if (_path.back() != '/') {
+        if (_path.at(_path.size()- 1) != '/') {
             _headers["location"] = _request.getUri() + "/";
             throw 301;
         }
@@ -97,7 +97,7 @@ void Response::performGET() {
         throw 415;
     }
     _headers["content-type"] = type;
-    _headers["last-modified"] = formatDate(_pathStat.st_mtimespec.tv_sec);
+    _headers["last-modified"] = formatDate(_pathStat.MTIME);
 }
 
 void Response::fileToBody(std::string &path) {
@@ -138,7 +138,7 @@ void Response::performPOST() {
     if (_path.rfind('.') == std::string::npos) {
         _path = _path + "." + extension;
     }
-    std::ofstream file(_path, std::ios::binary);
+    std::ofstream file(_path.c_str(), std::ios::binary);
     if (file.is_open()) {
         throw 500;
     }
@@ -159,7 +159,7 @@ void Response::performDELETE() {
             throw 500;
         }
     } else {
-        if (_path.back() != '/') {
+        if (_path.at(_path.size()- 1) != '/') {
             _headers["location"] = _request.getUri() + "/";
             throw 301;
         }

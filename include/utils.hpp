@@ -56,6 +56,12 @@
 #define SSTR(x) static_cast<std::ostringstream &>(\
         (std::ostringstream() << std::dec << x)).str()
 
+#if defined(__APPLE__)
+    #define MTIME st_mtimespec.tv_sec
+#else
+	#define MTIME st_mtime
+#endif
+
 /* ************************************************************************** */
 /*                                   ENUMS                                    */
 /* ************************************************************************** */

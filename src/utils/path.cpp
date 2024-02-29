@@ -1,7 +1,7 @@
 #include "../../include/utils.hpp"
 
 std::string combinePaths(std::string &lhs, std::string &rhs) {
-    switch ((lhs.back() == '/') + (rhs.front() == '/')) {
+    switch ((lhs.at(lhs.size()- 1) == '/') + (rhs.at(0) == '/')) {
     case 0:
         return (lhs + '/' + rhs);
     case 2:

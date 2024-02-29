@@ -294,7 +294,11 @@ void Config::closeTimeoutClients() {
 			std::cout << "Client timeout\n";
 			close(it->second.getClientFd());
 			fds.erase(fds.begin() + serverList.size() + i);
-			it = clientList.erase(it);
+			std::map<int, Client>::iterator tmp = it;
+			tmp++;
+			// it = clientList.erase(it);
+			clientList.erase(it);
+			it = tmp;
 		}
 		else
 		{

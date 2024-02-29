@@ -221,11 +221,11 @@ void Response::parseCGIHeaders() {
         if (!std::getline(field, line, '\n')) {
             throw 500;
         }
-        if (line.back() == '\r') {
-            line.pop_back();
+        if (line.at(line.size()- 1) == '\r') {
+            line.erase(line.size()- 1);
         }
         std::istringstream iss(line);
-        if (!std::getline(iss, key, ':') || std::isspace(key.back())
+        if (!std::getline(iss, key, ':') || std::isspace(key.at(line.size()- 1))
             || !std::getline(iss, value) || containsControlChar(key)
             || containsControlChar(value)) {
             throw 500;
