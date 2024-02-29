@@ -5,7 +5,6 @@ void Response::processRequest() {
     _location = _server.getLocation(_request.getPath());
 
     std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
-	std::cout << _request.getMethod() << "----\n";
     if (std::find(allowedMethods.begin(), allowedMethods.end(), _request.getMethod()) == allowedMethods.end()) {
         throw 405; // request method is not allowed
     }
