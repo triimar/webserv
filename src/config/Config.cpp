@@ -460,5 +460,5 @@ void Config::runServers() {
 	for (std::vector<pollfd>::iterator it = fds.begin(); it != fds.end(); it++) {
 		close(it->fd);
 	}
-//	std::cout << clientList.size() << " client size, " << clientList.begin()->first <<"\n";
+	fds.erase(fds.begin(), fds.end());
 }

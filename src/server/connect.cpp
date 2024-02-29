@@ -1,6 +1,7 @@
 #include "../../include/webserv.hpp"
 
 void Server::startServer() {
+	int optval = 1;
 	this->socketFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketFd < 0)
 		throw std::runtime_error("Error: unable to start server.\n");
@@ -9,20 +10,26 @@ void Server::startServer() {
 	this->socketAddress.sin_port = htons(port);
 	this->socketAddress.sin_addr = host;
 
+	if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
+	{
+		perror("Error setting up socket");
+		throw std::runtime_error("Error: cannot set socket flags.\n");
+	}
+
 	if (bind(socketFd, (sockaddr *)&socketAddress, sizeof(socketAddress)) < 0)
 	{
 		perror("Error binding socket");
 		throw std::runtime_error("Error: cannot connect socket to address.\n");
 	}
 
+	if (listen(socketFd, 20) < 0)
+		throw std::runtime_error("Error: socket listen failed.\n");
+
 	if (fcntl(socketFd, F_SETFL, O_NONBLOCK) == -1)
 	{
 //		perror("Error binding socket");
 		throw std::runtime_error("Error: cannot set socket to non-blocking.\n");
 	}
-
-	if (listen(socketFd, 20) < 0)
-		throw std::runtime_error("Error: socket listen failed.\n");
 }
 
 void Server::startListen() {
