@@ -150,4 +150,9 @@ void Location::autoCompleteFromServer(const Server &server) {
 		this->autoindex = server.isAutoIndex();
 	if (this->cgi_info.empty())
 		this->cgi_info = server.getCgiInfo();
+    if (this->allowedMethods.empty()) {
+        this->allowedMethods.push_back(GET);
+        this->allowedMethods.push_back(POST);
+        this->allowedMethods.push_back(DELETE);
+    }
 }

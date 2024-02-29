@@ -97,12 +97,7 @@ void Response::executeCGI() {
 
 void Response::checkCGI() {
     std::cout << std::endl << "INFO" << std::endl << std::endl;
-    std::cout << "ext: " << _cgiExtension << std::endl;
     std::vector<std::string> cgiInfo = _location.getCgiInfo();
-    for (std::vector<std::string>::iterator it = cgiInfo.begin(); it != cgiInfo.end(); ++it) {
-        std::cout << *it << std::endl;
-    }
-    std::cout << "END" << std::endl;
     if (std::find(cgiInfo.begin(), cgiInfo.end(), _cgiExtension) == cgiInfo.end()) {
         throw 403; // file extension not allowed
     }
@@ -129,14 +124,16 @@ void Response::checkCGI() {
     if (access(_cgiArgv.front().c_str(), X_OK) != 0) {
         throw 500; // interpreter invalid or not installed
     }
-    _cgiArgv.push_back(_cgiPath);
+    _cgiArgv.push_back(_cgiPath.substr(_location.getRoot().size()));
+
+    std::cout << "cgi Path: " << _cgiArgv.back() << std::endl;
 }
 
 void Response::cgiProcess(int cgiPipe[2]) {
     dup2(cgiPipe[PIPE_WRITE], STDOUT_FILENO);
     close(cgiPipe[PIPE_READ]);
     close(cgiPipe[PIPE_WRITE]);
-    if (chdir(_server.getRoot().c_str()) == -1) {
+    if (chdir(_location.getRoot().c_str()) == -1) {
         std::exit(EXIT_FAILURE);
     }
     if (_request.getMethod() == POST) {

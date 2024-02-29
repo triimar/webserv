@@ -94,9 +94,6 @@ enum Pipe {
 /*                                 FUNCTIONS                                  */
 /* ************************************************************************** */
 
-// split
-std::vector<std::string> splitString(const std::string& input, const std::string delim);
-
 // paths
 std::string combinePaths(std::string &lhs, std::string &rhs);
 
@@ -109,6 +106,7 @@ void strToLower(std::string& str);
 std::string& trimString(std::string& str);
 bool containsControlChar(std::string& str);
 std::vector<char>::iterator findSubstring(std::vector<char>::iterator begin, std::vector<char>::iterator end, std::string s);
+std::vector<std::string> splitString(const std::string& input, const std::string delim);
 
 // free
 void free_2d_array(void **array);
