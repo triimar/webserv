@@ -314,6 +314,11 @@ void Config::startServers() {
 
 void Config::sigintHandler(int signum) {
 	(void) signum;
+    
+/* ************************************************************************** */
+/*                               CLOSE SOCKETS                                */
+/* ************************************************************************** */
+
 	running = false;
 }
 
