@@ -9,7 +9,7 @@ void Response::processRequest() {
 
     std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
     if (std::find(allowedMethods.begin(), allowedMethods.end(), _request.getMethod()) == allowedMethods.end()) {
-       throw 405; // request method is not allowed
+        throw 405; // request method is not allowed
     }
 
     _path = _location.getRoot() + cleanPath(_request.getPath());
@@ -62,6 +62,9 @@ std::string Response::cleanPath(const std::string &path) {
         cleanedPath << '/' << components[i];
     }
     std::string result = cleanedPath.str();
+    if (path.back() == '/') {
+        result.push_back('/');
+    }
     return (result.empty() ? "/" : result);
 }
 
@@ -69,6 +72,7 @@ void Response::performGET() {
     if (access(_path.c_str(), R_OK) != 0) {
         throw 403;
     }
+    std::string pathExtension = _path;
     if (S_ISDIR(_pathStat.st_mode) == false) {
         fileToBody(_path);
     } else {
@@ -76,18 +80,19 @@ void Response::performGET() {
             _headers["location"] = _request.getUri() + "/";
             throw 301;
         }
-        std::string index = getIndex();
-        if (index.empty() == false) { // has index file
-            fileToBody(index);
+        pathExtension = getIndex();
+        if (pathExtension.empty() == false) { // has index file
+            fileToBody(pathExtension);
         } else if (_location.getAutoindex() == true) { // auto-indexing on
             makeDirectoryListing();
+            pathExtension = "html";
         } else { // directory without response
             throw 403;
         }
     }
     _status = 200;
     _headers["content-length"] = SSTR(_body.size());
-    const char *type = Response::getMimeType(_path.c_str());
+    const char *type = Response::getMimeType(pathExtension.c_str());
     if (type == NULL) {
         throw 415;
     }

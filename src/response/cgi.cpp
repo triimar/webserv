@@ -9,15 +9,11 @@ bool Response::isCGI() {
         return (false);
     }
 
-    if (isValidCGI(_path)) {
-        return (true);
+    if (S_ISDIR(_pathStat.st_mode) == true) {
+        return (hasCGIIndex());
     }
 
-    if (S_ISDIR(_pathStat.st_mode) == false) {
-        return (false);
-    }
-
-    return (hasCGIIndex());
+    return (isValidCGI(_path));
 }
 
 bool Response::isValidCGI(std::string &path) {
@@ -33,7 +29,7 @@ bool Response::isValidCGI(std::string &path) {
         }
         if (S_ISDIR(dirStat.st_mode) == false) {
             std::string extension = path.substr(ext + 1, end - ext - 1);
-            if (isSupportedCGI(extension)) {
+            if (Response::isSupportedCGI(extension) == false) {
                 return (false);
             }
             if (access(testPath.c_str(), R_OK) != 0) {
