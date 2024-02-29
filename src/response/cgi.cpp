@@ -99,7 +99,7 @@ void Response::checkCGI() {
     if (std::find(_location.getCgiInfo().begin(), _location.getCgiInfo().end(), _cgiExtension) == _location.getCgiInfo().end()) {
         throw 403; // file extension not allowed
     }
-    std::ifstream file(_cgiPath);
+    std::ifstream file(_cgiPath.c_str());
     if (file.is_open() == false) {
         throw 500; // failed opening file
     }

@@ -1,5 +1,6 @@
 #include "../../include/webserv.hpp"
 
+
 std::string Response::formatModificationTime(time_t modifTime) {
 	struct tm* timeinfo = localtime(&modifTime);
 	char timeStr[20];
@@ -16,10 +17,9 @@ std::string Response::formatSize(off_t size) {
 		++index;
 	}
 	std::ostringstream formatted;
+    formatted << std::fixed << std::setprecision(0);
 	if (fmod(sizeInUnits, 1.0) != 0.0)
         formatted << std::fixed << std::setprecision(1);
-    else
-        formatted << std::fixed << std::setprecision(0);
 	formatted << sizeInUnits << suffix[index];
 	return formatted.str();
 

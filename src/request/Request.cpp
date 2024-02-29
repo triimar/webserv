@@ -217,7 +217,7 @@ void Request::parseHeader() {
 	if (!headersStream_.eof() && headersStream_.get() != '\n') // for final when no crlf
 		return setError(requestERROR, 400, "Syntax error in Headers");
 	std::istringstream iss(line);
-	if (!std::getline(iss, key, ':') || std::isspace(key.back()) || !std::getline(iss, value) \
+	if (!std::getline(iss, key, ':') || std::isspace(key.at(key.size() - 1)) || !std::getline(iss, value) \
 		|| containsControlChar(key) || containsControlChar(value))
 		return setError(requestERROR, 400, "Syntax error in Headers 2");
 	trimString(key);

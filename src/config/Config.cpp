@@ -409,6 +409,7 @@ void Config::runServers() {
                 }
                 std::cout << "-----------END RESPONSE----------------" << std::endl;
 				int sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
+				std::cout << "SENT SIZE: " << sentSize << std::endl;
 				if (sentSize < 0)
 				{
 					perror("Could not write in client socket\n");
