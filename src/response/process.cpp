@@ -1,9 +1,6 @@
 #include "../../include/webserv.hpp"
 
 void Response::processRequest() {
-    if ((_status = _request.getErrorCode()) != 0) {
-        return ;
-    }
 
     _location = _server.getLocation(_request.getPath());
 
@@ -22,6 +19,9 @@ void Response::processRequest() {
         }
     }
 
+    if ((_status = _request.getErrorCode()) != 0) {
+        return ;
+    }
     if ((_isCGI = isCGI()) == true) {
         executeCGI();
         return ;
