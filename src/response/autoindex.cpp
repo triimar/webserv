@@ -57,7 +57,12 @@ void Response::appendHtmlBodyStart()
 
 void Response::appendHtmlRow(std::string& subPath, std::string& modTime, std::string& bytes) {
 	appendStringToVector(_body, "<div class=\"rows\">"
-								"<a href=\"/..\">");
+								"<a href=\"/");
+	appendStringToVector(_body, "..");
+	const std::string requestPath = _request.getPath();
+	_body.insert(_body.end(), requestPath.begin(), requestPath.end()); 
+	_body.insert(_body.end(), subPath.begin(), subPath.end());
+	appendStringToVector(_body, "\">");
 	_body.insert(_body.end(), subPath.begin(), subPath.end());
 	appendStringToVector(_body, "</a>"
 								"<p>");
