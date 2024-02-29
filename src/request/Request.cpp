@@ -50,7 +50,7 @@ void Request::setError(ParseState type, int statusCode, const char *message) {
 	state_ = type;
 	statusCode_ = statusCode;
 	errorMsg_.assign(message);
-	clearRequest();
+//	clearRequest();
 }
 
 // Clears data in case of invalid request, state_, rlstate_, statusCode_ and errorMsg_ are not cleared
@@ -196,7 +196,7 @@ void	Request::parseHTTPver(std::istringstream& requestLine) {
 	if (requestLine.fail() || httpVer_.empty())
 		return setError(requestERROR, 500, "Failure to extract HTTP version from request line");
 	if (!requestLine.eof() || httpVer_.compare(0, 5, "HTTP/") != 0)
-		return setError(requestERROR, 400, "Invalid version syntax");
+		return setError(requestERROR, 505, "Invalid version syntax");
 	std::stringstream verStr(httpVer_.substr(5));
 	int	major, minor;
 	char dot;

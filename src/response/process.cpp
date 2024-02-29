@@ -1,13 +1,11 @@
 #include "../../include/webserv.hpp"
 
 void Response::processRequest() {
-    if ((_status = _request.getErrorCode()) != 0) {
-        return ;
-    }
 
     _location = _server.getLocation(_request.getPath());
 
     std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
+	std::cout << _request.getMethod() << "----\n";
     if (std::find(allowedMethods.begin(), allowedMethods.end(), _request.getMethod()) == allowedMethods.end()) {
         throw 405; // request method is not allowed
     }
@@ -22,6 +20,9 @@ void Response::processRequest() {
         }
     }
 
+    if ((_status = _request.getErrorCode()) != 0) {
+        return ;
+    }
     if ((_isCGI = isCGI()) == true) {
         executeCGI();
         return ;
