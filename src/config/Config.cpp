@@ -134,7 +134,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 		}
 		//ERROR_PAGE
 		case 4: {
-			std::vector<unsigned int> errorCodes;
+			std::vector<int> errorCodes;
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format on error_page command.\n");
 			while (ss >> word && word[word.length() - 1] != ';')
@@ -142,7 +142,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			if (word.empty() || word[word.length() - 1] != ';')
 				throw std::runtime_error("Config file error: invalid keyword format on error_page command.\n");
 			word.erase(word.length() - 1);
-			for(std::vector<unsigned int>::iterator it = errorCodes.begin();
+			for(std::vector<int>::iterator it = errorCodes.begin();
 			it != errorCodes.end(); it++)
 				server.setErrorPage(*it, word);
 			if (ss >> word)

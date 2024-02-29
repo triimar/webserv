@@ -17,7 +17,7 @@ private:
 	std::string							ipAddress;
 	unsigned long						clientSize;
 
-	std::map<unsigned int, std::string>	errorPages;
+	std::map<int, std::string>          errorPages;
 	std::map<std::string, Location> 	locations;
 	bool								autoindex;
 	std::vector<std::string>			cgi_info;
@@ -49,7 +49,7 @@ public:
 	void setIndex(std::string index);
 	void setIP();
 	void setClientSize(unsigned long clientSize);
-	void setErrorPage(unsigned int key, std::string errorPage);
+	void setErrorPage(int key, std::string errorPage);
 	void setLocation(std::string line, std::ifstream &stream);
 	void setAutoIndex(std::string autoindex);
 	void setCgiInfo(std::string info);
@@ -59,19 +59,15 @@ public:
 
     static const char			*getStatusMessage(int status);
     std::string					getRoot() const;
-    // std::vector<std::string> getIndex(std::string &location) const;
     std::string					getServerName() const;
 	std::vector<std::string>	getIndex() const;
-	bool						getAutoIndex() const;
+	bool						isAutoIndex() const;
 	Location					getLocation(const std::string &path) const;
 	std::vector<std::string>	getCgiInfo() const;
     unsigned short				getPort() const;
     const std::string			&getIpAddr() const;
-    // std::string					&getIpAddr();
-
+    std::string                 getErrorPage(int status) const;
 	int							getSocketFd() const;
 	void				        autoCompleteLocations();
-
-    std::string getErrorPage(const std::string &path, int status) const;
 
 };

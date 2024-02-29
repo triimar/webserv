@@ -94,7 +94,7 @@ void Server::printServer(Server &server) {
 	std::for_each(server.index.begin(), server.index.end(), printList);
 	std::cout << "Client Size: " << server.clientSize <<
 	"\nError Pages:";
-	for (std::map<unsigned int, std::string>::iterator it = server.errorPages.begin();
+	for (std::map<int, std::string>::const_iterator it = server.errorPages.begin();
 	it != server.errorPages.end(); it++)
 	{
 		std::cout << "\t" << it->first << ": " << it->second << std::endl;

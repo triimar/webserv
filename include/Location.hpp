@@ -35,7 +35,7 @@ public:
 	const std::string 					&getRoot() const;
 	const std::vector<RequestMethod>	&getAllowedMethods() const;
 	const std::vector<std::string>		&getIndex() const;
-	bool								getAutoindex() const;
+	bool								isAutoIndex() const;
 	std::vector<std::string>			getCgiInfo() const;
 
 	static void printLocation(Location &location);

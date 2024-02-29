@@ -95,7 +95,7 @@ void Server::setClientSize(unsigned long clientSize) {
 	this->clientSize = clientSize;
 }
 
-void Server::setErrorPage(unsigned int key, std::string errorPage) {
+void Server::setErrorPage(int key, std::string errorPage) {
 	if (key > 511 || key < 400)
 		throw std::runtime_error("Config file error: error codes from 400 to 511.\n");
 	this->errorPages.insert(std::make_pair(key, errorPage));
@@ -149,7 +149,7 @@ std::vector<std::string> Server::getIndex() const{
     return (this->index);
 }
 
-bool Server::getAutoIndex() const {
+bool Server::isAutoIndex() const {
 	return this->autoindex;
 }
 
@@ -161,13 +161,12 @@ int Server::getSocketFd() const {
 	return this->socketFd;
 }
 
-Location Server::getLocation(const std::string &path) const{
+Location Server::getLocation(const std::string &path) const {
 	for (std::map<std::string, Location>::const_iterator it = this->locations.begin(); it != this->locations.end(); it++)
 	{
 		if (path.compare(0, it->first.size(), it->first) == 0)
 			return it->second;
 	}
-//	throw std::runtime_error("Could not find location\n");
 	Location location;
 	location.autoCompleteFromServer(*this);
 	return location;
@@ -179,9 +178,10 @@ void Server::autoCompleteLocations() {
 	}
 }
 
-std::string Server::getErrorPage(const std::string &path, int status) const {
-    (void)path;
-    (void)status;
-
-    return ("TODO");
+std::string Server::getErrorPage(int status) const {
+    std::map<int, std::string>::const_iterator it = errorPages.find(status);
+    if (it == errorPages.end()) {
+        return ("");
+    }
+    return (it->second);
 }

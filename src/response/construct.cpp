@@ -8,6 +8,7 @@ void Response::constructResponse() {
             _headers.clear();
             makeErrorPage();
         }
+        _headers["content-length"] = SSTR(_body.size());
     }
     appendStringToVector(_response, _request.getHttpVer().c_str());
     appendStringToVector(_response, " ");
@@ -29,7 +30,7 @@ void Response::constructResponse() {
 }
 
 void Response::makeErrorPage() {
-    std::string path = _server.getErrorPage(_path, _status);
+    std::string path = _server.getErrorPage(_status);
     int fd = -1;
     if (path.empty() == false) {
         fd = open(path.c_str(), O_RDONLY);

@@ -125,7 +125,7 @@ const std::vector<RequestMethod> &Location::getAllowedMethods() const{
 	return this->allowedMethods;
 }
 
-bool Location::getAutoindex() const{
+bool Location::isAutoIndex() const{
 	return this->autoindex;
 }
 
@@ -147,7 +147,7 @@ void Location::autoCompleteFromServer(const Server &server) {
 	if (index.empty())
 		this->index = server.getIndex();
 	if (!autoindexSet)
-		this->autoindex = server.getAutoIndex();
+		this->autoindex = server.isAutoIndex();
 	if (this->cgi_info.empty())
 		this->cgi_info = server.getCgiInfo();
 }

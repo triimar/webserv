@@ -66,7 +66,9 @@ bool Response::hasCGIIndex() {
 
 
 void Response::executeCGI() {
+    std::cout << std::endl << "EXECUTE" << std::endl << std::endl;
     checkCGI();
+    std::cout << std::endl << "CHECK" << std::endl << std::endl;
     int cgiPipe[2];
     if (pipe(cgiPipe) == -1) {
         throw 500;
@@ -88,13 +90,25 @@ void Response::executeCGI() {
         }
     }
     close(cgiPipe[PIPE_READ]);
+    std::cout << std::endl << "PARSE" << std::endl << std::endl;
     parseCGIOutput();
+    std::cout << std::endl << "DONE" << std::endl << std::endl;
 }
 
 void Response::checkCGI() {
-    if (std::find(_location.getCgiInfo().begin(), _location.getCgiInfo().end(), _cgiExtension) == _location.getCgiInfo().end()) {
+    std::cout << std::endl << "INFO" << std::endl << std::endl;
+    std::cout << "ext: " << _cgiExtension << std::endl;
+    std::vector<std::string> cgiInfo = _location.getCgiInfo();
+    for (std::vector<std::string>::iterator it = cgiInfo.begin(); it != cgiInfo.end(); ++it) {
+        std::cout << *it << std::endl;
+    }
+    std::cout << "END" << std::endl;
+    if (std::find(cgiInfo.begin(), cgiInfo.end(), _cgiExtension) == cgiInfo.end()) {
         throw 403; // file extension not allowed
     }
+
+    std::cout << std::endl << "IFSTREAM" << std::endl << std::endl;
+
     std::ifstream file(_cgiPath.c_str());
     if (file.is_open() == false) {
         throw 500; // failed opening file
@@ -102,10 +116,15 @@ void Response::checkCGI() {
     std::string line;
     std::getline(file, line);
     file.close();
-    if (line.compare(0, std::strlen(SHEBANG), SHEBANG) != 0) {
+    std::cout << std::endl << "COMPARE" << std::endl << std::endl;
+
+    if (line.compare(0, 2, SHEBANG) != 0) {
         throw 500; // no shebang
     }
-    line.erase(0, std::strlen(SHEBANG));
+
+    std::cout << std::endl << "DONE" << std::endl << std::endl;
+
+    line.erase(0, 2);
     _cgiArgv = splitString(line, " \t");
     if (access(_cgiArgv.front().c_str(), X_OK) != 0) {
         throw 500; // interpreter invalid or not installed

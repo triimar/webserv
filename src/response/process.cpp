@@ -83,7 +83,7 @@ void Response::performGET() {
         pathExtension = getIndex();
         if (pathExtension.empty() == false) { // has index file
             fileToBody(pathExtension);
-        } else if (_location.getAutoindex() == true) { // auto-indexing on
+        } else if (_location.isAutoIndex() == true) { // auto-indexing on
             makeDirectoryListing();
             pathExtension = "html";
         } else { // directory without response
