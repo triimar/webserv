@@ -1,6 +1,6 @@
 #include "../../include/utils.hpp"
 
-std::string combinePaths(std::string &lhs, std::string &rhs) {
+std::string combinePaths(const std::string &lhs, const std::string &rhs) {
     switch ((lhs.at(lhs.size()- 1) == '/') + (rhs.at(0) == '/')) {
     case 0:
         return (lhs + '/' + rhs);

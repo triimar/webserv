@@ -367,8 +367,7 @@ void Config::runServers() {
 
 			//HANDLING REQUESTS
 
-			else if (i >= serverList.size() &&
-					   fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
+			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
 				char buf[1024];
 				ssize_t num_read = read(current_fd, buf, sizeof(buf));
 				if (num_read == -1) {
@@ -407,11 +406,11 @@ void Config::runServers() {
 					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}
-                std::cout << "response size : " << currentResponse.size() << std::endl;
+                std::cout << "------RESPONSE-------------------" << std::endl;
                 for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
                     std::cout << *it;
                 }
-                std::cout << "-----------END RESPONSE----------------" << std::endl;
+                std::cout << "------END RESPONSE---------------" << std::endl;
 				int sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				std::cout << "SENT SIZE: " << sentSize << std::endl;
 				if (sentSize < 0)

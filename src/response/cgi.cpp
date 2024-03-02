@@ -85,7 +85,6 @@ void Response::executeCGI() {
             _status = 500;
         }
     }
-    std::cout << "\033[0;31m" << "status = " << _status << "\033[0m" << std::endl;
     close(cgiPipe[PIPE_READ]);
     if (_status != 0) {
         throw _status;
@@ -195,9 +194,6 @@ void Response::parseCGIOutput() {
     if (_response.empty()) {
         throw 204;
     }
-    std::cout << std::endl << "RESPONSE:" << std::endl;
-    std::cout << std::string(_response.data(), _response.size()) << std::endl;
-
     int len = 2;
     std::vector<char>::iterator headerEnd = findSubstring(_response.begin(), _response.end(), "\n\n");
     if (headerEnd == _response.end()) {
@@ -209,13 +205,6 @@ void Response::parseCGIOutput() {
     }
     _body.insert(_body.begin(), headerEnd + len, _response.end());
     _response.erase(headerEnd + len / 2, _response.end()); // empty line and body removed
-    
-    std::cout << std::endl << "HEADERS:" << std::endl;
-    std::cout << std::string(_response.data(), _response.size()) << std::endl;
-    std::cout << std::endl << "BODY:" << std::endl;
-    std::cout << std::string(_body.data(), _body.size()) << std::endl;
-
-    
     parseCGIHeaders();
     interpretCGIHeaders();
 }
@@ -228,7 +217,6 @@ void Response::parseCGIHeaders() {
         }
         std::string test = std::string(_response.begin(), fieldEnd);
         std::istringstream field(test);
-        std::cout << test << std::endl;
         _response.erase(_response.begin(), fieldEnd + 1);
         if ((!field.eof() && (field.peek() == ' ' || field.peek() == '\t'))) {
             throw 500;

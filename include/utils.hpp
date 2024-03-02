@@ -63,6 +63,8 @@
 	#define MTIME st_mtime
 #endif
 
+#define DELETE_CONFIM_MESSAGE "Are you sure to delete the directory including all its contents?\n-> Use 'force' as the query string: /your/uri?force"
+
 /* ************************************************************************** */
 /*                                   ENUMS                                    */
 /* ************************************************************************** */
@@ -96,7 +98,7 @@ enum Pipe {
 /* ************************************************************************** */
 
 // paths
-std::string combinePaths(std::string &lhs, std::string &rhs);
+std::string combinePaths(const std::string &lhs, const std::string &rhs);
 
 // vector
 void appendStringToVector(std::vector<char> &vector, std::string str);

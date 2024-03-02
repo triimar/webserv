@@ -10,13 +10,13 @@ void Response::processRequest() {
     }
 
     _path = _location.getRoot() + cleanPath(_request.getPath());
-    if (_request.getMethod() != POST) {
-        if (access(_path.c_str(), F_OK) != 0) {
-            throw 404;
-        }
+    
+    if (access(_path.c_str(), F_OK) == 0) {
         if (stat(_path.c_str(), &_pathStat) != 0) {
             throw 500;
         }
+    } else if (_request.getMethod() != POST) {
+        throw 404;
     }
 
     if ((_status = _request.getErrorCode()) != 0) {
@@ -76,7 +76,7 @@ void Response::performGET() {
     if (S_ISDIR(_pathStat.st_mode) == false) {
         fileToBody(_path);
     } else {
-        if (_path.at(_path.size()- 1) != '/') {
+        if (_path.at(_path.size() - 1) != '/') {
             _headers["location"] = _request.getUri() + "/";
             throw 301;
         }
@@ -90,12 +90,12 @@ void Response::performGET() {
             throw 403;
         }
     }
-    _status = 200;
-    _headers["content-length"] = SSTR(_body.size());
     const char *type = Response::getMimeType(pathExtension.c_str());
     if (type == NULL) {
         throw 415;
     }
+    _status = 200;
+    _headers["content-length"] = SSTR(_body.size());
     _headers["content-type"] = type;
     _headers["last-modified"] = formatDate(_pathStat.MTIME);
 }
@@ -128,29 +128,56 @@ std::string Response::getIndex() {
 }
 
 void Response::performPOST() {
-    if (access(_path.c_str(), F_OK) == 0) {
-        throw 403;
-    }
     const char *extension = Response::getMimeExtenstion(_request.getHeaderValueForKey("content-type").c_str());
     if (extension == NULL) {
         throw 415;
     }
-    if (_path.rfind('.') == std::string::npos) {
-        _path = _path + "." + extension;
+    std::string postPath = _path;
+    if (S_ISDIR(_pathStat.st_mode)) {
+        std::string index = "index." + std::string(extension);
+        postPath = combinePaths(_path, index);
     }
-    std::ofstream file(_path.c_str(), std::ios::binary);
+    std::string created; // dir creation
+    std::string dir = postPath.substr(0, postPath.rfind('/'));
+    if (access(dir.c_str(), F_OK) != 0) {
+        // if directory doesn't exist :
+        
+        // throw 409;
+
+        // or create all directories?
+        for (size_t ext = postPath.find('/'); ext != std::string::npos;
+            ext = postPath.find('/' , ext + 1)) {
+            dir = postPath.substr(0, ext);
+            if (access(dir.c_str(), F_OK) == -1) {
+                if (mkdir(dir.c_str(), 0700) == -1) {
+                    throw 500;
+                } else if (created.empty()) {
+                    created = dir;
+                }
+            }
+        }
+    }
+    if (access(postPath.c_str(), F_OK) == 0) {
+        throw 403;
+    }
+    std::ofstream file(postPath.c_str(), std::ofstream::binary);
     if (file.is_open()) {
-        throw 500;
-    }
-    file.write(_body.data(), _body.size());
-    if (file.fail()) {
+        file.write(_request.getBody().data(), _request.getBody().size());
+        if (file.bad() == false) {
+            file.close();
+            _status = 201;
+            _headers["content-length"] = "0";
+            _headers["location"] = postPath.substr(_location.getRoot().size());
+            return ;
+        }
         file.close();
-        throw 500;
     }
-    file.close();
-    _status = 201;
-    _headers["content-length"] = "0";
-    _headers["location"] = _path.substr(_location.getRoot().size());
+    if (created.empty() == false) { // dir creation
+        deleteDirectory(created);
+    } else {
+        std::remove(postPath.c_str());
+    }
+    throw 500;
 }
 
 void Response::performDELETE() {
@@ -159,14 +186,18 @@ void Response::performDELETE() {
             throw 500;
         }
     } else {
-        if (_path.at(_path.size()- 1) != '/') {
+        if (_path.at(_path.size() - 1) != '/') {
             _headers["location"] = _request.getUri() + "/";
             throw 301;
         }
         if (access(_path.c_str(), W_OK) == -1) {
             throw 403;
         }
-        if (rmdir(_path.c_str()) == -1) {
+        if (_request.getQuery() != "force") {
+            appendStringToVector(_body, DELETE_CONFIM_MESSAGE);
+            throw 409;
+        }
+        if (deleteDirectory(_path) == RETURN_FAILURE) {
             throw 500;
         }
     }

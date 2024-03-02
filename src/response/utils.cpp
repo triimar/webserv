@@ -38,3 +38,32 @@ std::string capitalizeHeader(std::string name) {
     }
 	return name;
 }
+
+Return deleteDirectory(const std::string &path) {
+    DIR *dir = opendir(path.c_str());
+    struct dirent *nextFile;
+    while ((nextFile = readdir(dir)) != NULL) {
+        std::string fileName = nextFile->d_name;
+        if (fileName == "." || fileName == "..") {
+            continue ;
+        }
+        std::string file = combinePaths(path, fileName);
+        std::cout << file << std::endl;
+        struct stat fileStat;
+        if (stat(file.c_str(), &fileStat) == -1) {
+            closedir(dir);
+            return (RETURN_FAILURE);
+        }
+        if (S_ISDIR(fileStat.st_mode)) {
+            if (deleteDirectory(file) == RETURN_FAILURE) {
+                closedir(dir);
+                return (RETURN_FAILURE);
+            }
+        } else if (std::remove(file.c_str()) == -1) {
+            closedir(dir);
+            return (RETURN_FAILURE);
+        }
+    }
+    closedir(dir);
+    return ((remove(path.c_str()) == -1) ? RETURN_FAILURE : RETURN_SUCCESS);
+}

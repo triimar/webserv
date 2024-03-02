@@ -82,3 +82,4 @@ private:
 char **vectorToArray(const std::vector<std::string> &vec);
 std::string formatDate(time_t pit);
 std::string capitalizeHeader(std::string name);
+Return deleteDirectory(const std::string &path);

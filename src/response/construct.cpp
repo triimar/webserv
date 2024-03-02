@@ -3,7 +3,7 @@
 void Response::constructResponse() {
     _response.clear();
     if (_status >= 300) {
-        _body.clear();
+        // _body.clear();
         if (_status >= 400) {
             _headers.clear();
             makeErrorPage();
@@ -31,14 +31,12 @@ void Response::constructResponse() {
 
 void Response::makeErrorPage() {
     std::string path = _server.getErrorPage(_status);
-    int fd = -1;
     if (path.empty() == false) {
-        fd = open(path.c_str(), O_RDONLY);
-    }
-    if (fd == -1 || readToVector(fd, _body) == RETURN_FAILURE) {
-        appendStringToVector(_body, Server::getStatusMessage(_status));
-    }
-    if (fd != -1) {
+        _body.clear();
+        int fd = open(path.c_str(), O_RDONLY);
+        if (readToVector(fd, _body) == RETURN_FAILURE) {
+            appendStringToVector(_body, Server::getStatusMessage(_status));
+        }
         close(fd);
     }
 }
