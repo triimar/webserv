@@ -165,7 +165,6 @@ Location Server::getLocation(const std::string &path) const {
     std::string dir = path.substr(0, path.rfind("/"));
     std::map<std::string, Location>::const_iterator it;
     while (dir.empty() == false) {
-        std::cout << dir << std::endl;
         if ((it = locations.find(dir)) != locations.end()) {
             return (it->second);
         }

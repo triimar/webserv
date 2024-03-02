@@ -44,7 +44,7 @@
 #define SERVER_VERSION "webserv/1.0"
 #define HTTP_VERSION "HTTP/1.1"
 #define CGI_VERSION "CGI/1.1"
-#define SUPPORTED_CGI "sh,py,perl"
+#define SUPPORTED_CGI "sh,py,pl"
 #define CGI_TIMEOUT 3.0
 #define SHEBANG "#!"
 #define DATE_FORMAT "%a, %d %b %Y %T GMT"
