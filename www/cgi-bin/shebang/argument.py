@@ -1,4 +1,4 @@
-#!/usr/bin/python3 -vv
-print("Content-Length: 47")
+#!/usr/bin/env python3
+print("Content-Length: 62")
 print("Content-Type: text/plain\n")
-print("this cgi script has arguments after the shebang")
+print("This script has the following shebang:\n\n#!/usr/bin/env python3")

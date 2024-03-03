@@ -1,7 +1,7 @@
 #include "../../include/webserv.hpp"
 
 void Response::processRequest() {
-
+// std::cout << std::endl << "processing..." << std::endl << std::endl;
     _location = _server.getLocation(_request.getPath());
 
     std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();

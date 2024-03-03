@@ -39,13 +39,14 @@
 
 #define BUFFER_SIZE 30720
 #define MAX_HEADER_SIZE 8175 //8kb
-#define KEEPALIVE_TIMEOUT 60
+#define KEEPALIVE_TIMEOUT 1.0 //sec
+#define POLL_TIMEOUT 5.0 //sec
 #define DEFAULT_CONFIG "./conf_files/default.conf"
 #define SERVER_VERSION "webserv/1.0"
 #define HTTP_VERSION "HTTP/1.1"
 #define CGI_VERSION "CGI/1.1"
 #define SUPPORTED_CGI "sh,py,pl"
-#define CGI_TIMEOUT 3.0
+#define CGI_TIMEOUT 3.0 //sec
 #define SHEBANG "#!"
 #define DATE_FORMAT "%a, %d %b %Y %T GMT"
 #define DATE_FORMAT_LEN 29

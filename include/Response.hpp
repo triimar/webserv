@@ -31,7 +31,8 @@ private:
     bool hasCGIIndex();
 	void executeCGI();
 	void checkCGI();
-	void cgiProcess(int cgiPipe[2]);
+    void setupPipes(int cgiInput[2], int cgiOutput[2]);
+    void cgiProcess(int cgiInputREAD, int cgiOutputWRITE);
 	char **getCGIEnvironment();
 	int waitForCGI(pid_t cgi);
 	void parseCGIOutput();

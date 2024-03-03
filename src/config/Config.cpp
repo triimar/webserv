@@ -335,7 +335,7 @@ void Config::runServers() {
 
 	while (running) {
 		this->closeTimeoutClients();
-		int eventNr = poll(fds.data(), fds.size(), 5000);
+		int eventNr = poll(fds.data(), fds.size(), POLL_TIMEOUT * 1000);
 		std::cout << fds.size() << " size\n";
 		if (eventNr == -1) {
 			if (!running)
@@ -407,9 +407,10 @@ void Config::runServers() {
 					currentResponse = currentClient.getResponse();
 				}
                 std::cout << "------RESPONSE-------------------" << std::endl;
-                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                    std::cout << *it;
-                }
+                std::cout << "Response size: " << currentResponse.size() << std::endl;
+                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                //     std::cout << *it;
+                // }
                 std::cout << "------END RESPONSE---------------" << std::endl;
 				int sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				std::cout << "SENT SIZE: " << sentSize << std::endl;

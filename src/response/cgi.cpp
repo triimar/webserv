@@ -64,28 +64,33 @@ bool Response::hasCGIIndex() {
 /*                                  EXECUTE                                   */
 /* ************************************************************************** */
 
-
 void Response::executeCGI() {
     checkCGI();
-    int cgiPipe[2];
-    if (pipe(cgiPipe) == -1) {
-        throw 500;
-    }
+    int cgiOutput[2];
+    int cgiInput[2];
+    setupPipes(cgiInput, cgiOutput);
     pid_t cgi = fork();
     if (cgi == -1) {
-        close(cgiPipe[PIPE_READ]);
-        close(cgiPipe[PIPE_WRITE]);
+        if (_request.getMethod() == POST) {
+            close(cgiInput[PIPE_READ]);
+        }
+        close(cgiOutput[PIPE_READ]);
+        close(cgiOutput[PIPE_WRITE]);
         throw 500;
     } else if (cgi == 0) {
-        cgiProcess(cgiPipe);
+        close(cgiOutput[PIPE_READ]);
+        cgiProcess(cgiInput[PIPE_READ], cgiOutput[PIPE_WRITE]);
     }
-    close(cgiPipe[PIPE_WRITE]);
+    if (_request.getMethod() == POST) {
+        close(cgiInput[PIPE_READ]);
+    }
+    close(cgiOutput[PIPE_WRITE]);
     if ((_status = waitForCGI(cgi)) == 0) {
-        if (readToVector(cgiPipe[PIPE_READ], _response) == RETURN_FAILURE) {
+        if (readToVector(cgiOutput[PIPE_READ], _response) == RETURN_FAILURE) {
             _status = 500;
         }
     }
-    close(cgiPipe[PIPE_READ]);
+    close(cgiOutput[PIPE_READ]);
     if (_status != 0) {
         throw _status;
     }
@@ -118,18 +123,36 @@ void Response::checkCGI() {
     _cgiArgv.push_back(_cgiPath.substr(_cgiPath.rfind("/") + 1));
 }
 
-void Response::cgiProcess(int cgiPipe[2]) {
-    dup2(cgiPipe[PIPE_WRITE], STDOUT_FILENO);
-    close(cgiPipe[PIPE_READ]);
-    close(cgiPipe[PIPE_WRITE]);
-    if (chdir(_cgiPath.substr(0, _cgiPath.rfind("/")).c_str()) == -1) {
-        std::exit(EXIT_FAILURE);
+void Response::setupPipes(int cgiInput[2], int cgiOutput[2]) {
+    if (pipe(cgiOutput) == -1) {
+        throw 500;
     }
     if (_request.getMethod() == POST) {
-        // write request body to cgi stdin
-        if (write(STDIN_FILENO, _request.getBody().data(), _request.getBody().size()) == -1) {
-            std::exit(EXIT_FAILURE);
+        if (pipe(cgiInput) == -1) {
+            close(cgiOutput[PIPE_READ]);
+            close(cgiOutput[PIPE_WRITE]);
+            throw 500;
         }
+        ssize_t written = write(cgiInput[PIPE_WRITE], _request.getBody().data(), _request.getBody().size());
+        close(cgiInput[PIPE_WRITE]);
+        if (written != static_cast<ssize_t>(_request.getBody().size())) {
+            close(cgiInput[PIPE_READ]);
+            close(cgiOutput[PIPE_READ]);
+            close(cgiOutput[PIPE_WRITE]);
+            throw 500;
+        }
+    }
+}
+
+void Response::cgiProcess(int cgiInputREAD, int cgiOutputWRITE) {
+    dup2(cgiOutputWRITE, STDOUT_FILENO);
+    if (_request.getMethod() == POST) {
+        dup2(cgiInputREAD, STDIN_FILENO);
+        close(cgiInputREAD);
+    }
+    close(cgiOutputWRITE);
+    if (chdir(_cgiPath.substr(0, _cgiPath.rfind("/")).c_str()) == -1) {
+        std::exit(EXIT_FAILURE);
     }
     char **argv = vectorToArray(_cgiArgv);
     if (argv == NULL) {
@@ -163,9 +186,9 @@ char **Response::getCGIEnvironment() {
     env.push_back("CONTENT_LENGTH=" + SSTR(_request.getBody().size()));
     env.push_back("REMOTE_ADDR=" + _server.getIpAddr());
     env.push_back("HTTP_FROM=" + _request.getHeaderValueForKey("from"));
-    env.push_back("HTTP_ACCEPT" + _request.getHeaderValueForKey("accept"));
-    env.push_back("HTTP_USER_AGENT" + _request.getHeaderValueForKey("user-agent"));
-    env.push_back("HTTP_REFERER" + _request.getHeaderValueForKey("referer"));
+    env.push_back("HTTP_ACCEPT=" + _request.getHeaderValueForKey("accept"));
+    env.push_back("HTTP_USER_AGENT=" + _request.getHeaderValueForKey("user-agent"));
+    env.push_back("HTTP_REFERER=" + _request.getHeaderValueForKey("referer"));
 
     return (vectorToArray(env));
 }
@@ -176,6 +199,7 @@ int Response::waitForCGI(pid_t cgi) {
 
     while (waitpid(cgi, &waitStatus, WNOHANG) == 0) {
         if (difftime(std::time(NULL), start) >= CGI_TIMEOUT) {
+            std::cerr << "CGI TIMEOUT!!!" << std::endl;
             kill(cgi, SIGTERM);
             return (503);
         }
