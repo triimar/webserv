@@ -3,9 +3,7 @@
 void Response::constructResponse() {
     _response.clear();
     if (_status >= 300) {
-        // _body.clear();
         if (_status >= 400) {
-            _headers.clear();
             makeErrorPage();
         }
         _headers["content-length"] = SSTR(_body.size());
@@ -27,6 +25,12 @@ void Response::constructResponse() {
     appendStringToVector(_response, CRLF);
     _response.insert(_response.end(), _body.begin(), _body.end());
     appendStringToVector(_response, CRLFCRLF);
+
+    std::cout << "RESPONSE HEADERS:" << std::endl;
+    for (std::map<std::string, std::string>::iterator it = _headers.begin();
+        it != _headers.end(); ++it) {
+        std::cout << it->first << ": " << it->second << std::endl;
+    }
 }
 
 void Response::makeErrorPage() {

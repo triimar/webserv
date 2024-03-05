@@ -59,28 +59,20 @@ void Client::confirmKeepAlive() {
 //timeout count needs to be set after connection is established and updated after each response has been sent
 //and socket is ready to read.
 void Client::updateTime() {
-	time(&_connectionStart);
+	_connectionStart = time(NULL);
 }
 
 bool Client::isTimeout() {
     return (std::difftime(time(NULL), _connectionStart) >= KEEPALIVE_TIMEOUT);
-
-	// time_t current;
-
-	// time(&current);
-	// if (current - _connectionStart >= KEEPALIVE_TIMEOUT)
-	// 	return true;
-	// return false;
 }
 
 void Client::setChunkedUnfinished() {
 	_finishedChunked = false;
 }
-// ⬆︎⬇︎ setChunkedFinished(bool isFinished) ??
+
 void Client::setChunkedFinished() {
 	_finishedChunked = true;
 }
-
 
 void Client::setResponse(std::vector<char> response) {
 	_responseMsg = response;

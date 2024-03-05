@@ -39,8 +39,8 @@
 
 #define BUFFER_SIZE 30720
 #define MAX_HEADER_SIZE 8175 //8kb
-#define KEEPALIVE_TIMEOUT 1.0 //sec
-#define POLL_TIMEOUT 5.0 //sec
+#define KEEPALIVE_TIMEOUT 60.0 //sec
+#define POLL_TIMEOUT 10.0 //sec
 #define DEFAULT_CONFIG "./conf_files/default.conf"
 #define SERVER_VERSION "webserv/1.0"
 #define HTTP_VERSION "HTTP/1.1"
@@ -64,7 +64,7 @@
 	#define MTIME st_mtime
 #endif
 
-#define DELETE_CONFIM_MESSAGE "Are you sure to delete the directory including all its contents?\n-> Use 'force' as the query string: /your/uri?force"
+#define DELETE_CONFIM_MESSAGE "Are you sure to delete the directory including all its contents?\n-> Use 'force' as the query string: /your/uri/?force"
 
 /* ************************************************************************** */
 /*                                   ENUMS                                    */

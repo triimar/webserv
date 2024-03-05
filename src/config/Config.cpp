@@ -290,6 +290,7 @@ std::map<int, Client> Config::getClientMap() {
 void Config::closeTimeoutClients() {
 	int i = 0;
 	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
+        // loop through fds[].events & POLL
 		if (it->second.isTimeout()){
 			std::cout << "Client timeout\n";
 			close(it->second.getClientFd());
@@ -370,6 +371,7 @@ void Config::runServers() {
 			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
 				char buf[1024];
 				ssize_t num_read = read(current_fd, buf, sizeof(buf));
+                std::cout << "GOT " << num_read << " bytes" << std::endl;
 				if (num_read == -1) {
 					perror("Could not read from client");
 					closeClient(current_fd, i);
@@ -384,7 +386,7 @@ void Config::runServers() {
 				}
 				Client &currentClient = clientList.at(current_fd);
 				currentClient.getRequest().processRequest(buf, num_read);
-//				std::cout << currentClient.getRequest();
+                // std::cout << currentClient.getRequest();
 				if (currentClient.getRequest().requestComplete()) {
 					currentClient.confirmKeepAlive();
 					fds[i].events = POLLOUT;
@@ -398,7 +400,7 @@ void Config::runServers() {
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
 				std::cout << currentClient.getRequest();
-				std::vector<char> currentResponse = currentClient.getResponse();
+				std::vector<char> &currentResponse = currentClient.getResponse();
 
 				if (currentResponse.empty() || currentClient.getFinishedChunked())
 				{
@@ -412,14 +414,14 @@ void Config::runServers() {
                 //     std::cout << *it;
                 // }
                 std::cout << "------END RESPONSE---------------" << std::endl;
-				int sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
+				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				std::cout << "SENT SIZE: " << sentSize << std::endl;
 				if (sentSize < 0)
 				{
-					perror("Could not write in client socket\n");
+					perror("Could not write in client socket");
 					closeClient(current_fd, i);
 					continue;
-				} else if (static_cast<unsigned long >(sentSize) < currentResponse.size())
+				} else if (sentSize < static_cast<ssize_t>(currentResponse.size()))
 				{
 					currentResponse.erase(currentResponse.begin(), currentResponse.begin() + sentSize);
 					currentClient.setChunkedUnfinished();
@@ -428,6 +430,8 @@ void Config::runServers() {
 				else {
 					currentClient.setChunkedFinished();
 				}
+                std::cout << "Response size after: " << currentResponse.size() << std::endl;
+                // std::cout << "finished? " << std::boolalpha << currentClient.getFinishedChunked() << " & keep-alive? " << std::boolalpha << currentClient.getKeepAlive() << std::endl;
 				if (!currentClient.getKeepAlive() && currentClient.getFinishedChunked()) {
 					closeClient(current_fd, i);
 					eventNr--;

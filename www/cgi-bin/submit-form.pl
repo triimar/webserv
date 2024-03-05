@@ -72,7 +72,7 @@ else {
     print "<h1>Form Submission Results</h1>";
     print "<ul>";
 
-    my @display_params = ( 'name', 'email', 'age', 'color', 'fruit', 'hobbies' );
+    my @display_params = ( 'name', 'email', 'age', 'color', 'fruit', 'hobbies', 'subscribe' );
     foreach my $param (@display_params) {
         my $value = $params{$param} || '';
         print "<li><strong>$param:</strong> $value</li>";

@@ -1,7 +1,10 @@
 #include "../../include/webserv.hpp"
 
 void Response::processRequest() {
-// std::cout << std::endl << "processing..." << std::endl << std::endl;
+    if ((_status = _request.getErrorCode()) != 0) {
+        return ;
+    }
+
     _location = _server.getLocation(_request.getPath());
 
     std::vector<RequestMethod> allowedMethods = _location.getAllowedMethods();
@@ -19,9 +22,6 @@ void Response::processRequest() {
         throw 404;
     }
 
-    if ((_status = _request.getErrorCode()) != 0) {
-        return ;
-    }
     if ((_isCGI = isCGI()) == true) {
         executeCGI();
         return ;
@@ -133,7 +133,8 @@ void Response::performPOST() {
         throw 415;
     }
     std::string postPath = _path;
-    if (S_ISDIR(_pathStat.st_mode)) {
+    if (_path[_path.size() - 1] == '/'
+        || (access(_path.c_str(), F_OK) == 0 && S_ISDIR(_pathStat.st_mode))) {
         std::string index = "index." + std::string(extension);
         postPath = combinePaths(_path, index);
     }
@@ -186,16 +187,15 @@ void Response::performDELETE() {
             throw 500;
         }
     } else {
-        if (_path.at(_path.size() - 1) != '/') {
-            _headers["location"] = _request.getUri() + "/";
-            throw 301;
+        if (_request.getQuery() != "force") {
+            appendStringToVector(_body, DELETE_CONFIM_MESSAGE);
+            if (_path.at(_path.size() - 1) != '/') {
+                _headers["location"] = _request.getUri() + "/";
+            }
+            throw 409;
         }
         if (access(_path.c_str(), W_OK) == -1) {
             throw 403;
-        }
-        if (_request.getQuery() != "force") {
-            appendStringToVector(_body, DELETE_CONFIM_MESSAGE);
-            throw 409;
         }
         if (deleteDirectory(_path) == RETURN_FAILURE) {
             throw 500;
