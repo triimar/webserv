@@ -55,7 +55,6 @@ int Response::mimeStrcmpi(const char *s1, const char *s2) {
 }
 
 Response::mimeEntry Response::_mimeTypes[348] =  {
-  {"txt", "text/plain"},
   {"*3gpp", "audio/3gpp"},
   {"*jpm", "video/jpm"},
   {"*mp3", "audio/mp3"},
@@ -349,6 +348,7 @@ Response::mimeEntry Response::_mimeTypes[348] =  {
   {"ttc", "font/collection"},
   {"ttf", "font/ttf"},
   {"ttl", "text/turtle"},
+  {"txt", "text/plain"},
   {"u8dsn", "message/global-delivery-status"},
   {"u8hdr", "message/global-headers"},
   {"u8mdn", "message/global-disposition-notification"},

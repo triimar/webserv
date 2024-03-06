@@ -6,14 +6,15 @@ Server::Server() {
 	root = "";
 	socketFd = -1;
 	ipAddress = "";
-	clientSize = 0;
+	clientSize = 5;
 	autoindex = true;
+	connectedClients = 0;
 }
 
 Server::Server(const Server &server) : port(server.port), host(server.host),
 serverName(server.serverName), root(server.root), index(server.index),
 ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-locations(server.locations), autoindex(server.autoindex), cgi_info(server.cgi_info), socketFd(server.socketFd){
+locations(server.locations), autoindex(server.autoindex), cgi_info(server.cgi_info), socketFd(server.socketFd), connectedClients(server.connectedClients){
 	return;
 }
 
@@ -31,6 +32,7 @@ Server &Server::operator=(const Server &server) {
 		this->autoindex = server.autoindex;
 		this->cgi_info = server.cgi_info;
 		this->socketFd = server.socketFd;
+		this->connectedClients = server.connectedClients;
 	}
 	return *this;
 }
@@ -134,6 +136,9 @@ std::string Server::getRoot() const {
 }
 
 std::string Server::getServerName() const {
+    if (this->serverName.empty()) {
+        return ("");
+    }
     return (this->serverName.back());
 }
 

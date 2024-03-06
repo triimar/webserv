@@ -279,33 +279,13 @@ void Config::addFdToPoll(int fd) {
 	this->fds.push_back(newPollFd);
 }
 
-std::vector <Server> Config::getServerList() {
-	return this->serverList;
-}
+// std::vector <Server> Config::getServerList() {
+// 	return this->serverList;
+// }
 
-std::map<int, Client> Config::getClientMap() {
-	return this->clientList;
-}
-
-void Config::closeTimeoutClients() {
-	int i = 0;
-	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
-        // loop through fds[].events & POLL
-		if (it->second.isTimeout()){
-			std::cout << "Client timeout\n";
-			close(it->second.getClientFd());
-			fds.erase(fds.begin() + serverList.size() + i);
-			std::map<int, Client>::iterator tmp = it;
-			it++;
-			clientList.erase(tmp);
-		}
-		else
-		{
-			it++;
-			i++;
-		}
-	}
-}
+// std::map<int, Client> Config::getClientMap() {
+// 	return this->clientList;
+// }
 
 void Config::startServers() {
 	for(std::vector<Server>::iterator it = this->serverList.begin(); it != this->serverList.end(); it++)
@@ -321,10 +301,32 @@ void Config::sigintHandler(int signum) {
 }
 
 void Config::closeClient(int fd, size_t &index) {
+	this->clientList.at(fd).getServer().removeClient();
 	this->clientList.erase(fd);
     close(fd);
 	fds.erase(fds.begin() + index);
 	index--;
+}
+
+void Config::closeTimeoutClients() {
+	int i = 0;
+	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
+        // loop through fds[].events & POLL
+		if (it->second.isTimeout()){
+			std::cout << "Client timeout\n";
+			close(it->second.getClientFd());
+			it->second.getServer().removeClient();
+			fds.erase(fds.begin() + serverList.size() + i);
+			std::map<int, Client>::iterator tmp = it;
+			it++;
+			clientList.erase(tmp);
+		}
+		else
+		{
+			it++;
+			i++;
+		}
+	}
 }
 
 void Config::runServers() {
@@ -407,11 +409,11 @@ void Config::runServers() {
 					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}
-                // std::cout << "------RESPONSE-------------------" << std::endl;
-                // // std::cout << "Response size: " << currentResponse.size() << std::endl;
-                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                //     std::cout << *it;
-                // }
+                std::cout << "------RESPONSE-------------------" << std::endl;
+                // std::cout << "Response size: " << currentResponse.size() << std::endl;
+                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                    std::cout << *it;
+                }
                 // std::cout << "------END RESPONSE---------------" << std::endl;
 				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				// std::cout << "SENT SIZE: " << sentSize << std::endl;

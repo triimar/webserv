@@ -34,8 +34,8 @@ public:
 	Config &operator=(const Config& config);
 	void printServers();
 
-	std::vector<Server> getServerList();
-	std::map<int, Client> getClientMap();
+	// std::vector<Server> getServerList();
+	// std::map<int, Client> getClientMap();
 
 	void startServers();
 	void runServers();

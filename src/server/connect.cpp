@@ -69,13 +69,18 @@ void Server::startListen() {
 
 void Server::acceptConnection(int &newSocket) {
 	newSocket = accept(socketFd, (sockaddr *)&socketAddress, &socketLen);
-	if (newSocket < 0)
+	if (newSocket < 0 || connectedClients >= clientSize)
 	{
 		std::ostringstream ss;
 		ss << "Server failed to accept incoming connection from ADDRESS: " << inet_ntoa(socketAddress.sin_addr) << "; PORT: " << ntohs(socketAddress.sin_port);
 		std::cerr << ss.str() << std::endl;
 		exit(1);
 	}
+	this->connectedClients++;
+}
+
+void Server::removeClient(){
+	clientSize--;
 }
 
 void Server::closeServer() {
