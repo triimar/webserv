@@ -1,22 +1,16 @@
 #include "../../include/webserv.hpp"
 
 Request::Request(): state_(stateGetHeaderData), rhstate_(stateParseMethod), \
-					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {
-	std::cout << "REQUEST\n";
-}
+					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {}
 
-Request::~Request() {
-	std::cout << "REQUEST destr\n";
-}
+Request::~Request() {}
 
 Request::Request(const Request& rhs): state_(rhs.state_), rhstate_(rhs.rhstate_), \
 								buffer_(rhs.buffer_), headersLen_(rhs.headersLen_), skip_(rhs.skip_), \
 								methodStr_(rhs.methodStr_), method_(rhs.method_), \
 								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
 								headers_(rhs.headers_), body_(rhs.body_), contentLen_(rhs.contentLen_), \
-								statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {
-	std::cout << "REQUEST copy\n";
-}
+								statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {}
 
 Request& Request::operator=(const Request& rhs) {
 	if (this != &rhs) {

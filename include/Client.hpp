@@ -19,8 +19,8 @@ private:
 public:
 	// Client();
 	Client(Server &server);
-	// Client(const Client &client);
-	// Client &operator=(Client &client);
+	Client(const Client &client);
+	Client &operator=(Client &client);
 	~Client();
 
 	void	confirmKeepAlive();

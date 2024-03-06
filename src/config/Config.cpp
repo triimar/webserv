@@ -398,7 +398,7 @@ void Config::runServers() {
 
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
-				std::cout << currentClient.getRequest();
+				// std::cout << currentClient.getRequest();
 				std::vector<char> currentResponse = currentClient.getResponse();
 
 				if (currentResponse.empty() || currentClient.getFinishedChunked())

@@ -22,30 +22,29 @@ Client::Client(Server &_server) : _server(_server) {
 	return;
 }
 
-// Client::Client(const Client &client) : _clientfd(client._clientfd), _server(client._server),
-// request(client.request), _connectionStart(client._connectionStart), _keepAlive(client._keepAlive),
-// _finishedChunked(client._finishedChunked){
-// 	return;
-// }
+Client::Client(const Client &client) : _clientfd(client._clientfd), _server(client._server),
+_request(client._request), _connectionStart(client._connectionStart), _keepAlive(client._keepAlive),
+_finishedChunked(client._finishedChunked){
+	return;
+}
 
 Client::~Client() {
-	std::cout << "Client destroyed\n";
 //	close(_clientfd);
 	return;
 }
 
-// Client &Client::operator=(Client &client) {
-// 	if (client._clientfd != _clientfd)
-// 	{
-// 		_clientfd = client._clientfd;
-// 		_server = client._server;
-// 		request = client.request;
-// 		_connectionStart = client._connectionStart;
-// 		_keepAlive = client._keepAlive;
-// 		_finishedChunked = client._finishedChunked;
-// 	}
-// 	return *this;
-// }
+Client &Client::operator=(Client &client) {
+	if (client._clientfd != _clientfd)
+	{
+		_clientfd = client._clientfd;
+		_server = client._server;
+		_request = client._request;
+		_connectionStart = client._connectionStart;
+		_keepAlive = client._keepAlive;
+		_finishedChunked = client._finishedChunked;
+	}
+	return *this;
+}
 
 
 // Timeout Expiry:
