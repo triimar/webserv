@@ -29,6 +29,7 @@ Client::Client(Server &_server) : _server(_server) {
 // }
 
 Client::~Client() {
+	std::cout << "Client destroyed\n";
 //	close(_clientfd);
 	return;
 }

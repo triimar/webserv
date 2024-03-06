@@ -324,6 +324,7 @@ void Config::sigintHandler(int signum) {
 
 void Config::closeClient(int fd, size_t &index) {
 	this->clientList.erase(fd);
+	close(fd);
 	fds.erase(fds.begin() + index);
 	index--;
 }
@@ -367,7 +368,7 @@ void Config::runServers() {
 			}
 
 			//HANDLING REQUESTS
-
+			
 			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
 				char buf[1024];
 				ssize_t num_read = read(current_fd, buf, sizeof(buf));
@@ -385,7 +386,8 @@ void Config::runServers() {
 				}
 				Client &currentClient = clientList.at(current_fd);
 				currentClient.getRequest().processRequest(buf, num_read);
-                std::cout << "------------" << num_read << "-----------------\n" << buf << "------------------" << std::endl;
+                // std::cout << "------------BUF-" << num_read << "-----------------\n" << buf << "------------------" << std::endl;
+				// memset(buf, '\0', 1024); /////
 				if (currentClient.getRequest().requestComplete()) {
 					currentClient.confirmKeepAlive();
 					fds[i].events = POLLOUT;
@@ -398,7 +400,7 @@ void Config::runServers() {
 
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
-				std::cout << currentClient.getRequest();
+				// std::cout << currentClient.getRequest();
 				std::vector<char> &currentResponse = currentClient.getResponse();
 
 				if (currentResponse.empty() || currentClient.getFinishedChunked())
@@ -407,14 +409,14 @@ void Config::runServers() {
 					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}
-                std::cout << "------RESPONSE-------------------" << std::endl;
-                // std::cout << "Response size: " << currentResponse.size() << std::endl;
-                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                    std::cout << *it;
-                }
-                std::cout << "------END RESPONSE---------------" << std::endl;
+                // std::cout << "------RESPONSE-------------------" << std::endl;
+                // // std::cout << "Response size: " << currentResponse.size() << std::endl;
+                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                //     std::cout << *it;
+                // }
+                // std::cout << "------END RESPONSE---------------" << std::endl;
 				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
-				std::cout << "SENT SIZE: " << sentSize << std::endl;
+				// std::cout << "SENT SIZE: " << sentSize << std::endl;
 				if (sentSize < 0)
 				{
 					perror("Could not write in client socket");

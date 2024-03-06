@@ -30,12 +30,6 @@ void Response::constructResponse() {
         _response.insert(_response.end(), _body.begin(), _body.end());
         appendStringToVector(_response, CRLFCRLF);
     }
-
-    std::cout << "RESPONSE HEADERS:" << std::endl;
-    for (std::map<std::string, std::string>::iterator it = _headers.begin();
-        it != _headers.end(); ++it) {
-        std::cout << it->first << ": " << it->second << std::endl;
-    }
 }
 
 void Response::makeErrorPage() {
