@@ -17,10 +17,9 @@
 #include <cstring>
 #include <cstdio>
 #include <ctime>
-// #include <cstdint>
-#include <cmath> //
-#include <iomanip> //
-#include <sys/wait.h> //
+#include <cmath>
+#include <iomanip>
+#include <sys/wait.h>
 #include <cctype>
 #include <csignal>
 #include <fcntl.h>
@@ -81,6 +80,7 @@ enum RequestMethod {
 	GET,
 	POST,
 	DELETE,
+	HEAD,
     OTHER
 };
 

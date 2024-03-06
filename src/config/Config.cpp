@@ -371,7 +371,6 @@ void Config::runServers() {
 			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
 				char buf[1024];
 				ssize_t num_read = read(current_fd, buf, sizeof(buf));
-                std::cout << "GOT " << num_read << " bytes" << std::endl;
 				if (num_read == -1) {
 					perror("Could not read from client");
 					closeClient(current_fd, i);
@@ -386,7 +385,7 @@ void Config::runServers() {
 				}
 				Client &currentClient = clientList.at(current_fd);
 				currentClient.getRequest().processRequest(buf, num_read);
-                // std::cout << currentClient.getRequest();
+                std::cout << "------------" << num_read << "-----------------\n" << buf << "------------------" << std::endl;
 				if (currentClient.getRequest().requestComplete()) {
 					currentClient.confirmKeepAlive();
 					fds[i].events = POLLOUT;
@@ -409,10 +408,10 @@ void Config::runServers() {
 					currentResponse = currentClient.getResponse();
 				}
                 std::cout << "------RESPONSE-------------------" << std::endl;
-                std::cout << "Response size: " << currentResponse.size() << std::endl;
-                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                //     std::cout << *it;
-                // }
+                // std::cout << "Response size: " << currentResponse.size() << std::endl;
+                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                    std::cout << *it;
+                }
                 std::cout << "------END RESPONSE---------------" << std::endl;
 				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				std::cout << "SENT SIZE: " << sentSize << std::endl;
