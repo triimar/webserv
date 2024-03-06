@@ -287,26 +287,6 @@ void Config::addFdToPoll(int fd) {
 // 	return this->clientList;
 // }
 
-void Config::closeTimeoutClients() {
-	int i = 0;
-	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
-        // loop through fds[].events & POLL
-		if (it->second.isTimeout()){
-			std::cout << "Client timeout\n";
-			close(it->second.getClientFd());
-			fds.erase(fds.begin() + serverList.size() + i);
-			std::map<int, Client>::iterator tmp = it;
-			it++;
-			clientList.erase(tmp);
-		}
-		else
-		{
-			it++;
-			i++;
-		}
-	}
-}
-
 void Config::startServers() {
 	for(std::vector<Server>::iterator it = this->serverList.begin(); it != this->serverList.end(); it++)
 	{
@@ -321,10 +301,32 @@ void Config::sigintHandler(int signum) {
 }
 
 void Config::closeClient(int fd, size_t &index) {
+	this->clientList.at(fd).getServer().removeClient();
 	this->clientList.erase(fd);
     close(fd);
 	fds.erase(fds.begin() + index);
 	index--;
+}
+
+void Config::closeTimeoutClients() {
+	int i = 0;
+	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
+        // loop through fds[].events & POLL
+		if (it->second.isTimeout()){
+			std::cout << "Client timeout\n";
+			close(it->second.getClientFd());
+			it->second.getServer().removeClient();
+			fds.erase(fds.begin() + serverList.size() + i);
+			std::map<int, Client>::iterator tmp = it;
+			it++;
+			clientList.erase(tmp);
+		}
+		else
+		{
+			it++;
+			i++;
+		}
+	}
 }
 
 void Config::runServers() {

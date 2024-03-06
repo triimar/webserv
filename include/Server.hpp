@@ -27,6 +27,8 @@ private:
 	int 								newSocket;
 	unsigned int						socketLen;
 
+	unsigned long						connectedClients;
+
 //	std::map<int, Client>				clients;
 //	long 								incomingMsg;
 //	uint32_t							ipAddress;
@@ -41,6 +43,7 @@ public:
 	void closeServer();
 	void startListen();
 	void acceptConnection(int &newSocket);
+	void removeClient();
 
 	void setPort(unsigned short port);
 	void setHost(std::string host);
