@@ -31,6 +31,9 @@ void Response::processRequest() {
     case GET: 
         performGET();
         return ;
+    case HEAD:
+        performGET();
+        return ;
     case POST: 
         performPOST();
         return ;

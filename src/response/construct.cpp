@@ -1,6 +1,9 @@
 #include "../../include/webserv.hpp"
 
 void Response::constructResponse() {
+    if (_request.getMethod() == HEAD) {
+        _body.clear();
+    }
     _response.clear();
     if (_status >= 300) {
         if (_status >= 400) {
@@ -23,8 +26,10 @@ void Response::constructResponse() {
         appendStringToVector(_response, CRLF);
     }
     appendStringToVector(_response, CRLF);
-    _response.insert(_response.end(), _body.begin(), _body.end());
-    appendStringToVector(_response, CRLFCRLF);
+    if (_body.empty() == false) {
+        _response.insert(_response.end(), _body.begin(), _body.end());
+        appendStringToVector(_response, CRLFCRLF);
+    }
 
     std::cout << "RESPONSE HEADERS:" << std::endl;
     for (std::map<std::string, std::string>::iterator it = _headers.begin();
