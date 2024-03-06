@@ -296,10 +296,8 @@ void Config::closeTimeoutClients() {
 			close(it->second.getClientFd());
 			fds.erase(fds.begin() + serverList.size() + i);
 			std::map<int, Client>::iterator tmp = it;
-			tmp++;
-			// it = clientList.erase(it);
-			clientList.erase(it);
-			it = tmp;
+			it++;
+			clientList.erase(tmp);
 		}
 		else
 		{
@@ -324,6 +322,7 @@ void Config::sigintHandler(int signum) {
 
 void Config::closeClient(int fd, size_t &index) {
 	this->clientList.erase(fd);
+    close(fd);
 	fds.erase(fds.begin() + index);
 	index--;
 }
@@ -399,7 +398,7 @@ void Config::runServers() {
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
 				std::cout << currentClient.getRequest();
-				std::vector<char> &currentResponse = currentClient.getResponse();
+				std::vector<char> currentResponse = currentClient.getResponse();
 
 				if (currentResponse.empty() || currentClient.getFinishedChunked())
 				{
@@ -409,9 +408,9 @@ void Config::runServers() {
 				}
                 std::cout << "------RESPONSE-------------------" << std::endl;
                 // std::cout << "Response size: " << currentResponse.size() << std::endl;
-                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                    std::cout << *it;
-                }
+                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                //     std::cout << *it;
+                // }
                 std::cout << "------END RESPONSE---------------" << std::endl;
 				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				std::cout << "SENT SIZE: " << sentSize << std::endl;
@@ -422,7 +421,7 @@ void Config::runServers() {
 					continue;
 				} else if (sentSize < static_cast<ssize_t>(currentResponse.size()))
 				{
-					currentResponse.erase(currentResponse.begin(), currentResponse.begin() + sentSize);
+					currentClient.getResponse().erase(currentClient.getResponse().begin(), currentClient.getResponse().begin() + sentSize);
 					currentClient.setChunkedUnfinished();
 					fds[i].revents = POLLOUT;
 				}
