@@ -38,7 +38,7 @@
 
 #define BUFFER_SIZE 30720
 #define MAX_HEADER_SIZE 8175 //8kb
-#define KEEPALIVE_TIMEOUT 1.0 //sec
+#define KEEPALIVE_TIMEOUT 60.0 //sec
 #define POLL_TIMEOUT 10.0 //sec
 #define DEFAULT_CONFIG "./conf_files/default.conf"
 #define SERVER_VERSION "webserv/1.0"

@@ -279,13 +279,13 @@ void Config::addFdToPoll(int fd) {
 	this->fds.push_back(newPollFd);
 }
 
-std::vector <Server> Config::getServerList() {
-	return this->serverList;
-}
+// std::vector <Server> Config::getServerList() {
+// 	return this->serverList;
+// }
 
-std::map<int, Client> Config::getClientMap() {
-	return this->clientList;
-}
+// std::map<int, Client> Config::getClientMap() {
+// 	return this->clientList;
+// }
 
 void Config::closeTimeoutClients() {
 	int i = 0;
@@ -407,11 +407,11 @@ void Config::runServers() {
 					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}
-                // std::cout << "------RESPONSE-------------------" << std::endl;
-                // // std::cout << "Response size: " << currentResponse.size() << std::endl;
-                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                //     std::cout << *it;
-                // }
+                std::cout << "------RESPONSE-------------------" << std::endl;
+                // std::cout << "Response size: " << currentResponse.size() << std::endl;
+                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                    std::cout << *it;
+                }
                 // std::cout << "------END RESPONSE---------------" << std::endl;
 				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
 				// std::cout << "SENT SIZE: " << sentSize << std::endl;

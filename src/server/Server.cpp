@@ -134,6 +134,9 @@ std::string Server::getRoot() const {
 }
 
 std::string Server::getServerName() const {
+    if (this->serverName.empty()) {
+        return ("");
+    }
     return (this->serverName.back());
 }
 
