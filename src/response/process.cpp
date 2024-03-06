@@ -13,7 +13,8 @@ void Response::processRequest() {
     }
 
     _path = _location.getRoot() + cleanPath(_request.getPath());
-    
+
+
     if (access(_path.c_str(), F_OK) == 0) {
         if (stat(_path.c_str(), &_pathStat) != 0) {
             throw 500;
@@ -95,12 +96,14 @@ void Response::performGET() {
     }
     const char *type = Response::getMimeType(pathExtension.c_str());
     if (type == NULL) {
+        _body.clear();
         throw 415;
     }
     _status = 200;
-    _headers["content-length"] = SSTR(_body.size());
     _headers["content-type"] = type;
-    _headers["last-modified"] = formatDate(_pathStat.MTIME);
+    if (pathExtension != "html") { // is auto-index
+        _headers["last-modified"] = formatDate(_pathStat.MTIME);
+    }
 }
 
 void Response::fileToBody(std::string &path) {
@@ -170,7 +173,6 @@ void Response::performPOST() {
         if (file.bad() == false) {
             file.close();
             _status = 201;
-            _headers["content-length"] = "0";
             _headers["location"] = postPath.substr(_location.getRoot().size());
             return ;
         }
