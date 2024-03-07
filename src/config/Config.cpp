@@ -306,7 +306,7 @@ void Config::sigintHandler(int signum) {
 }
 
 void Config::closeClient(int fd, size_t &index) {
-	this->clientList.at(fd).getServer().removeClient();
+	this->clientList.at(fd).getServer()->removeClient();
 	this->clientList.erase(fd);
     close(fd);
 	fds.erase(fds.begin() + index);
@@ -320,7 +320,7 @@ void Config::closeTimeoutClients() {
 		if (it->second.isTimeout()){
 			// std::cerr << "Client timeout\n";
 			close(it->second.getClientFd());
-			it->second.getServer().removeClient();
+			it->second.getServer()->removeClient();
 			fds.erase(fds.begin() + serverList.size() + i);
 			std::map<int, Client>::iterator tmp = it;
 			it++;
@@ -364,14 +364,17 @@ void Config::runServers() {
 
 			if (i < serverList.size() && (fds[i].revents & POLLIN)) {
 				try {
-					Client newClient(serverList[i]);
+					if (fds.size() + 1 > FD_LIMIT)
+						throw std::runtime_error("Client starting error: socket limit exceeded.");
+					Client newClient(&serverList[i]);
 					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
 					addFdToPoll(newClient.getClientFd());
 					eventNr--;
 					// std::clog << "New client connection accepted" << std::endl;
 				}
 				catch (std::exception &e) {
-					std::cerr << "Error accepting new client\n";
+					std::cerr << e.what();
+					eventNr--;
 					continue;
 				}
 			}
@@ -415,7 +418,7 @@ void Config::runServers() {
 
 				if (currentResponse.empty() || currentClient.getFinishedChunked())
 				{
-					Response response(currentClient.getServer(), currentClient.getRequest());
+					Response response(*currentClient.getServer(), currentClient.getRequest());
 					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}

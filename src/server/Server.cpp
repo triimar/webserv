@@ -117,15 +117,6 @@ void Server::setCgiInfo(std::string info) {
 	this->cgi_info.push_back(info);
 }
 
-//void Server::pushLocation() {
-//	Location location;
-//	this->locations.push_back(location);
-//}
-
-// ???????
-//	this->clientSize = clientSize;
-//}
-
 /* ************************************************************************** */
 /*                                  GETTERS                                   */
 /* ************************************************************************** */

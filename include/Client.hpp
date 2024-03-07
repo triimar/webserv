@@ -8,19 +8,19 @@ class Server;
 class Client {
 private:
 	int					_clientfd;
-	Server				&_server;
+	Server				*_server;
 	Request				_request;
 	std::vector<char>	_responseMsg;
 
 	time_t				_connectionStart;
 	bool				_keepAlive;
 	bool				_finishedChunked;
+	Client();
 
 public:
-	// Client();
-	Client(Server &server);
-	// Client(const Client &client);
-	// Client &operator=(Client &client);
+	Client(Server *server);
+	 Client(const Client &client);
+	 Client &operator=(Client &client);
 	~Client();
 
 	void	confirmKeepAlive();
@@ -31,7 +31,7 @@ public:
 	void	setChunkedFinished();
 
 	int					&getClientFd();
-	Server				&getServer();
+	Server				*getServer();
 	Request				&getRequest();
 	std::vector<char>	&getResponse();
 	time_t				&getConnectionStart();

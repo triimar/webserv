@@ -51,6 +51,7 @@
 #define DATE_FORMAT "%a, %d %b %Y %T GMT"
 #define DATE_FORMAT_LEN 29
 #define REDIRECTION_LIMIT 5
+#define FD_LIMIT 10200
 
 #define CRLF "\r\n"
 #define CRLFCRLF "\r\n\r\n"

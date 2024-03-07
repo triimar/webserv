@@ -42,7 +42,7 @@ public:
 	void startServer();
 	void closeServer();
 	// void startListen();
-	// void acceptConnection(int &newSocket);
+	bool acceptConnection();
 	void removeClient();
 
 	void setPort(unsigned short port);
