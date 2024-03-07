@@ -364,9 +364,12 @@ void Config::runServers() {
 
 			if (i < serverList.size() && (fds[i].revents & POLLIN)) {
 				try {
-					if (fds.size() + 1 > FD_LIMIT)
-						throw std::runtime_error("Client starting error: socket limit exceeded.");
 					Client newClient(&serverList[i]);
+					if (fds.size() + 1 > FD_LIMIT)
+					{
+						close(newClient.getClientFd());
+						throw std::runtime_error("Client starting error: socket limit exceeded.");
+					}
 					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
 					addFdToPoll(newClient.getClientFd());
 					eventNr--;
