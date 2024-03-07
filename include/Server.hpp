@@ -41,8 +41,8 @@ public:
 
 	void startServer();
 	void closeServer();
-	void startListen();
-	void acceptConnection(int &newSocket);
+	// void startListen();
+	// void acceptConnection(int &newSocket);
 	void removeClient();
 
 	void setPort(unsigned short port);
@@ -52,6 +52,7 @@ public:
 	void setIndex(std::string index);
 	void setIP();
 	void setClientSize(unsigned long clientSize);
+    void setDefaultClientSize();
 	void setErrorPage(int key, std::string errorPage);
 	void setLocation(std::string line, std::ifstream &stream);
 	void setAutoIndex(std::string autoindex);

@@ -1,37 +1,23 @@
-#include "../include/Server.hpp"
-#include "../include/utils.hpp"
-#include "../include/Config.hpp"
+#include "../include/webserv.hpp"
 
-int main(int argc, char **argv)
-{
-	if (argc > 2)
-	{
-		std::cerr << "Wrong number of arguments\n";
-		return 1;
+int main(int argc, char **argv) {
+	if (argc > 2) {
+		std::cerr << "Too many arguments" << std::endl;
+		return (EXIT_FAILURE);
 	}
-	(void) argv;
-	// Server server;
-	// std::string parameter = "0.0.0.0";
-	// server.setPort(4242);
-	// server.setHost(parameter.data());
-	// server.setIP();
-	// server.startServer();
-	// server.startListen();
 
-	try{
-		std::vector<Server> list;
+	try {
 		std::string file = DEFAULT_CONFIG;
-		if (argc > 1)
+		if (argc > 1) {
 			file = argv[1];
+        }
 		Config config(file.c_str());
-//		list = config.createServers();
-//		std::for_each(list.begin(), list.end(), Server::printServer);
-//		config.printServers();
 		config.startServers();
 		config.runServers();
+
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;;
 	}
-	catch (std::exception &e)
-	{
-		std::cerr << e.what();
-	}
+
+    return (EXIT_SUCCESS);
 }

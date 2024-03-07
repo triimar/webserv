@@ -13,10 +13,10 @@ bool running = true;
 Config::Config(const char *file) {
 	const char *conf = strstr(file, ".conf");
 	if (!conf || strlen(file) == 5 || strcmp(conf, &file[strlen(file) - 5]))
-		throw std::runtime_error("Error: wrong file format.\n");
+		throw std::runtime_error("Error: wrong file format.");
 	str.open(file);
 	if (!str.is_open())
-		throw std::runtime_error("Error: cannot open config file.\n");
+		throw std::runtime_error("Error: cannot open config file.");
 	createServers();
 }
 
@@ -32,7 +32,6 @@ Config::Config(const Config &file) : serverList(file.serverList), clientList(fil
 Config::~Config() {
 	if (str.is_open())
 		str.close();
-	// std::cout << "Deconstructor called!\n";
 }
 
 /**
@@ -67,112 +66,112 @@ void Config::parseServerLine(Server &server, std::string line) {
 			break;
 	}
 	if (i == keySize)
-		throw std::runtime_error("Config file error: invalid keyword.\n");
+		throw std::runtime_error("Config file error: invalid keyword.");
 	std::stringstream ss(line);
 	std::string word;
 	switch (i) {
 		//LISTEN
 		case 0: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on listen command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on listen command.");
 			ss >> word;
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on listen command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on listen command.");
 			word.erase(word.length() - 1);
 			std::stringstream port_ss(word);
 			unsigned short port;
 			if (!(port_ss >> port))
-				throw std::runtime_error("Config file error: invalid port format on listen command.\n");
+				throw std::runtime_error("Config file error: invalid port format on listen command.");
 			server.setPort(port);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\".\n");
+				throw std::runtime_error("Config file error: line should end after \";\".");
 			break;
 		}
 		//SERVER_NAME
 		case 1: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on server_name command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on server_name command.");
 			while (ss >> word && word[word.length() - 1] != ';')
 				server.setName(word);
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on server_name command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on server_name command.");
 			word.erase(word.length() - 1);
 			server.setName(word);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\"\n");
+				throw std::runtime_error("Config file error: line should end after \";\"");
 			break;
 		}
 		//CLIENT_SIZE
 		case 2: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on client_size command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on client_size command.");
 			ss >> word;
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on client_size command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on client_size command.");
 			word.erase(word.length() - 1);
 			std::stringstream client_ss(word);
 			unsigned long client;
 			if (!(client_ss >> client))
-				throw std::runtime_error("Config file error: invalid port format on client_size command.\n");
+				throw std::runtime_error("Config file error: invalid port format on client_size command.");
 			server.setClientSize(client);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\"\n");
+				throw std::runtime_error("Config file error: line should end after \";\"");
 			break;
 		}
 		//AUTOINDEX
 		case 3: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on autoindex command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on autoindex command.");
 			ss >> word;
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on autoindex command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on autoindex command.");
 			word.erase(word.length() - 1);
 			server.setAutoIndex(word);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+				throw std::runtime_error("Config file error: line should end after \";\" .");
 			break;
 		}
 		//ERROR_PAGE
 		case 4: {
 			std::vector<int> errorCodes;
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on error_page command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on error_page command.");
 			while (ss >> word && word[word.length() - 1] != ';')
 				errorCodes.push_back(atoi(word.c_str()));
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on error_page command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on error_page command.");
 			word.erase(word.length() - 1);
 			for(std::vector<int>::iterator it = errorCodes.begin();
 			it != errorCodes.end(); it++)
 				server.setErrorPage(*it, word);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\".\n");
+				throw std::runtime_error("Config file error: line should end after \";\".");
 			break;
 		}
 		//ROOT
 		case 5: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on root command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on root command.");
 			ss >> word;
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on root command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on root command.");
 			word.erase(word.length() - 1);
 			server.setRoot(word);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+				throw std::runtime_error("Config file error: line should end after \";\" .");
 			break;
 		}
 		//HOST
 		case 6: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on host command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on host command.");
 			ss >> word;
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on host command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on host command.");
 			word.erase(word.length() - 1);
 			server.setHost(word);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\" .\n");
+				throw std::runtime_error("Config file error: line should end after \";\" .");
 			break;
 		}
 		//LOCATION
@@ -183,32 +182,32 @@ void Config::parseServerLine(Server &server, std::string line) {
 		//INDEX
 		case 8: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on index command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on index command.");
 			while (ss >> word && word[word.length() - 1] != ';')
 				server.setIndex(word);
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on index command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on index command.");
 			word.erase(word.length() - 1);
 			server.setIndex(word);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\"\n");
+				throw std::runtime_error("Config file error: line should end after \";\"");
 			break;
 		}
 		case 9: {
 			while (ss >> word && word != keywords[i])
-				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.");
 			while (ss >> word && word[word.length() - 1] != ';')
 				server.setCgiInfo(word);
 			if (word.empty() || word[word.length() - 1] != ';')
-				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.\n");
+				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.");
 			word.erase(word.length() - 1);
 			server.setCgiInfo(word);
 			if (ss >> word)
-				throw std::runtime_error("Config file error: line should end after \";\"\n");
+				throw std::runtime_error("Config file error: line should end after \";\"");
 			break;
 		}
 		default:
-			std::cout << line << "\n";
+			std::cerr << line << "\n";
 			break;
 	}
 }
@@ -227,13 +226,13 @@ void Config::createServers() {
 			ss >> word;
 			if (word != "server")
 			{
-				std::cout << word << "\n";
-				throw std::runtime_error("Config file error: invalid format.\n");
+				std::cerr << word << "\n";
+				throw std::runtime_error("Config file error: invalid format.");
 			}
 			if (ss >> word && word != "{")
 			{
-				std::cout << word << std::endl;
-				throw std::runtime_error("Config file error: invalid format.\n");
+				std::cerr << word << std::endl;
+				throw std::runtime_error("Config file error: invalid format.");
 			}
 			if (word != "{")
 			{
@@ -241,12 +240,12 @@ void Config::createServers() {
 				while (!str.eof() && line.find('{') == std::string::npos)
 				{
 					if (!isEmptyLine(line))
-						throw std::runtime_error("Config file error: wrong format.\n");
+						throw std::runtime_error("Config file error: wrong format.");
 					std::getline(str, line);
 				}
 			}
 			if (str.eof() || line.find('{') != line.length() - 1)
-				throw std::runtime_error("Config file error: invalid format.\n");
+				throw std::runtime_error("Config file error: invalid format.");
 			Server server;
 			std::getline(str, line);
 			while (!str.eof() && line.find('}') == std::string::npos)
@@ -254,12 +253,13 @@ void Config::createServers() {
 				parseServerLine(server, line);
 				std::getline(str, line);
 			}
+            server.setDefaultClientSize();
 			server.setIP();
 			server.autoCompleteLocations();
 			list.push_back(server);
 		}
 		else if (!isEmptyLine(line))
-			throw std::runtime_error("Config file error: invalid format.\n");
+			throw std::runtime_error("Config file error: invalid format.");
 		if (!str.eof())
 			std::getline(str, line);
 	}
@@ -288,6 +288,11 @@ void Config::addFdToPoll(int fd) {
 // }
 
 void Config::startServers() {
+    if (this->serverList.size() == 1) {
+        std::cout << "Starting server..." << std::endl;
+    } else {
+        std::cout << "Starting servers..." << std::endl;
+    }
 	for(std::vector<Server>::iterator it = this->serverList.begin(); it != this->serverList.end(); it++)
 	{
 		it->startServer();
@@ -313,7 +318,7 @@ void Config::closeTimeoutClients() {
 	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
         // loop through fds[].events & POLL
 		if (it->second.isTimeout()){
-			std::cout << "Client timeout\n";
+			// std::cerr << "Client timeout\n";
 			close(it->second.getClientFd());
 			it->second.getServer().removeClient();
 			fds.erase(fds.begin() + serverList.size() + i);
@@ -334,35 +339,39 @@ void Config::runServers() {
 		perror("signal");
 		exit(EXIT_FAILURE);
 	}
-
+    if (this->serverList.size() == 1) {
+        std::cout << "Server is";
+    } else {
+        std::cout << "Servers are";
+    }
+    std::cout << " running and waiting for clients!" << std::endl;
 	while (running) {
 		this->closeTimeoutClients();
 		int eventNr = poll(fds.data(), fds.size(), POLL_TIMEOUT * 1000);
-		std::cout << fds.size() << " size\n";
+		std::cout << "Concurrent clients: " << fds.size() - serverList.size() << "\n\033[A\033[K\r";
 		if (eventNr == -1) {
 			if (!running)
 				break;
-			throw std::runtime_error("Poll error.\n");
+			throw std::runtime_error("Poll error.");
 		}
 		if (eventNr == 0)
 			continue;
 		for (size_t i = 0; i < fds.size() && eventNr; i++) {
 			int current_fd = fds[i].fd;
-			std::cout << i << " server, " << fds.size() << "\n";
+			// std::clog << i << " server, " << fds.size() << "\n";
 
 			//ACCEPTING CONNECTIONS
 
 			if (i < serverList.size() && (fds[i].revents & POLLIN)) {
 				try {
-					std::cout << "Setting up new client\n";
 					Client newClient(serverList[i]);
 					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
 					addFdToPoll(newClient.getClientFd());
 					eventNr--;
-					std::cout << "New client set up\n";
+					// std::clog << "New client connection accepted" << std::endl;
 				}
 				catch (std::exception &e) {
-					std::cout << "Error accepting new client\n";
+					std::cerr << "Error accepting new client\n";
 					continue;
 				}
 			}
@@ -379,16 +388,17 @@ void Config::runServers() {
 				}
 				if (num_read == 0) {
 					// Connection closed by client
-					std::cout << "Client with fd " << fds[i].fd << " closed the connection." << std::endl;
+					// std::clog << "Client(" << fds[i].fd << ") closed the connection." << std::endl;
 					closeClient(current_fd, i);
 					eventNr--;
 					continue;
 				}
 				Client &currentClient = clientList.at(current_fd);
 				currentClient.getRequest().processRequest(buf, num_read);
-                // std::cout << "------------BUF-" << num_read << "-----------------\n" << buf << "------------------" << std::endl;
+                // std::clog << "------------BUF-" << num_read << "-----------------\n" << buf << "------------------" << std::endl;
 				// memset(buf, '\0', 1024); /////
 				if (currentClient.getRequest().requestComplete()) {
+                    // std::clog << "Received " << currentClient.getRequest().getMethodStr() << " request from Client(" << fds[i].fd << ")" << std::endl;
 					currentClient.confirmKeepAlive();
 					fds[i].events = POLLOUT;
 				} else
@@ -400,7 +410,7 @@ void Config::runServers() {
 
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
-				std::cout << currentClient.getRequest();
+				// std::clog << currentClient.getRequest();
 				std::vector<char> currentResponse = currentClient.getResponse();
 
 				if (currentResponse.empty() || currentClient.getFinishedChunked())
@@ -409,14 +419,14 @@ void Config::runServers() {
 					currentClient.setResponse(response.getResponse());
 					currentResponse = currentClient.getResponse();
 				}
-                std::cout << "------RESPONSE-------------------" << std::endl;
-                // std::cout << "Response size: " << currentResponse.size() << std::endl;
-                for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                    std::cout << *it;
-                }
-                // std::cout << "------END RESPONSE---------------" << std::endl;
+                // std::clog << "------RESPONSE-------------------" << std::endl;
+                // std::clog << "Response size: " << currentResponse.size() << std::endl;
+                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
+                //     std::clog << *it;
+                // }
+                // std::clog << "------END RESPONSE---------------" << std::endl;
 				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
-				// std::cout << "SENT SIZE: " << sentSize << std::endl;
+				// std::clog << "SENT SIZE: " << sentSize << std::endl;
 				if (sentSize < 0)
 				{
 					perror("Could not write in client socket");
@@ -430,9 +440,8 @@ void Config::runServers() {
 				}
 				else {
 					currentClient.setChunkedFinished();
+                    // std::clog << "Response to Client(" << fds[i].fd << ") sent" << std::endl;
 				}
-                std::cout << "Response size after: " << currentResponse.size() << std::endl;
-                // std::cout << "finished? " << std::boolalpha << currentClient.getFinishedChunked() << " & keep-alive? " << std::boolalpha << currentClient.getKeepAlive() << std::endl;
 				if (!currentClient.getKeepAlive() && currentClient.getFinishedChunked()) {
 					closeClient(current_fd, i);
 					eventNr--;
@@ -448,7 +457,7 @@ void Config::runServers() {
 			//HANDLING ERRORS
 
 			else if (i >= serverList.size() && fds[i].revents & POLLERR) {
-				std::cout << "Poll error encountered\n";
+				std::cerr << "Poll error encountered\n";
 				closeClient(current_fd, i);
 				continue;
 			}
@@ -456,7 +465,7 @@ void Config::runServers() {
 			//HANDLING HANGUPS
 
 			else if (i >= serverList.size() && fds[i].revents & POLLHUP) {
-				std::cout << "Client hang up\n";
+				std::cerr << "Client hang up\n";
 				closeClient(current_fd, i);
 				continue;
 			}
@@ -466,4 +475,9 @@ void Config::runServers() {
 		close(it->fd);
 	}
 	fds.erase(fds.begin(), fds.end());
+    if (this->serverList.size() == 1) {
+        std::cout << "Server shutdown!" << std::endl;
+    } else {
+        std::cout << "Servers shutdown!" << std::endl;
+    }
 }

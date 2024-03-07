@@ -48,7 +48,6 @@ Return deleteDirectory(const std::string &path) {
             continue ;
         }
         std::string file = combinePaths(path, fileName);
-        std::cout << file << std::endl;
         struct stat fileStat;
         if (stat(file.c_str(), &fileStat) == -1) {
             closedir(dir);

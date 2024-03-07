@@ -40,6 +40,7 @@
 #define MAX_HEADER_SIZE 8175 //8kb
 #define KEEPALIVE_TIMEOUT 60.0 //sec
 #define POLL_TIMEOUT 10.0 //sec
+#define DEFAULT_CLIENT_SIZE 5
 #define DEFAULT_CONFIG "./conf_files/default.conf"
 #define SERVER_VERSION "webserv/1.0"
 #define HTTP_VERSION "HTTP/1.1"

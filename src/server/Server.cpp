@@ -1,14 +1,7 @@
 #include "../../include/webserv.hpp"
 
-Server::Server() {
-	port = 0;
-	host.s_addr = 0;
-	root = "";
-	socketFd = -1;
-	ipAddress = "";
-	clientSize = 5;
-	autoindex = true;
-	connectedClients = 0;
+Server::Server() : port(0), clientSize(0), autoindex(true), socketFd(-1), connectedClients(0) {
+    host.s_addr = 0;
 }
 
 Server::Server(const Server &server) : port(server.port), host(server.host),
@@ -39,22 +32,22 @@ Server &Server::operator=(const Server &server) {
 
 Server::~Server() {
 	closeServer();
-//	std::cout << "Server destroyed\n";
+//	std::clog << "Server destroyed\n";
 }
 
 void Server::setPort(unsigned short port) {
 //	if (!port)
-//		throw std::runtime_error("Config file error: port cannot be initialized to 0.\n");
+//		throw std::runtime_error("Config file error: port cannot be initialized to 0.");
 	if (this->port)
-		throw std::runtime_error("Config file error: server's port was initialized twice.\n");
+		throw std::runtime_error("Config file error: server's port was initialized twice.");
 	this->port = port;
 }
 
 void Server::setHost(std::string host) {
 	if (this->host.s_addr != 0)
-		throw std::runtime_error("Config file error: server's host was initialized twice.\n");
+		throw std::runtime_error("Config file error: server's host was initialized twice.");
 	if (!inet_aton(host.c_str(), &this->host))
-		throw std::runtime_error("Config file error: invalid host name.\n");
+		throw std::runtime_error("Config file error: invalid host name.");
 }
 
 void Server::setName(std::string name) {
@@ -67,7 +60,7 @@ void Server::setRoot(std::string root) {
 	if (stat(root.c_str(), &sb) == 0)
 		this->root = root;
 	else
-		throw std::runtime_error("Config file error: root directory does not exist.\n");
+		throw std::runtime_error("Config file error: root directory does not exist.");
 }
 
 void Server::setIndex(std::string index) {
@@ -76,7 +69,7 @@ void Server::setIndex(std::string index) {
 //	if (stat(index.c_str(), &sb) == 0)
 	this->index.push_back(index);
 //	else
-//		throw std::runtime_error("Config file error: index directory does not exist.\n");
+//		throw std::runtime_error("Config file error: index directory does not exist.");
 }
 
 void Server::setIP() {
@@ -91,15 +84,21 @@ void Server::setIP() {
 
 void Server::setClientSize(unsigned long clientSize) {
 	if (!clientSize)
-		throw std::runtime_error("Config file error: client size can't be 0.\n");
+		throw std::runtime_error("Config file error: client size can't be 0.");
 	if (this->clientSize)
-		throw std::runtime_error("Config file error: client size was initialized twice.\n");
+		throw std::runtime_error("Config file error: client size was initialized twice.");
 	this->clientSize = clientSize;
+}
+
+void Server::setDefaultClientSize() {
+    if (!clientSize) {
+        clientSize = DEFAULT_CLIENT_SIZE;
+    }
 }
 
 void Server::setErrorPage(int key, std::string errorPage) {
 	if (key > 511 || key < 400)
-		throw std::runtime_error("Config file error: error codes from 400 to 511.\n");
+		throw std::runtime_error("Config file error: error codes from 400 to 511.");
 	this->errorPages.insert(std::make_pair(key, errorPage));
 }
 
@@ -111,7 +110,7 @@ void Server::setAutoIndex(std::string autoindex) {
 		this->autoindex = false;
 	}
 	else
-		throw std::runtime_error("Config file error: autoindex can only be set to true or false.\n");
+		throw std::runtime_error("Config file error: autoindex can only be set to true or false.");
 }
 
 void Server::setCgiInfo(std::string info) {

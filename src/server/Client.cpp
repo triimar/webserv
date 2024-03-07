@@ -12,13 +12,13 @@ Client::Client(Server &_server) : _server(_server) {
 	_clientfd = accept(_server.getSocketFd(), (struct sockaddr *)&clientAddress, &socketLen);
 
 	if (_clientfd == -1)
-		throw std::runtime_error("Client starting error: failed to connect client.\n");
+		throw std::runtime_error("Client starting error: failed to connect client.");
 
 	time(&_connectionStart);
 	_finishedChunked = true;
 	_keepAlive = true;
 
-	std::cout << "Client Connected!\n";
+	// std::clog << "Client Connected!\n";
 	return;
 }
 
@@ -29,7 +29,7 @@ Client::Client(Server &_server) : _server(_server) {
 // }
 
 Client::~Client() {
-	std::cout << "Client destroyed\n";
+	// std::clog << "Client destroyed\n";
 //	close(_clientfd);
 	return;
 }
