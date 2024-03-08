@@ -51,7 +51,10 @@
 #define DATE_FORMAT "%a, %d %b %Y %T GMT"
 #define DATE_FORMAT_LEN 29
 #define REDIRECTION_LIMIT 5
-#define FD_LIMIT 10200
+#ifndef ULIMIT_N
+# define ULIMIT_N 512
+#endif
+#define FD_LIMIT (size_t)(ULIMIT_N - 256)
 
 #define CRLF "\r\n"
 #define CRLFCRLF "\r\n\r\n"
@@ -65,7 +68,7 @@
 	#define MTIME st_mtime
 #endif
 
-#define DELETE_CONFIM_MESSAGE "Are you sure to delete the directory including all its contents?\n-> Use 'force' as the query string: /your/uri/?force"
+#define DELETE_CONFIM_MESSAGE "Are you sure you want to delete the directory including all its contents?\n-> Then send the same request again with 'force' as the query string: /your/uri/?force"
 
 /* ************************************************************************** */
 /*                                   ENUMS                                    */

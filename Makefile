@@ -7,7 +7,7 @@ SUBDIRS		=	$(foreach name, $(SUBDIRNAMES), $(SRCDIR)/$(name))
 BUILDDIR	=	./build
 
 CP			=	c++
-CPPFLAGS	=	-Werror -Wextra -Wall -std=c++98 -MMD -MP -g -fsanitize=address 
+CPPFLAGS	=	-Werror -Wextra -Wall -std=c++98 -MMD -MP -g -fsanitize=address -D ULIMIT_N=$(shell ulimit -n) 
 INCFLAGS	=	-I $(INCDIR)
 
 INCS		=	$(wildcard $(INCDIR)/*.hpp)
