@@ -111,7 +111,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			word.erase(word.length() - 1);
 			std::stringstream client_ss(word);
 			unsigned long client;
-			if (!(client_ss >> client))
+			if (!(client_ss >> client) || !isdigit(word[0]))
 				throw std::runtime_error("Config file error: invalid size format on client_size command.");
 			server.setClientSize(client);
 			if (ss >> word)
@@ -217,7 +217,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			word.erase(word.length() - 1);
 			std::stringstream client_ss(word);
 			unsigned long client;
-			if (!(client_ss >> client))
+			if (!(client_ss >> client) || !isdigit(word[0]))
 				throw std::runtime_error("Config file error: invalid size format on client_body_size command.");
 			server.setClientBody(client);
 			if (ss >> word)
