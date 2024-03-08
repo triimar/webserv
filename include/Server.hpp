@@ -71,6 +71,7 @@ public:
 	Location					getLocation(const std::string &path) const;
 	std::vector<std::string>	getCgiInfo() const;
 	unsigned short				getPort() const;
+	unsigned long				getClientBodySize() const;
 	const std::string			&getIpAddr() const;
 	std::string                 getErrorPage(int status) const;
 	int							getSocketFd() const;

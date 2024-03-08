@@ -164,7 +164,7 @@ int Server::getSocketFd() const {
 Location Server::getLocation(const std::string &path) const {
 	std::string dir = path.substr(0, path.rfind("/"));
 	std::map<std::string, Location>::const_iterator it;
-	while (dir.empty() == false) {
+	while (!dir.empty()) {
 		if ((it = locations.find(dir)) != locations.end()) {
 			return (it->second);
 		}
@@ -191,4 +191,8 @@ std::string Server::getErrorPage(int status) const {
 		return ("");
 	}
 	return (it->second);
+}
+
+unsigned long Server::getClientBodySize() const {
+	return this->clientBody;
 }
