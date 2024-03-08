@@ -5,6 +5,9 @@ Client::Client() : _clientfd(0) {
 }
 
 Client::Client(Server *server) : _server(server) {
+    if (!_server->acceptConnection()) {
+		throw std::runtime_error("Client starting error: client number exceeded in server.");
+	}
 
 	struct sockaddr_in clientAddress;
 	socklen_t socketLen = sizeof(clientAddress);
@@ -14,11 +17,11 @@ Client::Client(Server *server) : _server(server) {
 	if (_clientfd == -1)
 		throw std::runtime_error("Client starting error: failed to connect client.");
 
-	if (!_server->acceptConnection())
-	{
-		close(_clientfd);
-		throw std::runtime_error("Client starting error: client number exceeded in server.");
-	}
+	// if (!_server->acceptConnection())
+	// {
+	// 	close(_clientfd);
+	// 	throw std::runtime_error("Client starting error: client number exceeded in server.");
+	// }
 	time(&_connectionStart);
 	_finishedChunked = true;
 	_keepAlive = true;

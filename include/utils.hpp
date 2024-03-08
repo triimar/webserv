@@ -36,11 +36,11 @@
 /*                                  DEFINES                                   */
 /* ************************************************************************** */
 
-#define BUFFER_SIZE 30720
+#define BUFFER_SIZE 1024
 #define MAX_HEADER_SIZE 8175 //8kb
 #define KEEPALIVE_TIMEOUT 60.0 //sec
 #define POLL_TIMEOUT 10.0 //sec
-#define DEFAULT_CLIENT_SIZE 5
+#define DEFAULT_CLIENT_SIZE 10240
 #define DEFAULT_CONFIG "./conf_files/default.conf"
 #define SERVER_VERSION "webserv/1.0"
 #define HTTP_VERSION "HTTP/1.1"
@@ -52,9 +52,9 @@
 #define DATE_FORMAT_LEN 29
 #define REDIRECTION_LIMIT 5
 #ifndef ULIMIT_N
-# define ULIMIT_N 512
+# define ULIMIT_N 10240
 #endif
-#define FD_LIMIT (size_t)(ULIMIT_N - 256)
+#define FD_LIMIT (size_t)(ULIMIT_N - 32)
 
 #define CRLF "\r\n"
 #define CRLFCRLF "\r\n\r\n"

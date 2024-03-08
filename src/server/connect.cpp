@@ -67,16 +67,16 @@ void Server::startServer() {
 // 	}
 // }
 
- bool Server::acceptConnection() {
+bool Server::acceptConnection() {
 	if (connectedClients < this->clientSize)
 		this->connectedClients++;
 	else
 		return false;
 	return true;
- }
+}
 
 void Server::removeClient(){
-	clientSize--;
+	connectedClients--;
 }
 
 void Server::closeServer() {
