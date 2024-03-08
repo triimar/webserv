@@ -199,7 +199,6 @@ int Response::waitForCGI(pid_t cgi) {
 
     while (waitpid(cgi, &waitStatus, WNOHANG) == 0) {
         if (std::difftime(std::time(NULL), start) >= CGI_TIMEOUT) {
-            std::cerr << "CGI TIMEOUT!!!" << std::endl;
             kill(cgi, SIGTERM);
             return (503);
         }

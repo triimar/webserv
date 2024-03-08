@@ -1,8 +1,8 @@
 #include "../../include/webserv.hpp"
 
- Client::Client() : _clientfd(0){
- 	return;
- }
+Client::Client() : _clientfd(0) {
+    return;
+}
 
 Client::Client(Server *server) : _server(server) {
 
@@ -80,8 +80,12 @@ void Client::setChunkedFinished() {
 	_finishedChunked = true;
 }
 
-void Client::setResponse(std::vector<char> response) {
+void Client::setResponse(std::vector<char> &response) {
 	_responseMsg = response;
+}
+
+void Client::setActivity(std::string activity) {
+    _activity = activity;
 }
 
 int &Client::getClientFd() {
@@ -110,4 +114,8 @@ bool &Client::getKeepAlive() {
 
 bool &Client::getFinishedChunked() {
 	return _finishedChunked;
+}
+
+std::string &Client::getActivity() {
+    return _activity;
 }

@@ -18,20 +18,19 @@ private:
 
 	Config();
 
-	Server getServer();
 	bool isEmptyLine(std::string line);
 	void parseServerLine(Server &server, std::string line);
 	void createServers();
 	void addFdToPoll(int fd);
 	void closeTimeoutClients();
 	void closeClient(int fd, size_t &index);
+    void printClientsInfo(std::string error = "");
 	static void sigintHandler(int signum);
 
 public:
 	Config(const char *file);
 	Config(const Config& file);
 	~Config();
-	Config &operator=(const Config& config);
 	void printServers();
 
 	// std::vector<Server> getServerList();

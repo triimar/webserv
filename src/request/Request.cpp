@@ -2,21 +2,16 @@
 
 Request::Request(): state_(stateGetHeaderData), rhstate_(stateParseMethod), \
 					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {
-	// std::clog << "REQUEST\n";
 }
 
-Request::~Request() {
-	// std::clog << "REQUEST destr\n";
-}
+Request::~Request() {}
 
 Request::Request(const Request& rhs): state_(rhs.state_), rhstate_(rhs.rhstate_), \
 								buffer_(rhs.buffer_), headersLen_(rhs.headersLen_), skip_(rhs.skip_), \
 								methodStr_(rhs.methodStr_), method_(rhs.method_), \
 								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
 								headers_(rhs.headers_), body_(rhs.body_), contentLen_(rhs.contentLen_), \
-								statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {
-	// std::clog << "REQUEST copy\n";
-}
+								statusCode_(rhs.statusCode_) {}
 
 Request& Request::operator=(const Request& rhs) {
 	if (this != &rhs) {
@@ -36,23 +31,20 @@ Request& Request::operator=(const Request& rhs) {
 		body_ = rhs.body_;
 		contentLen_ = rhs.contentLen_;
 		statusCode_ = rhs.statusCode_;
-		errorMsg_ = rhs.errorMsg_;
 	}
-	// std::clog << "REQUEST =\n";
 	return *this;
 }
 
 /* ************************************************************************** */
 /*                                  HELPERS                                   */
 /* ************************************************************************** */
-void Request::setError(ParseState type, int statusCode, const char *message) {
+void Request::setError(ParseState type, int statusCode) {
 	state_ = type;
 	statusCode_ = statusCode;
-	errorMsg_.assign(message);
-	// clearRequest();
+	clearRequest();
 }
 
-// Clears data in case of invalid request, state_, rhstate_, statusCode_ and errorMsg_ are not cleared
+// Clears data in case of invalid request. Values of state_, rhstate and statusCode_ are not cleared
 void Request::clearRequest() {
 	buffer_.clear();
 	buffer_ = "";
@@ -83,11 +75,11 @@ const char *Request::extractHeaders(const char *requestBuf, int &messageLen) {
 		headersLen_ += messageLen; 
 		messageLen = 0;
 		if (headersLen_ > MAX_HEADER_SIZE)
-			setError(requestERROR, 413, "Content too long");
+			setError(requestERROR, 413);
 		return requestBuf;
 	}
 	if (headersLen_ + foundPos  > MAX_HEADER_SIZE) {
-		setError(requestERROR, 413, "Content too long");
+		setError(requestERROR, 413);
 		return requestBuf;
 	}
 	buffer_.erase(foundPos);	
@@ -111,9 +103,9 @@ void	Request::parseRequestHeaders() {
 	buffer_ = "";
 	std::string rl;
 	if (!std::getline(headersStream, rl, '\r'))
-		return setError(requestERROR, 500, "Failure to extract request line");
+		return setError(requestERROR, 500);
 	if (!headersStream.eof() && headersStream.get() != '\n')
-		return setError(requestERROR, 400, "Syntax error in request line");
+		return setError(requestERROR, 400);
 	std::istringstream requestLineStream(rl);
 	while (state_ != requestERROR && state_ != requestParseFAIL && rhstate_ != requestHeadersOK)  {
 		switch (rhstate_)
@@ -141,7 +133,7 @@ void	Request::parseRequestHeaders() {
 void	Request::parseMethod(std::istringstream& requestLine) {
 	requestLine >> methodStr_;
 	if (requestLine.fail() || methodStr_.empty())
-		return setError(requestParseFAIL, 500, "Failure to extract method from request line");
+		return setError(requestParseFAIL, 500);
 	const std::string methods[4] = {"GET", "POST", "DELETE", "HEAD"};
 	for (int i = 0; i < 4; i++) {
 		if (methods[i] == methodStr_) {
@@ -150,20 +142,21 @@ void	Request::parseMethod(std::istringstream& requestLine) {
 		}
 	}
 	if (method_ == OTHER)
-		return setError(requestERROR, 501, "Method not implemented");
+		return setError(requestERROR, 501);
 	rhstate_ = stateParseUri;
 	return ;
 }
 
+//URI can be either abs URI or abs path. We don't handle '*' or authority.
 void	Request::parseURI(std::istringstream& requestLine) {
-	if (requestLine.eof() || requestLine.get() != ' ') ////
-		return setError(requestERROR, 400, "Invalid request line syntax");
+	if (requestLine.eof() || requestLine.get() != ' ')
+		return setError(requestERROR, 400);
 	std::string tmp;
-	std::getline(requestLine, tmp, ' '); /////
+	std::getline(requestLine, tmp, ' ');
 	if (requestLine.fail() || tmp.empty())
-		return setError(requestParseFAIL, 500, "Failure to extract URI from request line");
+		return setError(requestParseFAIL, 500);
 	if (containsControlChar(tmp))
-		return setError(requestERROR, 400, "URI contains control character(s)");
+		return setError(requestERROR, 400);
 	uri_ = tmp;
 	size_t componentStart = tmp.find('#');
 	if (componentStart != std::string::npos) {
@@ -177,7 +170,7 @@ void	Request::parseURI(std::istringstream& requestLine) {
 	}
 	if 	(tmp.compare(0, 7, "http://") == 0) {
 		if (!std::isalpha(tmp.at(8)))
-			return setError(requestERROR, 400, "Invalid URI");
+			return setError(requestERROR, 400);
 		componentStart = tmp.find('/', 8);
 		if (componentStart != std::string::npos)
 			tmp = tmp.substr(componentStart);
@@ -185,7 +178,7 @@ void	Request::parseURI(std::istringstream& requestLine) {
 	if (tmp.at(0) == '/')
 		path_ = tmp;
 	else
-		return setError(requestERROR, 400, "Invalid path");
+		return setError(requestERROR, 400);
 	if (state_ != requestOK && state_ != requestERROR && state_ != requestParseFAIL)
 		rhstate_ = stateParseHTTPver;
 	return ;
@@ -193,44 +186,44 @@ void	Request::parseURI(std::istringstream& requestLine) {
 
 void	Request::parseHTTPver(std::istringstream& requestLine) {
 	if (requestLine.eof())
-		return setError(requestERROR, 505, "Invalid version syntax");
+		return setError(requestERROR, 505);
 	requestLine >> httpVer_;
 	if (requestLine.fail() || httpVer_.empty())
-		return setError(requestERROR, 500, "Failure to extract HTTP version from request line");
+		return setError(requestERROR, 500);
 	if (!requestLine.eof() || httpVer_.compare(0, 5, "HTTP/") != 0)
-		return setError(requestERROR, 505, "Invalid version syntax");
+		return setError(requestERROR, 505);
 	std::stringstream verStr(httpVer_.substr(5));
 	int	major, minor;
 	char dot;
 	verStr >> major >> dot >> minor;
 	if (verStr.fail())
-		return setError(requestERROR, 500, "Failure to extract HTTP version from request line");
+		return setError(requestERROR, 500);
 	if (dot != '.' || verStr.peek() != EOF)
-		return setError(requestERROR, 400, "Bad Request Version");
+		return setError(requestERROR, 400);
 	if (major != 1 || minor != 1)
-		return setError(requestERROR, 505, "Unsupported HTTP version");
+		return setError(requestERROR, 505);
 	rhstate_ = stateParseHTTPHeaders;
 	return ;
 }
 
 void Request::parseHTTPHeader(std::istringstream& headersStream) {
 	if ((!headersStream.eof() && (headersStream.peek() == ' ' || headersStream.peek() == '\t')))
-		return setError(requestERROR, 400, "Syntax error: obsolete line folding in headers");
+		return setError(requestERROR, 400);
 	std::string line;
 	std::string key, value;
 	if (!std::getline(headersStream, line, '\r'))
-		return setError(requestERROR, 500, "Failure to extract line from headers");
-	if (!headersStream.eof() && headersStream.get() != '\n') // for final when no crlf
-		return setError(requestERROR, 400, "Syntax error in Headers");
+		return setError(requestERROR, 500);
+	if (!headersStream.eof() && headersStream.get() != '\n')
+		return setError(requestERROR, 400);
 	std::istringstream iss(line);
 	if (!std::getline(iss, key, ':') || std::isspace(key.at(key.size() - 1)) || !std::getline(iss, value) \
 		|| containsControlChar(key) || containsControlChar(value))
-		return setError(requestERROR, 400, "Syntax error in Headers 2");
+		return setError(requestERROR, 400);
 	trimString(key);
 	strToLower(key);
 	trimString(value);
 	if (!headersStream)
-		return setError(requestERROR, 500, "Failure extracting header data");
+		return setError(requestERROR, 500);
 	std::map<std::string, std::string>::iterator found = headers_.find(key);
 	if (found == headers_.end())
 		headers_.insert(std::make_pair(key, value));
@@ -257,7 +250,7 @@ const char	*Request::checkForBody(const char *start, const char *msgEnd, int &me
 	else {
 		std::string bodyLenStr = getHeaderValueForKey("content-length");
 		if (bodyLenStr.empty()) {
-			setError(requestERROR, 411, "Content-length header missing");
+			setError(requestERROR, 411);
 			return msgEnd;
 		}
 		char *endptr;
@@ -280,7 +273,7 @@ const char *Request::storeBody(const char *bodyStart, int& messageLen) {
 	else if (contentLen_ == 0) {
 		while (skip_ > 0 && messageLen > 0) {
 			if ((skip_ == 2 && *bodyStart != '\r') || (skip_ == 1 && *bodyStart != '\n'))
-				setError(requestERROR, 400, "Requiest syntac error (CRLF)");
+				setError(requestERROR, 400);
 			bodyStart++;
 			skip_--;
 			messageLen--;
@@ -315,7 +308,7 @@ const char *Request::getChunkSize(const char *start, int& messageLen) {
 		if (foundPos == std::string::npos) {
 			messageLen -= messageLen;
 			if (buffer_.size() > 4)
-				setError(requestERROR, 400, "Syntax error in chunk");
+				setError(requestERROR, 400);
 			return NULL;
 		}
 		buffer_.erase(foundPos);
@@ -330,9 +323,9 @@ const char *Request::getChunkSize(const char *start, int& messageLen) {
 	hexStream >> std::hex >> contentLen_;
 	if (!hexStream || !hexStream.eof()) {
 		if (!hexStream.eof())
-			setError(requestERROR, 400, "Syntax error in chunk");
+			setError(requestERROR, 400);
 		else
-			setError(requestParseFAIL, 500, "std::stringstream failure chunk header");
+			setError(requestParseFAIL, 500);
 		return NULL;
 	}
 	if (contentLen_ == 0)
@@ -376,8 +369,6 @@ void	Request::resetRequest() {
 	state_ = stateGetHeaderData;
 	rhstate_ = stateParseMethod;
 	statusCode_ = 0;
-	errorMsg_.clear();
-
 }
 
 /* ************************************************************************** */
@@ -414,11 +405,6 @@ const std::string&		Request::getHttpVer()const {
 const int&				Request::getErrorCode() const {
 	return statusCode_;
 }
-
-const std::string&		Request::getErrorMsg() const {
-	return errorMsg_;
-}
-
 
 std::string	Request::getHeaderValueForKey(const std::string& key) const {
 	std::map<std::string, std::string>::const_iterator it;
@@ -498,8 +484,6 @@ std::ostream& operator<<(std::ostream& out, const Request& rhs) {
 	}
 	std::clog << "------ERROR_STATUS---------------" << std::endl;
 	std::clog << "Status code: " << rhs.getErrorCode();
-	if (rhs.getErrorMsg() != "")
-		std::clog << " : " << rhs.getErrorMsg();
 	std::clog << std::endl;
 	return out;	
 }
