@@ -416,6 +416,26 @@ void Config::runServers() {
 					currentClient.confirmKeepAlive();
                     currentClient.setActivity("Request received");
 					fds[i].events = POLLOUT;
+
+
+
+
+
+
+
+
+
+                    // currentClient.setServer(i, currentClient.getRequest().getHeaderValueForKey("server_name"))
+
+
+
+
+
+
+
+
+
+
 				} else {
                     currentClient.setActivity("Reading request...");
 					fds[i].events = POLLIN;
