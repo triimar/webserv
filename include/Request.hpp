@@ -30,6 +30,8 @@ enum RequestHeadersState {
 class Request
 {
 private:
+	unsigned long		maxBodySize_;
+	
 	ParseState			state_;
 	RequestHeadersState	rhstate_;
 
@@ -47,17 +49,20 @@ private:
 	std::map<std::string, std::string> headers_;
 	
 	std::vector<char> 	body_;
-	long				contentLen_;
+	unsigned long		contentLen_;
 
 	int					statusCode_;
 
+	Request();
+
+	
 	const char *extractHeaders(const char *requestBuf, int& MessageLen);
 	void		parseRequestHeaders();
 	void		parseMethod(std::istringstream& requestLine);
 	void		parseHTTPver(std::istringstream& requestLine);
 	void		parseHTTPHeader(std::istringstream& headersStream);
 
-	const char *checkForBody(const char *bodyStart, const char *msgEnd, int& MessageLen);
+	const char *checkForBody(const char *bodyStart, int& MessageLen);
 	const char *storeBody(const char *bodyStart, int& MessageLen);
 	const char *getChunkSize(const char *start, int& messageLen);
 	const char *skipFoundCRLF(const char *start, int& messageLen);
@@ -66,7 +71,7 @@ private:
 	void		clearRequest();
 
 public:
-	Request();
+	Request(unsigned long maxBodySize);
 	~Request();
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);

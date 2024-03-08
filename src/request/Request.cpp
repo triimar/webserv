@@ -1,12 +1,16 @@
 #include "../../include/webserv.hpp"
 
-Request::Request(): state_(stateGetHeaderData), rhstate_(stateParseMethod), \
+Request::Request(): maxBodySize_(DEFAULT_CLIENT_BODY_SIZE), state_(stateGetHeaderData), rhstate_(stateParseMethod), \
+					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {
+}
+
+Request::Request(unsigned long maxBodySize): maxBodySize_(maxBodySize), state_(stateGetHeaderData), rhstate_(stateParseMethod), \
 					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {
 }
 
 Request::~Request() {}
 
-Request::Request(const Request& rhs): state_(rhs.state_), rhstate_(rhs.rhstate_), \
+Request::Request(const Request& rhs): maxBodySize_(rhs.maxBodySize_), state_(rhs.state_), rhstate_(rhs.rhstate_), \
 								buffer_(rhs.buffer_), headersLen_(rhs.headersLen_), skip_(rhs.skip_), \
 								methodStr_(rhs.methodStr_), method_(rhs.method_), \
 								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
@@ -15,6 +19,7 @@ Request::Request(const Request& rhs): state_(rhs.state_), rhstate_(rhs.rhstate_)
 
 Request& Request::operator=(const Request& rhs) {
 	if (this != &rhs) {
+		maxBodySize_ = rhs.maxBodySize_;
 		state_ = rhs.state_;
 		rhstate_ = rhs.rhstate_;
 		buffer_ = rhs.buffer_;
@@ -75,11 +80,11 @@ const char *Request::extractHeaders(const char *requestBuf, int &messageLen) {
 		headersLen_ += messageLen; 
 		messageLen = 0;
 		if (headersLen_ > MAX_HEADER_SIZE)
-			setError(requestERROR, 413);
+			setError(requestERROR, 431);
 		return requestBuf;
 	}
 	if (headersLen_ + foundPos  > MAX_HEADER_SIZE) {
-		setError(requestERROR, 413);
+		setError(requestERROR, 431);
 		return requestBuf;
 	}
 	buffer_.erase(foundPos);	
@@ -236,14 +241,14 @@ void Request::parseHTTPHeader(std::istringstream& headersStream) {
 	return ;
 }
 
-const char	*Request::checkForBody(const char *start, const char *msgEnd, int &messageLen) {
+const char	*Request::checkForBody(const char *start, int &messageLen) {
 	for (size_t i = 0; i < skip_ && messageLen > 0 ; ++i) {
 		start++;
 		messageLen--;
 	}
 	if (method_ != POST) {
 		state_ = requestOK;
-		return msgEnd;
+		return NULL;
 	}
 	if (isTransferEncodingChunked())
 		state_ = stateParseChunkHeader;
@@ -251,10 +256,14 @@ const char	*Request::checkForBody(const char *start, const char *msgEnd, int &me
 		std::string bodyLenStr = getHeaderValueForKey("content-length");
 		if (bodyLenStr.empty()) {
 			setError(requestERROR, 411);
-			return msgEnd;
+			return NULL;
 		}
 		char *endptr;
 		contentLen_ = strtol(bodyLenStr.c_str(), &endptr, 10);
+		if (contentLen_ > maxBodySize_) {
+			setError(requestERROR, 413);
+			return start + messageLen;
+		}
 		state_ = stateParseMessageBody;
 	}	
 	return start;
@@ -330,6 +339,10 @@ const char *Request::getChunkSize(const char *start, int& messageLen) {
 	}
 	if (contentLen_ == 0)
 		state_ = requestOK;
+	else if (contentLen_ + body_.size() > maxBodySize_) {
+		setError(requestERROR, 413);
+		return NULL;
+	}
 	else {
 		state_ = stateParseMessageBody;
 		skip_ = 2;
@@ -339,7 +352,6 @@ const char *Request::getChunkSize(const char *start, int& messageLen) {
 
 
 void	Request::processRequest(const char* requestBuf, int messageLen) {
-	const char *msgEnd = &requestBuf[messageLen - 1];
 	const char *start = requestBuf;
 	while (messageLen > 0 && state_ != requestERROR && state_ != requestParseFAIL && state_ != requestOK) {
 		switch (state_) {
@@ -347,7 +359,7 @@ void	Request::processRequest(const char* requestBuf, int messageLen) {
 				break;
 			case stateParseRequestHeaders: parseRequestHeaders();
 				break;
-			case stateCheckBody: start = checkForBody(start, msgEnd, messageLen);
+			case stateCheckBody: start = checkForBody(start, messageLen);
 				break;
 			case stateParseMessageBody: start = storeBody(start, messageLen);
 				break;
