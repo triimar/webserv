@@ -31,12 +31,8 @@ Location::~Location() {}
 void Location::setName(std::string name) {
 	if (!this->name.empty())
 		throw std::runtime_error("Configuration file error: declared name twice.\n");
-//	struct stat sb;
 
-//	if (stat(root.c_str(), &sb) == 0)
-		this->name = name;
-//	else
-//		throw std::runtime_error("Config file location error: location directory does not exist.\n");
+    this->name = name;
 }
 
 void Location::setRoot(std::string root) {
@@ -50,12 +46,7 @@ void Location::setRoot(std::string root) {
 }
 
 void Location::setIndex(std::string index) {
-//	struct stat sb;
-//
-//	if (stat(index.c_str(), &sb) == 0)
-		this->index.push_back(index);
-//	else
-//		throw std::runtime_error("Config file error: index directory does not exist.\n");
+    this->index.push_back(index);
 }
 
 void Location::setMethod(std::string method) {

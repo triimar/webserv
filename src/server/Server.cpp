@@ -32,12 +32,9 @@ Server &Server::operator=(const Server &server) {
 
 Server::~Server() {
 	closeServer();
-//	std::clog << "Server destroyed\n";
 }
 
 void Server::setPort(unsigned short port) {
-//	if (!port)
-//		throw std::runtime_error("Config file error: port cannot be initialized to 0.");
 	if (this->port)
 		throw std::runtime_error("Config file error: server's port was initialized twice.");
 	this->port = port;
@@ -64,12 +61,7 @@ void Server::setRoot(std::string root) {
 }
 
 void Server::setIndex(std::string index) {
-//	struct stat sb;
-//
-//	if (stat(index.c_str(), &sb) == 0)
 	this->index.push_back(index);
-//	else
-//		throw std::runtime_error("Config file error: index directory does not exist.");
 }
 
 void Server::setIP() {

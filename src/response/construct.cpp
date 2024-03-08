@@ -17,7 +17,6 @@ void Response::constructResponse() {
     _headers["date"] = formatDate(time(0));
     for (std::map<std::string, std::string>::iterator it = _headers.begin();
         it != _headers.end(); ++it) {
-//        capitalizeHeader(it->first);
         appendStringToVector(_response, it->first.c_str());
         appendStringToVector(_response, ": ");
         appendStringToVector(_response, it->second.c_str());

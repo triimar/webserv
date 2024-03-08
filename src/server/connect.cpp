@@ -27,45 +27,9 @@ void Server::startServer() {
 
 	if (fcntl(socketFd, F_SETFL, O_NONBLOCK) == -1)
 	{
-//		perror("Error binding socket");
 		throw std::runtime_error("Error: cannot set socket to non-blocking.");
 	}
 }
-
-// void Server::startListen() {
-// 	if (listen(socketFd, 20) < 0)
-// 		throw std::runtime_error("Error: socket listen failed.");
-// 	std::ostringstream ss;
-// 	ss << "\n*** Listening on ADDRESS: "
-// 	   << inet_ntoa(socketAddress.sin_addr)
-// 	   << " PORT: " << ntohs(socketAddress.sin_port)
-// 	   << " ***\n\n";
-// 	// std::clog << ss.str() << std::endl;
-
-// 	int bytesReceived;
-
-// 	while (true)
-// 	{
-// 		std::clog << ("====== Waiting for a new connection ======\n\n");
-// 		acceptConnection(newSocket);
-
-// 		char buffer[BUFFER_SIZE] = {0};
-// 		bytesReceived = read(newSocket, buffer, BUFFER_SIZE);
-// 		if (bytesReceived < 0)
-// 		{
-// 			perror("Failed to read bytes from client socket connection");
-// 			exit(1);
-// 		}
-
-// 		std::ostringstream ss;
-// 		ss << "------ Received Request from client ------\n\n";
-// 		std::clog << ss.str() << std::endl << buffer;
-
-// //		sendResponse();
-
-// 		close(newSocket);
-// 	}
-// }
 
 bool Server::acceptConnection() {
 	if (connectedClients < this->clientSize)
@@ -109,7 +73,6 @@ void Server::printServer(Server &server) {
 	}
 	std::clog << "CGI Info: ";
 	std::for_each(server.cgi_info.begin(), server.cgi_info.end(), printList);
-//	std::for_each(server.locations.begin(), server.locations.end(), Location::printLocation);
 	for (std::map<std::string, Location>::iterator it = server.locations.begin(); it != server.locations.end(); ++it)
 	{
 		Location::printLocation(it->second);
@@ -134,7 +97,6 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 	std::getline(stream, line);
 	while (stream.good() && line.find('}') == std::string::npos)
 	{
-//		std::clog << line << "\n";
 		if (line.empty())
 		{
 			std::getline(stream, line);
@@ -208,14 +170,7 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 		}
 		std::getline(stream, line);
 	}
-	if (!stream.eof())
-	{
+	if (!stream.eof()) {
 		this->locations.insert(std::pair<std::string, Location>(location.getName(), location));
-//		this->locations.push_back(location);
 	}
 }
-
-//void Server::pushLocation() {
-//	Location location;
-//	this->locations.push_back(location);
-//}

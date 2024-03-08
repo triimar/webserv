@@ -263,9 +263,7 @@ void Config::createServers() {
 		if (!str.eof())
 			std::getline(str, line);
 	}
-//	close(str);
 	this->serverList = list;
-//	return list;
 }
 
 void Config::printServers() {
@@ -278,14 +276,6 @@ void Config::addFdToPoll(int fd) {
 	newPollFd.events =  POLLIN;
 	this->fds.push_back(newPollFd);
 }
-
-// std::vector <Server> Config::getServerList() {
-// 	return this->serverList;
-// }
-
-// std::map<int, Client> Config::getClientMap() {
-// 	return this->clientList;
-// }
 
 void Config::startServers() {
     if (this->serverList.size() == 1) {
@@ -316,9 +306,7 @@ void Config::closeClient(int fd, size_t &index) {
 void Config::closeTimeoutClients() {
 	int i = 0;
 	for (std::map<int, Client>::iterator it = clientList.begin(); it != clientList.end();) {
-        // loop through fds[].events & POLL
 		if (it->second.isTimeout()){
-			// std::cerr << "Client timeout\n";
 			close(it->second.getClientFd());
 			it->second.getServer()->removeClient();
 			fds.erase(fds.begin() + serverList.size() + i);
@@ -359,7 +347,6 @@ void Config::runServers() {
             this->printClientsInfo();
 
 			int current_fd = fds[i].fd;
-			// std::clog << i << " server, " << fds.size() << "\n";
 
 			//ACCEPTING CONNECTIONS
 
@@ -369,18 +356,12 @@ void Config::runServers() {
                         throw std::runtime_error("Client starting error: file descriptor limit exceeded.");
                     }
 					Client newClient(&serverList[i]);
-					// if (fds.size() + 1 > FD_LIMIT) {
-					// 	close(newClient.getClientFd());
-					// 	throw std::runtime_error("Client starting error: file descriptor limit exceeded.");
-					// }
 					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
 					addFdToPoll(newClient.getClientFd());
 					eventNr--;
-					// std::clog << "New client connection accepted" << std::endl;
                     this->clientList.at(newClient.getClientFd()).setActivity("Connection accepted");
 				}
 				catch (std::exception &e) {
-					// printClientsInfo(e.what());
 					eventNr--;
 					continue;
 				}
@@ -389,8 +370,8 @@ void Config::runServers() {
 			//HANDLING REQUESTS
 			
 			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
-				char buf[1024];
-				ssize_t num_read = read(current_fd, buf, sizeof(buf));
+				char buf[BUFFER_SIZE];
+				ssize_t num_read = read(current_fd, buf, BUFFER_SIZE);
 				if (num_read == -1) {
 					printClientsInfo("Could not read from client");
 					closeClient(current_fd, i);
@@ -398,17 +379,14 @@ void Config::runServers() {
 				}
 				if (num_read == 0) {
 					// Connection closed by client
-					// std::clog << "Client(" << fds[i].fd << ") closed the connection." << std::endl;
 					closeClient(current_fd, i);
 					eventNr--;
 					continue;
 				}
 				Client &currentClient = clientList.at(current_fd);
 				currentClient.getRequest().processRequest(buf, num_read);
-                // std::clog << "------------BUF-" << num_read << "-----------------\n" << buf << "------------------" << std::endl;
-				// memset(buf, '\0', 1024); /////
+
 				if (currentClient.getRequest().requestComplete()) {
-                    // std::clog << "Received " << currentClient.getRequest().getMethodStr() << " request from Client(" << fds[i].fd << ")" << std::endl;
 					currentClient.confirmKeepAlive();
                     currentClient.setActivity("Request received");
 					fds[i].events = POLLOUT;
@@ -423,7 +401,7 @@ void Config::runServers() {
 
 			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
-				// std::clog << currentClient.getRequest();
+
 				if (currentClient.getResponse().empty() || currentClient.getFinishedChunked())
 				{
                     currentClient.setActivity("Processing request...");
@@ -432,14 +410,9 @@ void Config::runServers() {
 					currentClient.setResponse(response.getResponse());
 				}
 				std::vector<char> &currentResponse = currentClient.getResponse();
-                // std::clog << "------RESPONSE-------------------" << std::endl;
-                // std::clog << "Response size: " << currentResponse.size() << std::endl;
-                // for (std::vector<char>::const_iterator it  = currentResponse.begin(); it != currentResponse.end(); ++it) {
-                //     std::clog << *it;
-                // }
-                // std::clog << "------END RESPONSE---------------" << std::endl;
+
 				ssize_t sentSize = send(current_fd, currentResponse.data(), currentResponse.size(), 0);
-				// std::clog << "SENT SIZE: " << sentSize << std::endl;
+
 				if (sentSize < 0)
 				{
 					printClientsInfo("Could not write in client socket");
@@ -455,7 +428,6 @@ void Config::runServers() {
 				else {
 					currentClient.setChunkedFinished();
                     currentClient.setActivity("Response sent");
-                    // std::clog << "Response to Client(" << fds[i].fd << ") sent" << std::endl;
 				}
 				if (!currentClient.getKeepAlive() && currentClient.getFinishedChunked()) {
 					closeClient(current_fd, i);

@@ -1,8 +1,6 @@
 #include "../../include/webserv.hpp"
 
-Client::Client() : _clientfd(0) {
-    return;
-}
+Client::Client() : _clientfd(0) {}
 
 Client::Client(Server *server) : _server(server) {
     if (!_server->acceptConnection()) {
@@ -17,16 +15,10 @@ Client::Client(Server *server) : _server(server) {
 	if (_clientfd == -1)
 		throw std::runtime_error("Client starting error: failed to connect client.");
 
-	// if (!_server->acceptConnection())
-	// {
-	// 	close(_clientfd);
-	// 	throw std::runtime_error("Client starting error: client number exceeded in server.");
-	// }
 	time(&_connectionStart);
 	_finishedChunked = true;
 	_keepAlive = true;
 
-	// std::clog << "Client Connected!\n";
 	return;
 }
 
@@ -36,13 +28,9 @@ Client::Client(Server *server) : _server(server) {
  	return;
  }
 
-Client::~Client() {
-	// std::clog << "Client destroyed\n";
-//	close(_clientfd);
-	return;
-}
+Client::~Client() {}
 
- Client &Client::operator=(Client &client) {
+Client &Client::operator=(Client &client) {
  	if (client._clientfd != _clientfd)
  	{
  		_clientfd = client._clientfd;
@@ -53,7 +41,7 @@ Client::~Client() {
  		_finishedChunked = client._finishedChunked;
  	}
  	return *this;
- }
+}
 
 
 // Timeout Expiry:
