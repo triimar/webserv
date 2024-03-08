@@ -138,7 +138,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 				throw std::runtime_error("Config file error: invalid keyword format on error_page command.");
 			while (ss >> word && word[word.length() - 1] != ';')
 				errorCodes.push_back(atoi(word.c_str()));
-			if (word.empty() || word[word.length() - 1] != ';')
+			if (word.empty() || word[word.length() - 1] != ';' || errorCodes.empty())
 				throw std::runtime_error("Config file error: invalid keyword format on error_page command.");
 			word.erase(word.length() - 1);
 			for(std::vector<int>::iterator it = errorCodes.begin();
