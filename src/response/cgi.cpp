@@ -294,9 +294,9 @@ void Response::interpretCGIHeaders() {
         } else if (_headers.size() == 1) {
             _redirectHistory.push_back(_request.getUri());
             if (_redirectHistory.size() < REDIRECTION_LIMIT && 
-                std::find(_redirectHistory.begin(), _redirectHistory.end(), searchIt->second) != _redirectHistory.end()) {
+                std::find(_redirectHistory.begin(), _redirectHistory.end(), searchIt->second) == _redirectHistory.end()) {
                 // relative URI -> local redirect
-                std::istringstream iss(searchIt->second);
+                std::istringstream iss(" " + searchIt->second);
                 _request.parseURI(iss);
                 _headers.clear();
                 _body.clear();

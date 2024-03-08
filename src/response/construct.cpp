@@ -30,9 +30,9 @@ void Response::constructResponse() {
 }
 
 void Response::makeErrorPage() {
-    _body.clear();
     std::string path = _server.getErrorPage(_status);
     if (path.empty() == false) {
+        _body.clear();
         int fd = open(path.c_str(), O_RDONLY);
         if (readToVector(fd, _body) == RETURN_FAILURE) {
             appendStringToVector(_body, Server::getStatusMessage(_status));
