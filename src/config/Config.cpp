@@ -96,6 +96,8 @@ void Config::parseServerLine(Server &server, std::string line) {
 			if (word.empty() || word[word.length() - 1] != ';')
 				throw std::runtime_error("Config file error: invalid keyword format on server_name command.");
 			word.erase(word.length() - 1);
+			if (word.empty())
+				throw std::runtime_error("Config file error: invalid keyword format on server_name command.");
 			server.setName(word);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\"");
@@ -138,9 +140,11 @@ void Config::parseServerLine(Server &server, std::string line) {
 				throw std::runtime_error("Config file error: invalid keyword format on error_page command.");
 			while (ss >> word && word[word.length() - 1] != ';')
 				errorCodes.push_back(atoi(word.c_str()));
-			if (word.empty() || word[word.length() - 1] != ';' || errorCodes.empty())
+			if (word.empty() || word[word.length() - 1] != ';')
 				throw std::runtime_error("Config file error: invalid keyword format on error_page command.");
 			word.erase(word.length() - 1);
+			if (word.empty())
+				throw std::runtime_error("Config file error: invalid keyword format on error_page command.");
 			for(std::vector<int>::iterator it = errorCodes.begin();
 			it != errorCodes.end(); it++)
 				server.setErrorPage(*it, word);
@@ -188,6 +192,8 @@ void Config::parseServerLine(Server &server, std::string line) {
 			if (word.empty() || word[word.length() - 1] != ';')
 				throw std::runtime_error("Config file error: invalid keyword format on index command.");
 			word.erase(word.length() - 1);
+			if (word.empty())
+				throw std::runtime_error("Config file error: invalid keyword format on index command.");
 			server.setIndex(word);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\"");
@@ -202,6 +208,8 @@ void Config::parseServerLine(Server &server, std::string line) {
 			if (word.empty() || word[word.length() - 1] != ';')
 				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.");
 			word.erase(word.length() - 1);
+			if (word.empty())
+				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.");
 			server.setCgiInfo(word);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\"");
