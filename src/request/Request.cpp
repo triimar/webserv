@@ -1,16 +1,22 @@
 #include "../../include/webserv.hpp"
 
 Request::Request(): state_(stateGetHeaderData), rhstate_(stateParseMethod), \
-					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {}
+					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {
+	// std::clog << "REQUEST\n";
+}
 
-Request::~Request() {}
+Request::~Request() {
+	// std::clog << "REQUEST destr\n";
+}
 
 Request::Request(const Request& rhs): state_(rhs.state_), rhstate_(rhs.rhstate_), \
 								buffer_(rhs.buffer_), headersLen_(rhs.headersLen_), skip_(rhs.skip_), \
 								methodStr_(rhs.methodStr_), method_(rhs.method_), \
 								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
 								headers_(rhs.headers_), body_(rhs.body_), contentLen_(rhs.contentLen_), \
-								statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {}
+								statusCode_(rhs.statusCode_), errorMsg_(rhs.errorMsg_) {
+	// std::clog << "REQUEST copy\n";
+}
 
 Request& Request::operator=(const Request& rhs) {
 	if (this != &rhs) {
@@ -32,7 +38,7 @@ Request& Request::operator=(const Request& rhs) {
 		statusCode_ = rhs.statusCode_;
 		errorMsg_ = rhs.errorMsg_;
 	}
-	std::cout << "REQUEST =\n";
+	// std::clog << "REQUEST =\n";
 	return *this;
 }
 
@@ -472,28 +478,28 @@ bool	Request::isKeepAlive() const {
 /*                                  DEBUG PRINT                               */
 /* ************************************************************************** */
 std::ostream& operator<<(std::ostream& out, const Request& rhs) { 
-	std::cout << "------REQUEST LINE---------------" << std::endl;
-	std::cout << "Method: " << rhs.getMethodStr() << std::endl;
-	std::cout << "URI: " << rhs.getUri() << std::endl;
-	std::cout << "path: " << rhs.getPath() << std::endl;
-	std::cout << "query: " << rhs.getQuery() << std::endl;
-	std::cout << "fragment: " << rhs.getFragment() << std::endl;
-	std::cout << "Http version: " << rhs.getHttpVer() << std::endl;
-	std::cout << "------HEADERS(key : value)-------" << std::endl;
+	std::clog << "------REQUEST LINE---------------" << std::endl;
+	std::clog << "Method: " << rhs.getMethodStr() << std::endl;
+	std::clog << "URI: " << rhs.getUri() << std::endl;
+	std::clog << "path: " << rhs.getPath() << std::endl;
+	std::clog << "query: " << rhs.getQuery() << std::endl;
+	std::clog << "fragment: " << rhs.getFragment() << std::endl;
+	std::clog << "Http version: " << rhs.getHttpVer() << std::endl;
+	std::clog << "------HEADERS(key : value)-------" << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = rhs.getHeadersBegin(); it != rhs.getHeadersEnd(); ++it) {
-		std::cout << it->first << " : " << it->second << std::endl;
+		std::clog << it->first << " : " << it->second << std::endl;
 	}
 	if (rhs.getBodyBegin() != rhs.getBodyEnd()) {
-		std::cout << "------BODY-----------------------" << std::endl;
+		std::clog << "------BODY-----------------------" << std::endl;
 		for (std::vector<char>::const_iterator it  = rhs.getBodyBegin(); it != rhs.getBodyEnd(); ++it) {
-			std::cout << *it;
+			std::clog << *it;
 		}
-		std::cout << std::endl;
+		std::clog << std::endl;
 	}
-	std::cout << "------ERROR_STATUS---------------" << std::endl;
-	std::cout << "Status code: " << rhs.getErrorCode();
+	std::clog << "------ERROR_STATUS---------------" << std::endl;
+	std::clog << "Status code: " << rhs.getErrorCode();
 	if (rhs.getErrorMsg() != "")
-		std::cout << " : " << rhs.getErrorMsg();
-	std::cout << std::endl;
+		std::clog << " : " << rhs.getErrorMsg();
+	std::clog << std::endl;
 	return out;	
 }

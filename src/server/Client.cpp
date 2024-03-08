@@ -1,50 +1,56 @@
 #include "../../include/webserv.hpp"
 
-// Client::Client() : _clientfd(0){
-// 	return;
-// }
+ Client::Client() : _clientfd(0){
+ 	return;
+ }
 
-Client::Client(Server &_server) : _server(_server) {
+Client::Client(Server *server) : _server(server) {
 
 	struct sockaddr_in clientAddress;
 	socklen_t socketLen = sizeof(clientAddress);
 
-	_clientfd = accept(_server.getSocketFd(), (struct sockaddr *)&clientAddress, &socketLen);
+	_clientfd = accept(_server->getSocketFd(), (struct sockaddr *)&clientAddress, &socketLen);
 
 	if (_clientfd == -1)
-		throw std::runtime_error("Client starting error: failed to connect client.\n");
+		throw std::runtime_error("Client starting error: failed to connect client.");
 
+	if (!_server->acceptConnection())
+	{
+		close(_clientfd);
+		throw std::runtime_error("Client starting error: client number exceeded in server.");
+	}
 	time(&_connectionStart);
 	_finishedChunked = true;
 	_keepAlive = true;
 
-	std::cout << "Client Connected!\n";
+	// std::clog << "Client Connected!\n";
 	return;
 }
 
-Client::Client(const Client &client) : _clientfd(client._clientfd), _server(client._server),
-_request(client._request), _connectionStart(client._connectionStart), _keepAlive(client._keepAlive),
-_finishedChunked(client._finishedChunked){
-	return;
-}
+ Client::Client(const Client &client) : _clientfd(client._clientfd), _server(client._server),
+ _request(client._request), _connectionStart(client._connectionStart), _keepAlive(client._keepAlive),
+ _finishedChunked(client._finishedChunked){
+ 	return;
+ }
 
 Client::~Client() {
+	// std::clog << "Client destroyed\n";
 //	close(_clientfd);
 	return;
 }
 
-Client &Client::operator=(Client &client) {
-	if (client._clientfd != _clientfd)
-	{
-		_clientfd = client._clientfd;
-		_server = client._server;
-		_request = client._request;
-		_connectionStart = client._connectionStart;
-		_keepAlive = client._keepAlive;
-		_finishedChunked = client._finishedChunked;
-	}
-	return *this;
-}
+ Client &Client::operator=(Client &client) {
+ 	if (client._clientfd != _clientfd)
+ 	{
+ 		_clientfd = client._clientfd;
+ 		_server = client._server;
+ 		_request = client._request;
+ 		_connectionStart = client._connectionStart;
+ 		_keepAlive = client._keepAlive;
+ 		_finishedChunked = client._finishedChunked;
+ 	}
+ 	return *this;
+ }
 
 
 // Timeout Expiry:
@@ -82,7 +88,7 @@ int &Client::getClientFd() {
 	return _clientfd;
 }
 
-Server &Client::getServer() {
+Server *Client::getServer() {
 	return _server;
 }
 

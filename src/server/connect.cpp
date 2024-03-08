@@ -4,7 +4,7 @@ void Server::startServer() {
 	int optval = 1;
 	this->socketFd = socket(AF_INET, SOCK_STREAM, 0);
 	if (socketFd < 0)
-		throw std::runtime_error("Error: unable to start server.\n");
+		throw std::runtime_error("Error: unable to start server.");
 
 	this->socketAddress.sin_family = AF_INET;
 	this->socketAddress.sin_port = htons(port);
@@ -13,71 +13,67 @@ void Server::startServer() {
 	if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
 	{
 		perror("Error setting up socket");
-		throw std::runtime_error("Error: cannot set socket flags.\n");
+		throw std::runtime_error("Error: cannot set socket flags.");
 	}
 
 	if (bind(socketFd, (sockaddr *)&socketAddress, sizeof(socketAddress)) < 0)
 	{
 		perror("Error binding socket");
-		throw std::runtime_error("Error: cannot connect socket to address.\n");
+		throw std::runtime_error("Error: cannot connect socket to address.");
 	}
 
 	if (listen(socketFd, 20) < 0)
-		throw std::runtime_error("Error: socket listen failed.\n");
+		throw std::runtime_error("Error: socket listen failed.");
 
 	if (fcntl(socketFd, F_SETFL, O_NONBLOCK) == -1)
 	{
 //		perror("Error binding socket");
-		throw std::runtime_error("Error: cannot set socket to non-blocking.\n");
+		throw std::runtime_error("Error: cannot set socket to non-blocking.");
 	}
 }
 
-void Server::startListen() {
-	if (listen(socketFd, 20) < 0)
-		throw std::runtime_error("Error: socket listen failed.\n");
-	std::ostringstream ss;
-	ss << "\n*** Listening on ADDRESS: "
-	   << inet_ntoa(socketAddress.sin_addr)
-	   << " PORT: " << ntohs(socketAddress.sin_port)
-	   << " ***\n\n";
-	std::cout << ss.str() << std::endl;
+// void Server::startListen() {
+// 	if (listen(socketFd, 20) < 0)
+// 		throw std::runtime_error("Error: socket listen failed.");
+// 	std::ostringstream ss;
+// 	ss << "\n*** Listening on ADDRESS: "
+// 	   << inet_ntoa(socketAddress.sin_addr)
+// 	   << " PORT: " << ntohs(socketAddress.sin_port)
+// 	   << " ***\n\n";
+// 	// std::clog << ss.str() << std::endl;
 
-	int bytesReceived;
+// 	int bytesReceived;
 
-	while (true)
-	{
-		std::cout << ("====== Waiting for a new connection ======\n\n\n");
-		acceptConnection(newSocket);
+// 	while (true)
+// 	{
+// 		std::clog << ("====== Waiting for a new connection ======\n\n");
+// 		acceptConnection(newSocket);
 
-		char buffer[BUFFER_SIZE] = {0};
-		bytesReceived = read(newSocket, buffer, BUFFER_SIZE);
-		if (bytesReceived < 0)
-		{
-			perror("Failed to read bytes from client socket connection");
-			exit(1);
-		}
+// 		char buffer[BUFFER_SIZE] = {0};
+// 		bytesReceived = read(newSocket, buffer, BUFFER_SIZE);
+// 		if (bytesReceived < 0)
+// 		{
+// 			perror("Failed to read bytes from client socket connection");
+// 			exit(1);
+// 		}
 
-		std::ostringstream ss;
-		ss << "------ Received Request from client ------\n\n";
-		std::cout << ss.str() << std::endl << buffer;
+// 		std::ostringstream ss;
+// 		ss << "------ Received Request from client ------\n\n";
+// 		std::clog << ss.str() << std::endl << buffer;
 
-//		sendResponse();
+// //		sendResponse();
 
-		close(newSocket);
-	}
-}
+// 		close(newSocket);
+// 	}
+// }
 
-void Server::acceptConnection(int &newSocket) {
-	newSocket = accept(socketFd, (sockaddr *)&socketAddress, &socketLen);
-	if (newSocket < 0 || connectedClients >= clientSize)
-	{
-		std::ostringstream ss;
-		ss << "Server failed to accept incoming connection from ADDRESS: " << inet_ntoa(socketAddress.sin_addr) << "; PORT: " << ntohs(socketAddress.sin_port);
-		std::cerr << ss.str() << std::endl;
-		exit(1);
-	}
-	this->connectedClients++;
-}
+ bool Server::acceptConnection() {
+	if (connectedClients < this->clientSize)
+		this->connectedClients++;
+	else
+		return false;
+	return true;
+ }
 
 void Server::removeClient(){
 	clientSize--;
@@ -89,36 +85,36 @@ void Server::closeServer() {
 
 void printList(std::string index)
 {
-	std::cout << "\t" << index << std::endl;
+	std::clog << "\t" << index << std::endl;
 }
 
 void Server::printServer(Server &server) {
-	std::cout << "Server:";
+	std::clog << "Server:";
 	std::for_each(server.serverName.begin(), server.serverName.end(), printList);
-	std::cout << "IP: " << server.ipAddress <<
+	std::clog << "IP: " << server.ipAddress <<
 	"\nRoot: " << server.root <<
 	"\nAutindex: ";
 	if (server.autoindex)
-		std::cout << "true";
+		std::clog << "true";
 	else
-		std::cout << "false";
-	std::cout << "\nIndex: ";
+		std::clog << "false";
+	std::clog << "\nIndex: ";
 	std::for_each(server.index.begin(), server.index.end(), printList);
-	std::cout << "Client Size: " << server.clientSize <<
+	std::clog << "Client Size: " << server.clientSize <<
 	"\nError Pages:";
 	for (std::map<int, std::string>::const_iterator it = server.errorPages.begin();
 	it != server.errorPages.end(); it++)
 	{
-		std::cout << "\t" << it->first << ": " << it->second << std::endl;
+		std::clog << "\t" << it->first << ": " << it->second << std::endl;
 	}
-	std::cout << "CGI Info: ";
+	std::clog << "CGI Info: ";
 	std::for_each(server.cgi_info.begin(), server.cgi_info.end(), printList);
 //	std::for_each(server.locations.begin(), server.locations.end(), Location::printLocation);
 	for (std::map<std::string, Location>::iterator it = server.locations.begin(); it != server.locations.end(); ++it)
 	{
 		Location::printLocation(it->second);
 	}
-	std::cout << std::endl;
+	std::clog << std::endl;
 }
 
 void Server::setLocation(std::string line, std::ifstream &stream) {
@@ -128,17 +124,17 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 	std::string word;
 	std::string keywords[] = {"allow", "root", "index", "autoindex", "cgi_info"};
 	while (ss >> word && word != "location")
-		throw std::runtime_error("Config file error location a: invalid keyword format.\n");
+		throw std::runtime_error("Config file error location a: invalid keyword format.");
 	ss >> word;
 	if (word.empty() || word == "{")
-		throw std::runtime_error("Config file error location b: location should be followed by a directory.\n");
+		throw std::runtime_error("Config file error location b: location should be followed by a directory.");
 	location.setName(word);
 	if (!(ss >> word) || word != "{")
-		throw std::runtime_error("Config file error location c: location directory should be followed by a '{'.\n");
+		throw std::runtime_error("Config file error location c: location directory should be followed by a '{'.");
 	std::getline(stream, line);
 	while (stream.good() && line.find('}') == std::string::npos)
 	{
-//		std::cout << line << "\n";
+//		std::clog << line << "\n";
 		if (line.empty())
 		{
 			std::getline(stream, line);
@@ -156,21 +152,21 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 				while (lss >> word && word.find(";") == std::string::npos)
 					location.setMethod(word);
 				if (word.empty() || word[word.length() - 1] != ';')
-					throw std::runtime_error("Config file error location: invalid keyword format.\n");
+					throw std::runtime_error("Config file error location: invalid keyword format.");
 				word.erase(word.length() - 1);
 				location.setMethod(word);
 				if (lss >> word)
-					throw std::runtime_error("Config file error location: command should end after ;.\n");
+					throw std::runtime_error("Config file error location: command should end after ;.");
 				break;
 			}
 			//ROOT
 			case 1: {
 				if (!(lss >> word) || word[word.length() - 1] != ';')
-					throw std::runtime_error("Config file error location: invalid keyword format.\n");
+					throw std::runtime_error("Config file error location: invalid keyword format.");
 				word.erase(word.length() - 1);
 				location.setRoot(word);
 				if (lss >> word)
-					throw std::runtime_error("Config file error location: command should end after ;.\n");
+					throw std::runtime_error("Config file error location: command should end after ;.");
 				break;
 			}
 			//INDEX
@@ -178,36 +174,36 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 				while (lss >> word && word.find(";") == std::string::npos)
 					location.setIndex(word);
 				if (word.empty() || word[word.length() - 1] != ';')
-					throw std::runtime_error("Config file error location: invalid keyword format.\n");
+					throw std::runtime_error("Config file error location: invalid keyword format.");
 				word.erase(word.length() - 1);
 				location.setIndex(word);
 				if (lss >> word)
-					throw std::runtime_error("Config file error location: command should end after ;.\n");
+					throw std::runtime_error("Config file error location: command should end after ;.");
 				break;
 			}
 			case 3: {
 				if (!(lss >> word) || word[word.length() - 1] != ';')
-					throw std::runtime_error("Config file error location: invalid keyword format.\n");
+					throw std::runtime_error("Config file error location: invalid keyword format.");
 				word.erase(word.length() - 1);
 				location.setAutoIndex(word);
 				if (lss >> word)
-					throw std::runtime_error("Config file error location: command should end after ;.\n");
+					throw std::runtime_error("Config file error location: command should end after ;.");
 				break;
 			}
 			case 4: {
 				while (lss >> word && word.find(";") == std::string::npos)
 					location.setCgiInfo(word);
 				if (word.empty() || word[word.length() - 1] != ';')
-					throw std::runtime_error("Config file error location: invalid keyword format.\n");
+					throw std::runtime_error("Config file error location: invalid keyword format.");
 				word.erase(word.length() - 1);
 				location.setCgiInfo(word);
 				if (lss >> word)
-					throw std::runtime_error("Config file error location: command should end after ;.\n");
+					throw std::runtime_error("Config file error location: command should end after ;.");
 				break;
 			}
 			default: {
-				// std::cout << word << "\n";
-				throw std::runtime_error("Config file error location: invalid keyword.\n");
+				// std::clog << word << "\n";
+				throw std::runtime_error("Config file error location: invalid keyword.");
 			}
 		}
 		std::getline(stream, line);
