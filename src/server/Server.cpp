@@ -1,13 +1,14 @@
 #include "../../include/webserv.hpp"
 
-Server::Server() : port(0), clientSize(0), autoindex(true), socketFd(-1), connectedClients(0) {
-    host.s_addr = 0;
+Server::Server() : port(0), clientSize(0), clientBody(0), autoindex(true), socketFd(-1), connectedClients(0) {
+	host.s_addr = 0;
 }
 
 Server::Server(const Server &server) : port(server.port), host(server.host),
-serverName(server.serverName), root(server.root), index(server.index),
-ipAddress(server.ipAddress), clientSize(server.clientSize), errorPages(server.errorPages),
-locations(server.locations), autoindex(server.autoindex), cgi_info(server.cgi_info), socketFd(server.socketFd), connectedClients(server.connectedClients){
+									   serverName(server.serverName), root(server.root), index(server.index),
+									   ipAddress(server.ipAddress), clientSize(server.clientSize), clientBody(server.clientBody),
+									   errorPages(server.errorPages),locations(server.locations), autoindex(server.autoindex),
+									   cgi_info(server.cgi_info), socketFd(server.socketFd), connectedClients(server.connectedClients){
 	return;
 }
 
@@ -21,6 +22,7 @@ Server &Server::operator=(const Server &server) {
 		this->index = server.index;
 		this->ipAddress = server.ipAddress;
 		this->clientSize = server.clientSize;
+		this->clientBody = server.clientBody;
 		this->errorPages = server.errorPages;
 		this->autoindex = server.autoindex;
 		this->cgi_info = server.cgi_info;
@@ -82,10 +84,21 @@ void Server::setClientSize(unsigned long clientSize) {
 	this->clientSize = clientSize;
 }
 
+void Server::setClientBody(unsigned long clientBody) {
+	if (!clientBody)
+		throw std::runtime_error("Config file error: client body size can't be 0.");
+	if (this->clientBody)
+		throw std::runtime_error("Config file error: client body size was initialized twice.");
+	this->clientBody = clientBody;
+}
+
 void Server::setDefaultClientSize() {
-    if (!clientSize) {
-        clientSize = DEFAULT_CLIENT_SIZE;
-    }
+	if (!clientSize) {
+		clientSize = DEFAULT_CLIENT_SIZE;
+	}
+	if (!clientBody) {
+		clientBody = DEFAULT_CLIENT_BODY_SIZE;
+	}
 }
 
 void Server::setErrorPage(int key, std::string errorPage) {
@@ -114,26 +127,26 @@ void Server::setCgiInfo(std::string info) {
 /* ************************************************************************** */
 
 std::string Server::getRoot() const {
-    return (this->root);
+	return (this->root);
 }
 
 std::string Server::getServerName() const {
-    if (this->serverName.empty()) {
-        return ("");
-    }
-    return (this->serverName.back());
+	if (this->serverName.empty()) {
+		return ("");
+	}
+	return (this->serverName.back());
 }
 
 unsigned short Server::getPort() const {
-    return (this->port);
+	return (this->port);
 }
 
 const std::string &Server::getIpAddr() const{
-    return (this->ipAddress);
+	return (this->ipAddress);
 }
 
 std::vector<std::string> Server::getIndex() const{
-    return (this->index);
+	return (this->index);
 }
 
 bool Server::isAutoIndex() const {
@@ -149,17 +162,17 @@ int Server::getSocketFd() const {
 }
 
 Location Server::getLocation(const std::string &path) const {
-    std::string dir = path.substr(0, path.rfind("/"));
-    std::map<std::string, Location>::const_iterator it;
-    while (dir.empty() == false) {
-        if ((it = locations.find(dir)) != locations.end()) {
-            return (it->second);
-        }
-        dir.erase(dir.rfind("/"));
-    }
-    if ((it = locations.find("/")) != locations.end()) {
-        return (it->second);
-    }
+	std::string dir = path.substr(0, path.rfind("/"));
+	std::map<std::string, Location>::const_iterator it;
+	while (dir.empty() == false) {
+		if ((it = locations.find(dir)) != locations.end()) {
+			return (it->second);
+		}
+		dir.erase(dir.rfind("/"));
+	}
+	if ((it = locations.find("/")) != locations.end()) {
+		return (it->second);
+	}
 
 	Location location;
 	location.autoCompleteFromServer(*this);
@@ -173,9 +186,9 @@ void Server::autoCompleteLocations() {
 }
 
 std::string Server::getErrorPage(int status) const {
-    std::map<int, std::string>::const_iterator it = errorPages.find(status);
-    if (it == errorPages.end()) {
-        return ("");
-    }
-    return (it->second);
+	std::map<int, std::string>::const_iterator it = errorPages.find(status);
+	if (it == errorPages.end()) {
+		return ("");
+	}
+	return (it->second);
 }

@@ -41,6 +41,7 @@
 #define KEEPALIVE_TIMEOUT 60.0 //sec
 #define POLL_TIMEOUT 10.0 //sec
 #define DEFAULT_CLIENT_SIZE 10240
+#define DEFAULT_CLIENT_BODY_SIZE 102400 //100Kb
 #define DEFAULT_CONFIG "./conf_files/default.conf"
 #define SERVER_VERSION "webserv/1.0"
 #define HTTP_VERSION "HTTP/1.1"

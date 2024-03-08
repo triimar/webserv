@@ -57,8 +57,8 @@ bool Config::isEmptyLine(std::string line) {
 void Config::parseServerLine(Server &server, std::string line) {
 	if (isEmptyLine(line))
 		return;
-	unsigned long keySize = 10;
-	std::string keywords[] = {"listen", "server_name", "client_size", "autoindex", "error_page", "root", "host", "location", "index", "cgi_info"};
+	unsigned long keySize = 11;
+	std::string keywords[] = {"listen", "server_name", "client_size", "autoindex", "error_page", "root", "host", "location", "index", "cgi_info", "client_body_size"};
 	unsigned long i;
 	for (i = 0; i < keySize; i++)
 	{
@@ -112,7 +112,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 			std::stringstream client_ss(word);
 			unsigned long client;
 			if (!(client_ss >> client))
-				throw std::runtime_error("Config file error: invalid port format on client_size command.");
+				throw std::runtime_error("Config file error: invalid size format on client_size command.");
 			server.setClientSize(client);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\"");
@@ -193,6 +193,7 @@ void Config::parseServerLine(Server &server, std::string line) {
 				throw std::runtime_error("Config file error: line should end after \";\"");
 			break;
 		}
+		//CGI INFO
 		case 9: {
 			while (ss >> word && word != keywords[i])
 				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.");
@@ -202,6 +203,23 @@ void Config::parseServerLine(Server &server, std::string line) {
 				throw std::runtime_error("Config file error: invalid keyword format on cgi_info command.");
 			word.erase(word.length() - 1);
 			server.setCgiInfo(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\"");
+			break;
+		}
+		//CLIENT BODY SIZE
+		case 10: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format on client_body_size command.");
+			ss >> word;
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format on client_body_size command.");
+			word.erase(word.length() - 1);
+			std::stringstream client_ss(word);
+			unsigned long client;
+			if (!(client_ss >> client))
+				throw std::runtime_error("Config file error: invalid size format on client_body_size command.");
+			server.setClientBody(client);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\"");
 			break;
