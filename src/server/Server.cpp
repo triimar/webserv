@@ -132,7 +132,7 @@ std::string Server::getRoot() const {
 
 std::string Server::getServerName() const {
 	if (this->serverName.empty()) {
-		return ("");
+		return (SERVER_VERSION);
 	}
 	return (this->serverName.back());
 }
