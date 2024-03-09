@@ -358,7 +358,7 @@ void Config::closeTimeoutClients() {
 
 void Config::runServers() {
 	if (fds.empty())
-		throw std::runtime_error("No valid server to run\n");
+		throw std::runtime_error("No valid server to run");
 	if (signal(SIGINT, Config::sigintHandler) == SIG_ERR) {
 		perror("signal");
 		exit(EXIT_FAILURE);

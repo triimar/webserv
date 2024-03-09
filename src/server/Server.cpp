@@ -1,6 +1,6 @@
 #include "../../include/webserv.hpp"
 
-Server::Server() : port(0), clientSize(0), clientBody(0), autoindex(true), socketFd(-1), connectedClients(0) {
+Server::Server() : port(0), root(), clientSize(0), clientBody(0), autoindex(true), socketFd(-1), connectedClients(0) {
 	host.s_addr = 0;
 }
 
@@ -54,6 +54,9 @@ void Server::setName(std::string name) {
 }
 
 void Server::setRoot(std::string root) {
+	if (!this->root.empty()){
+		throw std::runtime_error("Config file error: root was set twice.");
+	}
 	struct stat sb;
 
 	if (stat(root.c_str(), &sb) == 0)
@@ -67,8 +70,8 @@ void Server::setIndex(std::string index) {
 }
 
 void Server::setIP() {
-	if (!host.s_addr || !port)
-		return;//Throw exception?
+	if (!host.s_addr || !port || root.empty())
+		throw std::runtime_error("Config file error: server input incomplete.");
 	this->ipAddress = inet_ntoa(this->host);
 	this->ipAddress += ":";
 	std::stringstream ss;
