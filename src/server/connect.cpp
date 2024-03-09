@@ -6,15 +6,16 @@ void Server::startServer() {
 	if (socketFd < 0)
 		throw std::runtime_error("Error: unable to start server.");
 
-	this->socketAddress.sin_family = AF_INET;
-	this->socketAddress.sin_port = htons(port);
-	this->socketAddress.sin_addr = host;
-
 	if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
 	{
 		perror("Error setting up socket");
 		throw std::runtime_error("Error: cannot set socket flags.");
 	}
+
+	memset(socketAddress.sin_zero, 0, sizeof(socketAddress.sin_zero));
+	this->socketAddress.sin_family = AF_INET;
+	this->socketAddress.sin_port = htons(port);
+	this->socketAddress.sin_addr = host;
 
 	if (bind(socketFd, (sockaddr *)&socketAddress, sizeof(socketAddress)) < 0)
 	{

@@ -309,10 +309,18 @@ void Config::startServers() {
     } else {
         std::cout << "Starting servers..." << std::endl;
     }
-	for(std::vector<Server>::iterator it = this->serverList.begin(); it != this->serverList.end(); it++)
+	for (size_t i = 0; i < serverList.size();)
 	{
-		it->startServer();
-		addFdToPoll(it->getSocketFd());
+		try {
+			serverList[i].startServer();
+			addFdToPoll(serverList[i].getSocketFd());
+			i++;
+		}
+		catch(std::exception &e)
+		{
+			std::cout << "Failed to start server " << serverList[i].getServerName() << std::endl;
+			serverList.erase(serverList.begin() + i);
+		}
 	}
 }
 
@@ -349,6 +357,8 @@ void Config::closeTimeoutClients() {
 }
 
 void Config::runServers() {
+	if (fds.empty())
+		throw std::runtime_error("No valid server to run\n");
 	if (signal(SIGINT, Config::sigintHandler) == SIG_ERR) {
 		perror("signal");
 		exit(EXIT_FAILURE);
