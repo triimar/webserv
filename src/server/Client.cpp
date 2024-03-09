@@ -79,6 +79,30 @@ void Client::setActivity(std::string activity) {
     _activity = activity;
 }
 
+void Client::setServer(std::vector<Server> &servers, std::string &hostname) {
+    std::vector<std::string> split = splitString(hostname, ":");
+    if (split.size() > 2) {
+        return ;
+    }
+    if (split.size() == 2) {
+        unsigned short port;
+        std::istringstream(split[1]) >> port;
+        if (_server->getPort() != port) {
+            return ;
+        }
+    }
+    std::vector<std::string> serverName;
+    serverName.push_back(split[0]);
+    for (std::vector<Server>::iterator it = servers.begin(); it != servers.end(); ++it) {
+        if (it->hasServerName(serverName)) {
+            Server &newServer = *it;
+            _server = &newServer;
+            _request.setMaxBodySize(_server->getClientBodySize());
+            return ;
+        }
+    }
+}
+
 int &Client::getClientFd() {
 	return _clientfd;
 }

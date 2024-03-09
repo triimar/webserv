@@ -100,6 +100,7 @@ public:
 	bool				isTransferEncodingChunked() const;
 	bool 				isKeepAlive() const;
 	bool				requestComplete() const;
+    void                setMaxBodySize(unsigned long size);
 };
 
 std::ostream& operator<<(std::ostream& out, const Request& rhs);

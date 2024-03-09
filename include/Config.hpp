@@ -13,6 +13,7 @@ private:
 //	int errorLogFd;
 	std::ifstream			str;
 	std::vector<Server>		serverList;
+    std::map<int, std::vector<Server> >	serverMap;
 	std::map<int, Client>	clientList;
 	std::vector<pollfd>		fds;
 
@@ -24,6 +25,7 @@ private:
 	void addFdToPoll(int fd);
 	void closeTimeoutClients();
 	void closeClient(int fd, size_t &index);
+    Server *hasHostPort(const Server &server) const;
     void printClientsInfo(std::string error = "");
 	static void sigintHandler(int signum);
 

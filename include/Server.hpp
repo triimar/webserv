@@ -41,7 +41,6 @@ public:
 	~Server();
 
 	void startServer();
-	void closeServer();
 	// void startListen();
 	bool acceptConnection();
 	void removeClient();
@@ -75,6 +74,9 @@ public:
 	const std::string			&getIpAddr() const;
 	std::string                 getErrorPage(int status) const;
 	int							getSocketFd() const;
+    void                        setSocketFd(int socketFd);
 	void				        autoCompleteLocations();
+    std::vector<std::string>    &getServerNames();
+    bool                        hasServerName(std::vector<std::string> &serverName) const;
 
 };
