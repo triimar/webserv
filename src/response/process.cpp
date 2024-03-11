@@ -23,6 +23,10 @@ void Response::processRequest() {
         throw 413;
     }
 
+    if ((_isCGI = isCGI()) == true) {
+        executeCGI();
+        return ;
+    }
 
     if (access(_path.c_str(), F_OK) == 0) {
         if (stat(_path.c_str(), &_pathStat) != 0) {
@@ -30,11 +34,6 @@ void Response::processRequest() {
         }
     } else if (_request.getMethod() != POST) {
         throw 404;
-    }
-
-    if ((_isCGI = isCGI()) == true) {
-        executeCGI();
-        return ;
     }
 
     switch (_request.getMethod()) {
