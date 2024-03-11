@@ -114,6 +114,7 @@ void Location::printLocation(Location &location) {
 	std::clog << "\tAllowed:\n";
 	std::for_each(location.allowedMethods.begin(), location.allowedMethods.end(), printListMethods);
 	std::clog << "\tAutoindex: " << location.autoindex << std::endl;
+	std::clog << "\tRedirect: " << location.getRedirect() << std::endl;
 }
 
 const std::string &Location::getName() const{
@@ -138,6 +139,10 @@ const std::vector <std::string> &Location::getIndex() const{
 
 const std::string &Location::getRoot() const{
 	return this->root;
+}
+
+const std::string &Location::getRedirect() const {
+	return this->redirect;
 }
 
 void Location::autoCompleteFromServer(const Server &server) {
