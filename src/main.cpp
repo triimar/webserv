@@ -16,7 +16,8 @@ int main(int argc, char **argv) {
 		config.runServers();
 
 	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;;
+		std::cerr << e.what() << std::endl;
+		return (EXIT_FAILURE);
 	}
 
     return (EXIT_SUCCESS);
