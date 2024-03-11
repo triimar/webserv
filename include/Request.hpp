@@ -53,9 +53,6 @@ private:
 
 	int					statusCode_;
 
-	Request();
-
-	
 	const char *extractHeaders(const char *requestBuf, int& MessageLen);
 	void		parseRequestHeaders();
 	void		parseMethod(std::istringstream& requestLine);
@@ -71,7 +68,7 @@ private:
 	void		clearRequest();
 
 public:
-	Request(unsigned long maxBodySize);
+	Request();
 	~Request();
 	Request(const Request& rhs);
 	Request &operator=(const Request& rhs);
