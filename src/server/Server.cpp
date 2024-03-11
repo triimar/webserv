@@ -214,7 +214,7 @@ std::vector<std::string>    &Server::getServerNames() {
     return this->serverName;
 }
 
-std::string Server::getRedirect() {
+std::string Server::getRedirect() const{
 	return this->redirect;
 }
 

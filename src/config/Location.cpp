@@ -154,4 +154,6 @@ void Location::autoCompleteFromServer(const Server &server) {
         this->allowedMethods.push_back(POST);
         this->allowedMethods.push_back(DELETE);
     }
+	if (this->redirect.empty())
+		this->redirect = server.getRedirect();
 }

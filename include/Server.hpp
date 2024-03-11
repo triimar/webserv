@@ -79,7 +79,7 @@ public:
     void                        setSocketFd(int socketFd);
 	void				        autoCompleteLocations();
     std::vector<std::string>    &getServerNames();
-	std::string 				getRedirect();
+	std::string 				getRedirect() const;
     bool                        hasServerName(std::vector<std::string> &serverName) const;
 
 };
