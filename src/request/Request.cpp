@@ -47,6 +47,7 @@ void Request::setError(ParseState type, int statusCode) {
 
 // Clears data in case of invalid request. Values of state_, rhstate and statusCode_ are not cleared
 void Request::clearRequest() {
+	maxBodySize_ = DEFAULT_CLIENT_BODY_SIZE;
 	buffer_.clear();
 	buffer_ = "";
 	headersLen_ = 0;
