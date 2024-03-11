@@ -4,11 +4,14 @@ Request::Request(): maxBodySize_(DEFAULT_CLIENT_BODY_SIZE), state_(stateGetHeade
 					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {
 }
 
-Request::Request(unsigned long maxBodySize): maxBodySize_(maxBodySize), state_(stateGetHeaderData), rhstate_(stateParseMethod), \
-					headersLen_(0), skip_(4), method_(OTHER), contentLen_(0), statusCode_(0) {
-}
-
 Request::~Request() {}
+
+Request::Request(const Request& rhs): maxBodySize_(rhs.maxBodySize_), state_(rhs.state_), rhstate_(rhs.rhstate_), \
+								buffer_(rhs.buffer_), headersLen_(rhs.headersLen_), skip_(rhs.skip_), \
+								methodStr_(rhs.methodStr_), method_(rhs.method_), \
+								uri_(rhs.uri_), path_(rhs.path_), httpVer_(rhs.httpVer_), \
+								headers_(rhs.headers_), body_(rhs.body_), contentLen_(rhs.contentLen_), \
+								statusCode_(rhs.statusCode_) {}
 
 Request& Request::operator=(const Request& rhs) {
 	if (this != &rhs) {
@@ -440,6 +443,14 @@ std::vector<char>::const_iterator	Request::getBodyEnd() const {
 }
 
 /* ************************************************************************** */
+/*                                  SETTERS                                   */
+/* ************************************************************************** */
+
+void Request::setMaxBodySize(unsigned long maxBodySize) {
+    maxBodySize_ = maxBodySize;
+}
+
+/* ************************************************************************** */
 /*                                  CHECKERS                                  */
 /* ************************************************************************** */
 
@@ -463,10 +474,6 @@ bool	Request::isKeepAlive() const {
 	if (it != headers_.end() && it->second == "close")
 		return false;
 	return true;
-}
-
-void    Request::setMaxBodySize(unsigned long size) {
-    maxBodySize_ = size;
 }
 
 /* ************************************************************************** */

@@ -384,8 +384,6 @@ void Config::closeTimeoutClients() {
 }
 
 void Config::runServers() {
-    std::cout << "number of servers on first socket: " << serverMap.begin()->second.size() << std::endl;
-    std::cout << "fds size: " << fds.size() << std::endl;
 	if (fds.empty())
 		throw std::runtime_error("No valid server to run");
 	if (signal(SIGINT, Config::sigintHandler) == SIG_ERR) {

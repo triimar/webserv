@@ -97,7 +97,7 @@ public:
 	bool				isTransferEncodingChunked() const;
 	bool 				isKeepAlive() const;
 	bool				requestComplete() const;
-    void                setMaxBodySize(unsigned long size);
+    void                setMaxBodySize(unsigned long maxBodySize);
 };
 
 std::ostream& operator<<(std::ostream& out, const Request& rhs);
