@@ -462,7 +462,6 @@ void Config::runServers() {
                     currentClient.setServer(serverMap[currentClient.getServer()->getSocketFd()], host);
                 }
 
-
 				if (currentClient.getRequest().requestComplete()) {
 					currentClient.confirmKeepAlive();
                     currentClient.setActivity("Request received");

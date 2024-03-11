@@ -14,6 +14,9 @@ void Response::processRequest() {
 
     _path = _location.getRoot() + cleanPath(_request.getPath());
 
+    if (_request.getMethod() == POST && _request.getBody().size() > _server.getClientBodySize()) {
+        throw 413;
+    }
 
     if (access(_path.c_str(), F_OK) == 0) {
         if (stat(_path.c_str(), &_pathStat) != 0) {

@@ -1,8 +1,8 @@
 #include "../../include/webserv.hpp"
 
-Client::Client() : _clientfd(0) , _request(Request(DEFAULT_CLIENT_BODY_SIZE)){}
+Client::Client() : _clientfd(0) {}
 
-Client::Client(Server *server) : _server(server) , _request(server->getClientBodySize()){
+Client::Client(Server *server) : _server(server) {
     if (!_server->acceptConnection()) {
 		throw std::runtime_error("Client starting error: client number exceeded in server.");
 	}
