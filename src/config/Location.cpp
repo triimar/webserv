@@ -5,12 +5,13 @@ Location::Location(){
 	root = "";
 	autoindex = true;
 	autoindexSet = false;
+	redirect = "";
 }
 
 Location::Location(const Location &location) : name(location.name),
 											   root(location.root), allowedMethods(location.allowedMethods),
 											   index(location.index), autoindex(location.autoindex), cgi_info(location.cgi_info),
-											   autoindexSet(location.autoindexSet){}
+											   autoindexSet(location.autoindexSet), redirect(location.redirect){}
 
 Location &Location::operator=(const Location &location){
 	if (&location != this)
@@ -22,6 +23,7 @@ Location &Location::operator=(const Location &location){
 		autoindex = location.autoindex;
 		cgi_info = location.cgi_info;
 		autoindexSet = location.autoindexSet;
+		redirect = location.redirect;
 	}
 	return *this;
 }
@@ -75,6 +77,12 @@ void Location::setAutoIndex(std::string autoindex) {
 
 void Location::setCgiInfo(std::string cgiInfo){
 	this->cgi_info.push_back(cgiInfo);
+}
+
+void Location::setRedirect(std::string redirect) {
+	if (!this->redirect.empty())
+		throw std::runtime_error("Config file error: Can only have one redirection per location.");
+	this->redirect = redirect;
 }
 
 void Location::changeAutoIndex(bool ai) {

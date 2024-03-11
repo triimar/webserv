@@ -60,8 +60,8 @@ bool Config::isEmptyLine(std::string line) {
 void Config::parseServerLine(Server &server, std::string line) {
 	if (isEmptyLine(line))
 		return;
-	unsigned long keySize = 11;
-	std::string keywords[] = {"listen", "server_name", "client_size", "autoindex", "error_page", "root", "host", "location", "index", "cgi_info", "client_body_size"};
+	unsigned long keySize = 12;
+	std::string keywords[] = {"listen", "server_name", "client_size", "autoindex", "error_page", "root", "host", "location", "index", "cgi_info", "client_body_size", "redirect"};
 	unsigned long i;
 	for (i = 0; i < keySize; i++)
 	{
@@ -233,6 +233,18 @@ void Config::parseServerLine(Server &server, std::string line) {
 			server.setClientBody(client);
 			if (ss >> word)
 				throw std::runtime_error("Config file error: line should end after \";\"");
+			break;
+		}
+		case 11: {
+			while (ss >> word && word != keywords[i])
+				throw std::runtime_error("Config file error: invalid keyword format on redirect command.");
+			ss >> word;
+			if (word.empty() || word[word.length() - 1] != ';')
+				throw std::runtime_error("Config file error: invalid keyword format on redirect command.");
+			word.erase(word.length() - 1);
+			server.setRedirect(word);
+			if (ss >> word)
+				throw std::runtime_error("Config file error: line should end after \";\" .");
 			break;
 		}
 		default:

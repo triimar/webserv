@@ -22,6 +22,7 @@ private:
 	std::map<std::string, Location> 	locations;
 	bool								autoindex;
 	std::vector<std::string>			cgi_info;
+	std::string 						redirect;
 
 	int									socketFd;
 	sockaddr_in							socketAddress;
@@ -58,6 +59,7 @@ public:
 	void setLocation(std::string line, std::ifstream &stream);
 	void setAutoIndex(std::string autoindex);
 	void setCgiInfo(std::string info);
+	void setRedirect(std::string redirect);
 //	void pushLocation();
 
 	static void printServer(Server &server);
@@ -77,6 +79,7 @@ public:
     void                        setSocketFd(int socketFd);
 	void				        autoCompleteLocations();
     std::vector<std::string>    &getServerNames();
+	std::string 				getRedirect();
     bool                        hasServerName(std::vector<std::string> &serverName) const;
 
 };

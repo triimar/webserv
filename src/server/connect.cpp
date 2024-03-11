@@ -82,7 +82,7 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 
 	std::stringstream ss(line);
 	std::string word;
-	std::string keywords[] = {"allow", "root", "index", "autoindex", "cgi_info"};
+	std::string keywords[] = {"allow", "root", "index", "autoindex", "cgi_info", "redirect"};
 	while (ss >> word && word != "location")
 		throw std::runtime_error("Config file error location a: invalid keyword format.");
 	ss >> word;
@@ -102,7 +102,7 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 		std::stringstream lss(line);
 		lss >> word;
 		int i;
-		for (i = 0; i < 5; i++)
+		for (i = 0; i < 6; i++)
 			if (word == keywords[i])
 				break;
 		switch (i){
@@ -156,6 +156,15 @@ void Server::setLocation(std::string line, std::ifstream &stream) {
 					throw std::runtime_error("Config file error location: invalid keyword format.");
 				word.erase(word.length() - 1);
 				location.setCgiInfo(word);
+				if (lss >> word)
+					throw std::runtime_error("Config file error location: command should end after ;.");
+				break;
+			}
+			case 5: {
+				if (!(lss >> word) || word[word.length() - 1] != ';')
+					throw std::runtime_error("Config file error location: invalid keyword format.");
+				word.erase(word.length() - 1);
+				location.setRedirect(word);
 				if (lss >> word)
 					throw std::runtime_error("Config file error location: command should end after ;.");
 				break;

@@ -1,14 +1,15 @@
 #include "../../include/webserv.hpp"
 
 Server::Server() : port(0), root(), clientSize(0), clientBody(0), autoindex(true), socketFd(-1), connectedClients(0) {
-	host.s_addr = 0;
+	inet_aton(DEFAULT_ADDRESS, &this->host);
 }
 
 Server::Server(const Server &server) : port(server.port), host(server.host),
 									   serverName(server.serverName), root(server.root), index(server.index),
 									   ipAddress(server.ipAddress), clientSize(server.clientSize), clientBody(server.clientBody),
 									   errorPages(server.errorPages),locations(server.locations), autoindex(server.autoindex),
-									   cgi_info(server.cgi_info), socketFd(server.socketFd), connectedClients(server.connectedClients){
+									   cgi_info(server.cgi_info), redirect(server.redirect),socketFd(server.socketFd),
+									   connectedClients(server.connectedClients){
 	return;
 }
 
@@ -26,6 +27,7 @@ Server &Server::operator=(const Server &server) {
 		this->errorPages = server.errorPages;
 		this->autoindex = server.autoindex;
 		this->cgi_info = server.cgi_info;
+		this->redirect = server.redirect;
 		this->socketFd = server.socketFd;
 		this->connectedClients = server.connectedClients;
 	}
@@ -41,7 +43,7 @@ void Server::setPort(unsigned short port) {
 }
 
 void Server::setHost(std::string host) {
-	if (this->host.s_addr != 0)
+	if (strcmp(inet_ntoa(this->host), DEFAULT_ADDRESS))
 		throw std::runtime_error("Config file error: server's host was initialized twice.");
 	if (!inet_aton(host.c_str(), &this->host))
 		throw std::runtime_error("Config file error: invalid host name.");
@@ -68,7 +70,7 @@ void Server::setIndex(std::string index) {
 }
 
 void Server::setIP() {
-	if (!host.s_addr || !port || root.empty())
+	if (!strcmp(inet_ntoa(this->host), DEFAULT_ADDRESS) || !port || root.empty())
 		throw std::runtime_error("Config file error: server input incomplete.");
 	this->ipAddress = inet_ntoa(this->host);
 	this->ipAddress += ":";
@@ -121,6 +123,12 @@ void Server::setAutoIndex(std::string autoindex) {
 
 void Server::setCgiInfo(std::string info) {
 	this->cgi_info.push_back(info);
+}
+
+void Server::setRedirect(std::string redirect) {
+	if (!this->redirect.empty())
+		throw std::runtime_error("Config file error: Can only have one redirection per location.");
+	this->redirect = redirect;
 }
 
 /* ************************************************************************** */
@@ -204,6 +212,10 @@ unsigned long Server::getClientBodySize() const {
 
 std::vector<std::string>    &Server::getServerNames() {
     return this->serverName;
+}
+
+std::string Server::getRedirect() {
+	return this->redirect;
 }
 
 bool Server::hasServerName(std::vector<std::string> &serverName) const {

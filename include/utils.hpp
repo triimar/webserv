@@ -52,6 +52,7 @@
 #define DATE_FORMAT "%a, %d %b %Y %T GMT"
 #define DATE_FORMAT_LEN 29
 #define REDIRECTION_LIMIT 5
+#define DEFAULT_ADDRESS "192.0.2.0"
 #ifndef ULIMIT_N
 # define ULIMIT_N 10240
 #endif

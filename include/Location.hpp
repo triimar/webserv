@@ -14,6 +14,7 @@ private:
 	bool						autoindex;
 	std::vector<std::string>	cgi_info;
 	bool						autoindexSet;
+	std::string 				redirect;
 
 public:
 	Location();
@@ -27,6 +28,7 @@ public:
 	void setIndex(std::string index);
 	void setAutoIndex(std::string autoindex);
 	void setCgiInfo(std::string cgiInfo);
+	void setRedirect(std::string redirect);
 	void changeAutoIndex(bool ai);
 
 	void autoCompleteFromServer(const Server &server);
@@ -35,6 +37,7 @@ public:
 	const std::string 					&getRoot() const;
 	const std::vector<RequestMethod>	&getAllowedMethods() const;
 	const std::vector<std::string>		&getIndex() const;
+	const std::string					&getRedirect() const;
 	bool								isAutoIndex() const;
 	std::vector<std::string>			getCgiInfo() const;
 
