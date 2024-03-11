@@ -31,6 +31,7 @@ public:
 	void	setChunkedUnfinished();
 	void	setChunkedFinished();
     void    setActivity(std::string activity);
+    void    setServer(std::vector<Server> &servers, std::string &hostname);
 
 	int					&getClientFd();
 	Server				*getServer();

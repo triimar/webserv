@@ -44,10 +44,6 @@ void Server::removeClient(){
 	connectedClients--;
 }
 
-void Server::closeServer() {
-	close(socketFd);
-}
-
 void printList(std::string index)
 {
 	std::clog << "\t" << index << std::endl;

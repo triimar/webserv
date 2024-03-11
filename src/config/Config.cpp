@@ -30,6 +30,9 @@ Config::Config(const Config &file) : serverList(file.serverList), clientList(fil
  * Destructor that closes the ifstream file.
  */
 Config::~Config() {
+    for (std::map<int, std::vector<Server> >::iterator it = serverMap.begin(); it != serverMap.end(); ++it) {
+        close(it->first);
+    }
 	if (str.is_open())
 		str.close();
 }
@@ -279,10 +282,15 @@ void Config::createServers() {
 				parseServerLine(server, line);
 				std::getline(str, line);
 			}
+            server.setIP();
+            for (std::vector<Server>::iterator it = list.begin(); it != list.end(); ++it) {
+                if (it->getIpAddr() == server.getIpAddr() && it->getPort() == server.getPort() && it->hasServerName(server.getServerNames())) {
+                    throw std::runtime_error("Config file error: duplicate servers.");
+                }
+            }
             server.setDefaultClientSize();
-			server.setIP();
-			server.autoCompleteLocations();
-			list.push_back(server);
+            server.autoCompleteLocations();
+            list.push_back(server);
 		}
 		else if (!isEmptyLine(line))
 			throw std::runtime_error("Config file error: invalid format.");
@@ -299,8 +307,21 @@ void Config::printServers() {
 void Config::addFdToPoll(int fd) {
 	struct pollfd newPollFd;
 	newPollFd.fd = fd;
-	newPollFd.events =  POLLIN;
+	newPollFd.events = POLLIN;
 	this->fds.push_back(newPollFd);
+}
+
+Server *Config::hasHostPort(const Server &server) const {
+    for (std::map<int, std::vector<Server> >::const_iterator it = serverMap.begin();
+        it != serverMap.end(); ++it) {
+        for (std::vector<Server>::const_iterator its = it->second.begin(); its != it->second.end(); ++its) {
+            if (its->getIpAddr() == server.getIpAddr() && its->getPort() == server.getPort()) {
+                Server &server = const_cast<Server &>(*its);
+                return (&server);
+            }
+        }
+    }
+    return (NULL);
 }
 
 void Config::startServers() {
@@ -312,8 +333,14 @@ void Config::startServers() {
 	for (size_t i = 0; i < serverList.size();)
 	{
 		try {
-			serverList[i].startServer();
-			addFdToPoll(serverList[i].getSocketFd());
+            Server *server = hasHostPort(serverList[i]);
+            if (server == NULL) {
+                serverList[i].startServer();
+                addFdToPoll(serverList[i].getSocketFd());
+            } else {
+                serverList[i].setSocketFd(server->getSocketFd());
+            }
+            serverMap[serverList[i].getSocketFd()].push_back(serverList[i]);
 			i++;
 		}
 		catch(std::exception &e)
@@ -343,7 +370,7 @@ void Config::closeTimeoutClients() {
 		if (it->second.isTimeout()){
 			close(it->second.getClientFd());
 			it->second.getServer()->removeClient();
-			fds.erase(fds.begin() + serverList.size() + i);
+			fds.erase(fds.begin() + serverMap.size() + i);
 			std::map<int, Client>::iterator tmp = it;
 			it++;
 			clientList.erase(tmp);
@@ -357,6 +384,8 @@ void Config::closeTimeoutClients() {
 }
 
 void Config::runServers() {
+    std::cout << "number of servers on first socket: " << serverMap.begin()->second.size() << std::endl;
+    std::cout << "fds size: " << fds.size() << std::endl;
 	if (fds.empty())
 		throw std::runtime_error("No valid server to run");
 	if (signal(SIGINT, Config::sigintHandler) == SIG_ERR) {
@@ -366,7 +395,11 @@ void Config::runServers() {
     if (this->serverList.size() == 1) {
         std::cout << "Server is running!" << std::endl;
     } else {
-        std::cout << "Servers are running!" << std::endl;
+        std::cout << this->serverList.size() << " servers are running on " << serverMap.size() << " socket";
+        if (serverMap.size() > 1) {
+            std::cout << "s";
+        }
+        std::cout << "!" << std::endl;
     }
 	while (running) {
 		this->closeTimeoutClients();
@@ -386,12 +419,13 @@ void Config::runServers() {
 
 			//ACCEPTING CONNECTIONS
 
-			if (i < serverList.size() && (fds[i].revents & POLLIN)) {
+			if (i < serverMap.size() && (fds[i].revents & POLLIN)) {
 				try {
-                    if (fds.size() + 1 > FD_LIMIT) {
+                    if (fds.size() >= FD_LIMIT) {
                         throw std::runtime_error("Client starting error: file descriptor limit exceeded.");
                     }
-					Client newClient(&serverList[i]);
+                    Server &defaultServer = *serverMap[current_fd].begin();
+					Client newClient(&defaultServer);
 					this->clientList.insert(std::pair<int, Client>(newClient.getClientFd(), newClient));
 					addFdToPoll(newClient.getClientFd());
 					eventNr--;
@@ -405,7 +439,7 @@ void Config::runServers() {
 
 			//HANDLING REQUESTS
 			
-			else if (i >= serverList.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
+			else if (i >= serverMap.size() && fds[i].revents & POLLIN) { // Check if the file descriptor has data to read
 				char buf[BUFFER_SIZE];
 				ssize_t num_read = read(current_fd, buf, BUFFER_SIZE);
 				if (num_read == -1) {
@@ -422,30 +456,16 @@ void Config::runServers() {
 				Client &currentClient = clientList.at(current_fd);
 				currentClient.getRequest().processRequest(buf, num_read);
 
+                // put changing server inside request so maxClientBody can be immediately be set to the correct value
+                std::string host = currentClient.getRequest().getHeaderValueForKey("host");
+                if (host.empty() == false) {
+                    currentClient.setServer(serverMap[currentClient.getServer()->getSocketFd()], host);
+                }
+
 				if (currentClient.getRequest().requestComplete()) {
 					currentClient.confirmKeepAlive();
                     currentClient.setActivity("Request received");
 					fds[i].events = POLLOUT;
-
-
-
-
-
-
-
-
-
-                    // currentClient.setServer(i, currentClient.getRequest().getHeaderValueForKey("server_name"))
-
-
-
-
-
-
-
-
-
-
 				} else {
                     currentClient.setActivity("Reading request...");
 					fds[i].events = POLLIN;
@@ -455,7 +475,7 @@ void Config::runServers() {
 
 			//HANDLING RESPONSES
 
-			else if (i >= serverList.size() && fds[i].revents & POLLOUT) {
+			else if (i >= serverMap.size() && fds[i].revents & POLLOUT) {
 				Client &currentClient = clientList.at(current_fd);
 
 				if (currentClient.getResponse().empty() || currentClient.getFinishedChunked())
@@ -500,7 +520,7 @@ void Config::runServers() {
 
 			//HANDLING ERRORS
 
-			else if (i >= serverList.size() && fds[i].revents & POLLERR) {
+			else if (i >= serverMap.size() && fds[i].revents & POLLERR) {
 				printClientsInfo("Poll error encountered");
 				closeClient(current_fd, i);
 				continue;
@@ -508,7 +528,7 @@ void Config::runServers() {
 
 			//HANDLING HANGUPS
 
-			else if (i >= serverList.size() && fds[i].revents & POLLHUP) {
+			else if (i >= serverMap.size() && fds[i].revents & POLLHUP) {
 				printClientsInfo("Client hang up");
 				closeClient(current_fd, i);
 				continue;

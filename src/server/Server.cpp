@@ -32,9 +32,7 @@ Server &Server::operator=(const Server &server) {
 	return *this;
 }
 
-Server::~Server() {
-	closeServer();
-}
+Server::~Server() {}
 
 void Server::setPort(unsigned short port) {
 	if (this->port)
@@ -164,6 +162,10 @@ int Server::getSocketFd() const {
 	return this->socketFd;
 }
 
+void Server::setSocketFd(int socketFd) {
+    this->socketFd = socketFd;
+}
+
 Location Server::getLocation(const std::string &path) const {
 	std::string dir = path.substr(0, path.rfind("/"));
 	std::map<std::string, Location>::const_iterator it;
@@ -198,4 +200,17 @@ std::string Server::getErrorPage(int status) const {
 
 unsigned long Server::getClientBodySize() const {
 	return this->clientBody;
+}
+
+std::vector<std::string>    &Server::getServerNames() {
+    return this->serverName;
+}
+
+bool Server::hasServerName(std::vector<std::string> &serverName) const {
+    for (std::vector<std::string>::iterator it = serverName.begin(); it != serverName.end(); ++it) {
+        if (std::find(this->serverName.begin(), this->serverName.end(), *it) != this->serverName.end()) {
+            return (true);
+        }
+    }
+    return (false);
 }

@@ -465,6 +465,10 @@ bool	Request::isKeepAlive() const {
 	return true;
 }
 
+void    Request::setMaxBodySize(unsigned long size) {
+    maxBodySize_ = size;
+}
+
 /* ************************************************************************** */
 /*                                  DEBUG PRINT                               */
 /* ************************************************************************** */
