@@ -12,11 +12,17 @@ void Response::processRequest() {
         throw 405; // request method is not allowed
     }
 
+    if (_location.getRedirect().empty() == false) {
+        _headers["location"] = _location.getRedirect();
+        throw 301;
+    }
+
     _path = _location.getRoot() + cleanPath(_request.getPath());
 
     if (_request.getMethod() == POST && _request.getBody().size() > _server.getClientBodySize()) {
         throw 413;
     }
+
 
     if (access(_path.c_str(), F_OK) == 0) {
         if (stat(_path.c_str(), &_pathStat) != 0) {
