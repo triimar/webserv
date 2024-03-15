@@ -13,11 +13,5 @@ The server can handle multiple CGI scripts, including Perl, Shell, and Python.
 
 Created in a three person team with my peers [mtravez](https://github.com/mtravez) and [Aaron Rabenstein](https://github.com/aaron-22766)
 
-### Themes
-- Unix
-- Network & system administration
-- Rigor
-- Object-oriented programming
-
 ### Running the Program
 ./webserv [configuration file]
