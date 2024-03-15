@@ -10,3 +10,5 @@
 !conf_files/**
 !.gitignore
 .DS_Store
+!Subject_webserv.pdf
+!README.md
