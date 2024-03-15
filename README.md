@@ -11,7 +11,7 @@ The following methods are implemented:
 
 The server can handle multiple CGI scripts, including Perl, Shell, and Python.
 
-Created in a three person team with my peers [mtravez](https://github.com/mtravez) and [Aaron Rabenstein](https://github.com/aaron-22766)
+Created in a three person team with my peers [mtravez](https://github.com/mtravez) and [Aaron Rabenstein](https://github.com/aaron-22766).
 
 ### Running the Program
 ./webserv [configuration file]
